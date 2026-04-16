@@ -70,6 +70,71 @@ Always use `theme: 'base'` — it's the only theme where all `themeVariables` ar
 
 **FORBIDDEN in Mermaid themeVariables:** `#8b5cf6`, `#7c3aed`, `#a78bfa` (indigo/violet), `#d946ef` (fuchsia). Use teal, slate, amber, emerald, or colors from your page's palette.
 
+### Mono-Industrial Mermaid Theme (default aesthetic)
+
+When generating output in the Mono-Industrial aesthetic (see `./mono-industrial.md` for the full system), Mermaid renders in grayscale only. Color is reserved for status (success / warning / error) and applied via `classDef` to specific edges or nodes that semantically represent those states — never as a role-color palette for the diagram as a whole.
+
+```html
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  import elkLayouts from 'https://cdn.jsdelivr.net/npm/@mermaid-js/layout-elk/dist/mermaid-layout-elk.esm.min.mjs';
+
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  // Grayscale tokens — every node, every edge, same palette.
+  const nodeFill   = isDark ? '#000000' : '#ffffff';
+  const nodeBorder = isDark ? 'rgba(242, 237, 229, 0.58)' : 'rgba(22, 19, 15, 0.56)';
+  const nodeText   = isDark ? 'rgba(242, 237, 229, 0.95)' : 'rgba(22, 19, 15, 0.95)';
+  const edgeColor  = isDark ? 'rgba(242, 237, 229, 0.40)' : 'rgba(22, 19, 15, 0.40)';
+
+  mermaid.registerLayoutLoaders(elkLayouts);
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    look: 'classic',
+    layout: 'elk',
+    themeVariables: {
+      fontFamily: "'Space Grotesk', system-ui, sans-serif",
+      fontSize: '15px',
+      // All three node tiers share the same grayscale — hierarchy
+      // comes from labels and layout, not color.
+      primaryColor: nodeFill,
+      primaryBorderColor: nodeBorder,
+      primaryTextColor: nodeText,
+      secondaryColor: nodeFill,
+      secondaryBorderColor: nodeBorder,
+      secondaryTextColor: nodeText,
+      tertiaryColor: nodeFill,
+      tertiaryBorderColor: nodeBorder,
+      tertiaryTextColor: nodeText,
+      lineColor: edgeColor,
+      noteBkgColor: nodeFill,
+      noteTextColor: nodeText,
+      noteBorderColor: nodeBorder,
+    }
+  });
+</script>
+```
+
+**Status-only coloring.** When a specific node or edge represents a degraded path, apply color via `classDef`. Do NOT use color to distinguish process types, data types, or any structural role.
+
+```
+graph TD
+  GW[Gateway] --> LEDGER[(Ledger)]
+  LEDGER --> IDX[Indexer]
+  LEDGER -->|"SLOW"| BILL[Billing]:::warn
+  classDef warn stroke:#b36b00,stroke-width:2px
+  %% In dark mode, swap #b36b00 → #f0b05a. Since classDef values are static,
+  %% emit the appropriate one based on window.matchMedia before rendering,
+  %% or inject via a pre-render string replace.
+```
+
+**Edge-label treatment.** In Mono-Industrial, edge labels go through the CSS overrides to render in Space Mono, ALL CAPS, 11px. Keep label text terse (`SLOW`, `ASYNC`, `FALLBACK`).
+
+**Node-label fonts.** Space Grotesk at 15px (docs) or 20px (slide decks).
+
+**When to use this theme:** default for all visual-explainer output. Switch to the teal/slate/earth palettes shown earlier in this file only when the user explicitly requests a named aesthetic (Blueprint, Editorial, Paper/ink, Monochrome terminal, IDE-inspired).
+
 ### CSS Overrides on Mermaid SVG
 
 Mermaid renders SVG. Override its classes for pixel-perfect control that `themeVariables` can't reach:

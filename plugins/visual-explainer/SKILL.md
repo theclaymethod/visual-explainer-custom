@@ -45,7 +45,11 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 
 **What type of content?** Architecture, flowchart, sequence, data flow, schema/ER, state machine, mind map, class diagram, C4 architecture, data table, timeline, dashboard, or prose-first page. Each has distinct layout needs and rendering approaches (see Diagram Types below).
 
-**What aesthetic?** Pick one and commit. The constrained aesthetics (Blueprint, Editorial, Paper/ink) are safer — they have specific requirements that prevent generic output. The flexible ones (IDE-inspired) require more discipline.
+**What aesthetic?** **Default to Mono-Industrial** unless the user names a different one. The other aesthetics listed below remain available, but they are opt-in — they do not rotate in by default.
+
+**Default aesthetic — Mono-Industrial (Swiss, monochrome, typography-first).** Inspired by Nothing, Braun, Teenage Engineering. Hierarchy is built from type scale, weight, and spacing — never from color. Grayscale canvas with status colors only (success / warning / error) on values themselves. Three-layer rule: display, primary, tertiary. Font budget: Space Grotesk + Space Mono + optional Doto for exactly one hero element per page. Zero on-load motion. One "moment of surprise" per page (an oversized number, a vast gap, a Doto word, a broken grid). **Before generating, read `./references/mono-industrial.md`.** For architecture output, base on `./templates/mono-industrial.html`. For slide decks, base on `./templates/mono-industrial-slides.html`.
+
+**Named alternatives (use only when the user explicitly requests one).** The aesthetics below exist for users who ask for Blueprint, Editorial, Paper/ink, Monochrome terminal, or an IDE-inspired palette by name. Do not rotate through them on your own initiative, and do not select them as a "change of pace" for variety.
 
 **Constrained aesthetics (prefer these):**
 - Blueprint (technical drawing feel, subtle grid background, deep slate/blue palette, monospace labels, precise borders) — see `websocket-implementation-plan.html` for reference
@@ -62,16 +66,22 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 - Gradient mesh (pink/purple/cyan blobs) — too generic
 - Any combination of Inter font + violet/indigo accents + gradient text
 
-Vary the choice each time. If the last diagram was dark and technical, make the next one light and editorial. The swap test: if you replaced your styling with a generic dark theme and nobody would notice the difference, you haven't designed anything.
+**Do not rotate aesthetics on your own.** Mono-Industrial is the default for every fresh generation. Switch only when the user requests a named alternative ("do it in Editorial style", "use the Dracula palette", "make it paper/ink"). The previous guidance to "vary the choice each time" is obsolete — variety is not a goal, consistent identity is. The swap test still applies within whichever aesthetic you pick: if you replaced the fonts and colors with a generic default and nobody would notice, you haven't designed anything.
 
 ### 2. Structure
 
 **Read the reference material** before generating. Don't memorize it — read it each time to absorb the patterns.
-- For text-heavy architecture overviews (card content matters more than topology): read `./templates/architecture.html`
-- For flowcharts, sequence diagrams, ER, state machines, mind maps, class diagrams, C4: read `./templates/mermaid-flowchart.html`
-- For data tables, comparisons, audits, feature matrices: read `./templates/data-table.html`
-- For slide deck presentations (when `--slides` flag is present or `/generate-slides` is invoked): read `./templates/slide-deck.html` and `./references/slide-patterns.md`
-- For prose-heavy publishable pages (READMEs, articles, blog posts, essays): read the "Prose Page Elements" section in `./references/css-patterns.md` and "Typography by Content Voice" in `./references/libraries.md`
+
+**For Mono-Industrial output (the default), always read `./references/mono-industrial.md` first.** Then, depending on output type:
+- Scrollable architecture / plan / diff / recap / table / mixed: `./templates/mono-industrial.html`
+- Slide deck (`--slides` or `/generate-slides`): `./templates/mono-industrial-slides.html` (still consult `./references/slide-patterns.md` for engine-level patterns like scroll-snap, nav chrome, and slide-type roles)
+
+**For named alternative aesthetics** (only when the user explicitly asks for one), use these legacy reference templates instead:
+- Text-heavy architecture overviews: `./templates/architecture.html`
+- Flowcharts, sequence, ER, state, mind map, class, C4: `./templates/mermaid-flowchart.html`
+- Data tables, comparisons, audits: `./templates/data-table.html`
+- Slide decks: `./templates/slide-deck.html` + `./references/slide-patterns.md`
+- Prose-heavy pages: "Prose Page Elements" in `./references/css-patterns.md` + "Typography by Content Voice" in `./references/libraries.md`
 
 **For CSS/layout patterns and SVG connectors**, read `./references/css-patterns.md`.
 
@@ -134,7 +144,9 @@ See `./references/css-patterns.md` for image container styles (hero banners, inl
 
 ### 3. Style
 
-Apply these principles to every diagram:
+**If generating Mono-Industrial (the default), follow `./references/mono-industrial.md` — not the rules below.** The guidance in this section (font rotation, multi-accent palettes, staggered fade-in animation) applies only when the user has explicitly requested a named alternative aesthetic (Blueprint, Editorial, Paper/ink, Monochrome terminal, IDE-inspired). Mono-Industrial overrides all of it: fixed typography (Space Grotesk + Space Mono + optional Doto), grayscale palette with status colors only, zero on-load motion.
+
+Apply these principles to every diagram in a **named alternative aesthetic**:
 
 **Typography is the diagram.** Pick a distinctive font pairing from the list in `./references/libraries.md`. Every page should use a different pairing from recent generations.
 
