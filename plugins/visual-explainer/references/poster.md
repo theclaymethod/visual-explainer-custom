@@ -156,6 +156,33 @@ Use **poster** for structured/technical graphics. Use **surf** for illustrations
 
 ---
 
+## Canvas-fit verification loop (mandatory for every poster)
+
+Posters fail silently. Unlike a scrolling HTML page — where overflow shows up as a scrollbar — a poster that is too dense just clips at the canvas edge when rasterized, and the result looks like "the layout ended early." You cannot trust that the live HTML preview tells you the truth: the browser will happily let content flow past the declared `w-[Npx] h-[Npx]` box. Only the exported PNG shows the real cropped result.
+
+**After every `poster export`, load the PNG and inspect it. Do not report the poster as done until this check passes.**
+
+Tool chain matches SKILL.md § 6 Verify — prefer Playwright MCP (`browser_navigate` to `file://<path>.png`, `browser_take_screenshot`), fall back to `/expect` or `agent-browser`. The LLM then looks at the rendered PNG and answers each of these:
+
+1. **Does any text clip at an edge?** Characters cut in half, ellipsized headlines, descriptions that trail off past the right or bottom edge, a paragraph whose last line is missing.
+2. **Does any element get cut by the canvas boundary?** Card bottoms disappearing, a hero number half-visible, footer metadata pushed off-frame.
+3. **Is there suspiciously large empty space at one edge?** Often means a grid collapsed to one column, a section wrapped in an unexpected way, or the content is far too small for the declared canvas.
+4. **Does the hierarchy still read?** Canvas fit sometimes forces shrinking the display type until it stops dominating — if the display no longer wins the squint test, the fit is broken even if nothing is clipped.
+5. **Does the moment of surprise survive?** If the Doto hero number got shrunk to fit, it's not a moment of surprise anymore.
+6. **Do status colors still appear only on values?** Rework sometimes drifts here — the color starts leaking into backgrounds or labels as the author tries to "fit more in."
+
+**On any failure, rework the TSX and re-export until the PNG passes.** The reworks available to you, roughly in order of preference:
+
+- Shrink the body copy first (it usually has the most slack — `text-[18px]` → `text-[16px]`)
+- Tighten spacing tiers (`gap: 32` → `gap: 24`, `padding: 80` → `padding: 64`) **but not below `--space-2` of hairlines between sections** — the Mono-Industrial rhythm depends on those
+- Reduce the word count on descriptions (often better than shrinking type)
+- Drop a secondary element (one of the four modules becomes three, a redundant metadata field disappears)
+- Bump the canvas taller (`h-[1000px]` → `h-[1200px]`) as a last resort — the user asked for a specific aspect ratio for a reason; changing it silently is worse than shipping a slightly sparser poster
+
+**Bounded attempts.** Rework at most **3 times**. If the PNG still doesn't fit after the third attempt, stop and report the specific problem to the user along with what you tried and the last PNG. Do not keep iterating blindly — the content may genuinely be too dense for the declared canvas, and the user needs to either accept a larger canvas, split across multiple posters, or prune the content.
+
+**Do not claim success on a clipped poster.** A poster that "kind of" fits is a failure. The whole point of the fixed-canvas format is pixel-perfect composition — if the edge is wrong, the piece is wrong.
+
 ## File structure in the skill
 
 - `./references/poster.md` — this file

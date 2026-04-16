@@ -28,7 +28,8 @@ Load the visual-explainer skill, then generate a fixed-canvas poster for: $@
 2. Run `/unslop` on all prose copy (headlines, descriptions, body) before writing into the TSX. See SKILL.md § 4.
 3. Build: `poster build ~/.agent/diagrams/<name>.poster.tsx -o ~/.agent/diagrams/<name>.poster.html`
 4. Export PNG: `poster export ~/.agent/diagrams/<name>.poster.tsx -o ~/.agent/diagrams/<name>.poster.png`
-5. **Verify in the browser** (see SKILL.md § 6): open the HTML, confirm canvas renders correctly, no clipped text, hierarchy legible, status colors only on values. Compare against the PNG to catch anything that drifts between live render and raster.
-6. Tell the user both file paths (HTML for live viewing with the export toolbar, PNG for sharing).
+5. **Verify in the browser** (see SKILL.md § 6): open the HTML, confirm canvas renders correctly, hierarchy legible, status colors only on values.
+6. **Canvas-fit loop (mandatory — see `./references/poster.md` → "Canvas-fit verification loop").** Load the exported PNG and inspect it. Posters clip silently at the canvas edge, and the live HTML lies about this — only the PNG shows the real cropped result. If text is clipped, elements are cut by the boundary, empty space suggests a collapsed grid, the hierarchy no longer reads, or the moment of surprise got shrunk to fit, **rework the TSX and re-export**. Bounded at 3 attempts; if still broken, stop and report.
+7. Tell the user both file paths (HTML for live viewing with the export toolbar, PNG for sharing).
 
 Use `.poster.` as an infix in the filename (`payments-q1.poster.html`, `payments-q1.poster.png`) to distinguish from the scrollable HTML output.

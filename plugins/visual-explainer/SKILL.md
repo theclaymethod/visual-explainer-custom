@@ -302,6 +302,8 @@ If you skip this step and your prose still reads as AI-generated (telltale phras
 
 **Do not skip this step.** The whole point of this skill is producing output that actually looks good when a human opens it. An unverified HTML file is a promise the skill can't keep.
 
+**For poster output specifically (see `./references/poster.md` → "Canvas-fit verification loop"):** posters clip silently at the canvas edge — the live HTML preview will happily let content flow past the declared `w-[Npx] h-[Npx]` box, and only the exported PNG shows the real cropped result. After `poster export`, load the PNG (not just the HTML) and inspect for edge clipping, cut elements, collapsed grids, shrunken hero, or lost moment-of-surprise. If any fail, rework the TSX and re-export. Bounded at 3 attempts.
+
 ## Diagram Types
 
 ### Architecture / System Diagrams
