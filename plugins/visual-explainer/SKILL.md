@@ -211,6 +211,42 @@ Keep animations purposeful: entrance reveals, hover feedback, and user-initiated
 
 **Tell the user** the file path so they can re-open or share it.
 
+### 5. Verify in a browser (mandatory)
+
+**Every generated diagram must be rendered and inspected before you report it as done.** Writing HTML does not verify it works — Mermaid can fail to parse, text can overflow, grids can collapse, and none of that shows up until a browser actually renders the page. A clean file write is not a green signal.
+
+**Tool preference (use the first one available):**
+
+1. **Playwright MCP** (preferred — widely available in Claude Code). Use these MCP tools:
+   - `browser_navigate` to `file://~/.agent/diagrams/<filename>.html`
+   - `browser_resize` to 1440×900 (desktop)
+   - `browser_take_screenshot` (full page)
+   - `browser_console_messages` to catch JS errors
+   - `browser_resize` to 390×844 (mobile)
+   - `browser_take_screenshot` again
+2. **`/expect` skill** (if Playwright MCP is not available). Pass the file path; it runs adversarial checks and returns findings.
+3. **`agent-browser` CLI** (portable fallback). Use `agent-browser screenshot <file-url>`.
+4. **No browser automation available**: explicitly say so in your final message. Do NOT claim the output is verified. Open the file for the user with `open`/`xdg-open` and tell them you couldn't auto-verify.
+
+**What to inspect in the screenshots (the LLM reads them):**
+
+- **Mermaid rendered**, not a raw `<pre class="mermaid">` text dump. If you see Mermaid source code on the page, the diagram failed to parse — fix the source and regenerate.
+- **No layout overflow.** Content stays inside its container at both desktop and mobile widths. Horizontal scrollbars on the body are a failure (except inside intentional `.table-scroll` / `.mermaid-wrap` containers).
+- **Text not clipped or truncated.** Headings wrap cleanly. No ellipsis where there shouldn't be one. No characters pushed off-screen.
+- **No template placeholders leaked** into output (`{{skill_dir}}`, `TODO`, placeholder names like "Module A" unless that's genuinely the content).
+- **Hierarchy visible at a glance.** Apply the squint test mentally to the screenshot: the primary element dominates, the tertiary metadata stays quiet. For Mono-Industrial specifically: the three-layer rule is legible, status colors appear only on values, the one moment of surprise is clearly placed.
+- **No console errors.** `browser_console_messages` should return empty or contain only expected warnings. Mermaid parse errors, font 404s, or JS exceptions are failures.
+- **Both themes look intentional.** If practical, toggle `prefers-color-scheme` via `browser_evaluate` and re-screenshot; at minimum, verify the default theme renders coherently.
+
+**On failure (anything above):**
+
+- Fix the root cause — usually a Mermaid syntax error, overflowing text, or a missing CSS class. Don't shotgun-patch by tweaking margins.
+- Regenerate the file.
+- Re-verify in the browser.
+- If still failing after a second attempt, deliver what you have but **tell the user exactly what's broken** and what you tried. Don't claim success on broken output.
+
+**Do not skip this step.** The whole point of this skill is producing output that actually looks good when a human opens it. An unverified HTML file is a promise the skill can't keep.
+
 ## Diagram Types
 
 ### Architecture / System Diagrams
@@ -407,7 +443,8 @@ See `./commands/share.md` for the `/share` command template.
 
 ## Quality Checks
 
-Before delivering, verify:
+Most of these are enforced by the mandatory **Verify in a browser** step above (Workflow § 5). The list below is the human-readable expansion of what the LLM is actually looking for when inspecting screenshots.
+
 - **The squint test**: Blur your eyes. Can you still perceive hierarchy? Are sections visually distinct?
 - **The swap test**: Would replacing your fonts and colors with a generic dark theme make this indistinguishable from a template? If yes, push the aesthetic further.
 - **Both themes**: Toggle your OS between light and dark mode. Both should look intentional, not broken.
