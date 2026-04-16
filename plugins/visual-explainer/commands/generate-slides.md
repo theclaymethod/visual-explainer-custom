@@ -16,3 +16,5 @@ Follow the visual-explainer skill workflow. Read the reference template at `./te
 **Compositional variety:** Consecutive slides must vary their spatial approach. Alternate between centered, left-heavy, right-heavy, split, edge-aligned, and full-bleed. Three centered slides in a row means push one off-axis.
 
 Write to `~/.agent/diagrams/` and open the result in the browser.
+
+**`--poster-export` flag (optional):** if the user passes this flag, after producing the interactive HTML deck, also render each slide to its own fixed-canvas PNG via `poster-ai`. Check `which poster`; skip the export silently if unavailable. Write per-slide PNGs to `~/.agent/diagrams/<deck-name>/slides/` at 1920×1080. See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow. The interactive HTML deck remains canonical — PNGs are a secondary artifact for sharing.

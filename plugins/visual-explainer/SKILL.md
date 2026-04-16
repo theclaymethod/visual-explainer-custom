@@ -23,6 +23,7 @@ Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/d
 | `generate-web-diagram` | Generate an HTML diagram for any topic |
 | `generate-visual-plan` | Generate a visual implementation plan for a feature |
 | `generate-slides` | Generate a magazine-quality slide deck |
+| `generate-poster` | Generate a single-canvas rich-composition poster (HTML + PNG) via poster-ai — see `./references/poster.md` |
 | `diff-review` | Visual diff review with architecture comparison and code review |
 | `plan-review` | Compare a plan against the codebase with risk assessment |
 | `project-recap` | Mental model snapshot for context-switching back to a project |
@@ -141,6 +142,29 @@ See `./references/css-patterns.md` for image container styles (hero banners, inl
 **When to skip:** Anything Mermaid or CSS handles well. Generic decoration that doesn't convey meaning. Data-heavy pages where images would distract. Always degrade gracefully — if surf isn't available, skip images without erroring. The page should stand on its own with CSS and typography alone.
 
 **Prompt craft:** Match the image to the page's palette and aesthetic direction. Specify the style (3D render, technical illustration, watercolor, isometric, flat vector, etc.) and mention dominant colors from your CSS variables. Use `--aspect-ratio 16:9` for hero banners, `--aspect-ratio 1:1` for inline illustrations. Keep prompts specific — "isometric illustration of a message queue with cyan nodes on dark navy background" beats "a diagram of a queue."
+
+**Code-driven embedded graphics via poster-ai (optional).** When you need a *structured* inline graphic — a KPI card, a Sankey diagram, a hierarchy figure, a dashboard strip — and you want determinism instead of generative output, use `poster-ai` as the image generator (the peer to surf-cli's Gemini illustrations). Check availability with `which poster`. If available:
+
+```bash
+# Write TSX to a temp file (sized for the embed slot, e.g. 1200×400 hero banner)
+cat > /tmp/ve-graphic.tsx <<'TSX'
+export default function() {
+  return (<div className="w-[1200px] h-[400px] bg-black text-white ...">...</div>);
+}
+TSX
+
+# Rasterize via headless Chrome
+poster export /tmp/ve-graphic.tsx -o /tmp/ve-graphic.png --quiet
+
+# Base64 encode for inline embedding (macOS)
+IMG=$(base64 -i /tmp/ve-graphic.png)
+# Linux: IMG=$(base64 -w 0 /tmp/ve-graphic.png)
+
+# Embed:  <img src="data:image/png;base64,${IMG}" alt="...">
+rm /tmp/ve-graphic.tsx /tmp/ve-graphic.png
+```
+
+**Poster vs surf:** use `poster` when the graphic is structural (dashboards, charts, schematics, data-art with exact layouts, diagrams you want to iterate on in code). Use `surf` when the graphic is illustrative (hero photography, conceptual art, mood imagery, anything generative). They are complements — pick based on whether you want deterministic/code-driven or generative/prompt-driven output. See `./references/poster.md` for canvas sizes, Mono-Industrial TSX idioms, and the full constraints list (no Mermaid inside posters, single-element root, etc.). Degrade gracefully — skip if `poster` isn't installed.
 
 ### 3. Style
 
@@ -413,6 +437,8 @@ An alternative output format for presenting content as a magazine-quality slide 
 **Curated presets:** Four slide-specific presets as starting points (Midnight Editorial, Warm Signal, Terminal Mono, Swiss Clean) plus the existing 8 aesthetic directions adapted for slides. Pick one and commit. See `slide-patterns.md` for preset CSS values.
 
 **`--slides` flag on existing prompts:** When a user passes `--slides` to `/diff-review`, `/plan-review`, `/project-recap`, or other prompts, the agent gathers data using the prompt's normal data-gathering instructions, then presents the content as a slide deck instead of a scrollable page. The slide version tells the same story with different structure and pacing — but the same breadth of coverage. Don't use the slide format as an excuse to summarize or skip sections that the scrollable version would have included.
+
+**`--poster-export` flag (optional).** When the user passes `--poster-export` to `/generate-slides`, the agent produces the interactive HTML deck first (canonical), then *additionally* renders each slide to its own fixed-canvas PNG via `poster-ai`. Slides go to `~/.agent/diagrams/<deck-name>/slides/<NN>-<title>.png` at 1920×1080 (or 1600×900 for tighter 16:9). Use these PNGs to share individual slides or to import into Keynote / Google Slides. Check `which poster` first; if missing, tell the user the flag is unavailable and proceed with HTML-only. See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow.
 
 ## File Structure
 
