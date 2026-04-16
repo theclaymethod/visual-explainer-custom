@@ -201,7 +201,38 @@ Put your primary aesthetic in `:root` and the alternate in the media query:
 
 Keep animations purposeful: entrance reveals, hover feedback, and user-initiated interactions. Nothing should glow or pulse on its own.
 
-### 4. Deliver
+### 4. Copy — unslop every line of prose before you write it to HTML
+
+Before you render any prose into the page, **run the copy through the `/unslop` skill**. Generated HTML often looks right structurally while the text underneath reads like generic AI output — predictable rhythms, overused connectors, manufactured emphasis, "Here's the thing:" phrasings. The template design will not save you if the copy is slop.
+
+**What counts as "copy" (must be unslopped):**
+
+- Headlines and sub-headlines
+- Lead paragraphs, body paragraphs, descriptions under sections or modules
+- Module/card descriptions
+- Callout text, pull quotes, blockquotes
+- Slide body copy
+- Any complete-sentence content meant to be read as prose
+
+**What does NOT count as copy (leave untouched):**
+
+- Space Mono ALL CAPS labels (`LAST UPDATED`, `SOURCE`, `STATUS`)
+- Numeric values, units, timestamps
+- Code snippets, filenames, identifiers
+- Mermaid node labels (they're diagram labels, not prose — keep them terse and technical)
+- Table header cells and column names
+- System messages in square brackets (`[NO DATA]`, `[ERROR: ...]`)
+- Version strings, section numbers, counters
+
+**Workflow:**
+
+1. Draft the full set of prose copy for the page as a plain-text block before writing HTML.
+2. Invoke `/unslop` on that block. The skill runs its two-pass diagnosis-then-reconstruction and returns revised copy.
+3. Paste the unslopped copy into the HTML template. Do not paraphrase it again or "polish" it further — `/unslop` already did that work, and re-editing reintroduces the patterns it removed.
+
+If you skip this step and your prose still reads as AI-generated (telltale phrases like "it's important to note", "let that sink in", "in today's fast-paced landscape", predictable three-item lists, transitional "however"s and "moreover"s), the output has failed the craft bar regardless of how good the visual design is.
+
+### 5. Deliver
 
 **Output location:** Write to `~/.agent/diagrams/`. Use a descriptive filename based on content: `modem-architecture.html`, `pipeline-flow.html`, `schema-overview.html`. The directory persists across sessions.
 
@@ -211,7 +242,7 @@ Keep animations purposeful: entrance reveals, hover feedback, and user-initiated
 
 **Tell the user** the file path so they can re-open or share it.
 
-### 5. Verify in a browser (mandatory)
+### 6. Verify in a browser (mandatory)
 
 **Every generated diagram must be rendered and inspected before you report it as done.** Writing HTML does not verify it works — Mermaid can fail to parse, text can overflow, grids can collapse, and none of that shows up until a browser actually renders the page. A clean file write is not a green signal.
 
@@ -443,7 +474,7 @@ See `./commands/share.md` for the `/share` command template.
 
 ## Quality Checks
 
-Most of these are enforced by the mandatory **Verify in a browser** step above (Workflow § 5). The list below is the human-readable expansion of what the LLM is actually looking for when inspecting screenshots.
+Most of these are enforced by the mandatory **Verify in a browser** step above (Workflow § 6). The list below is the human-readable expansion of what the LLM is actually looking for when inspecting screenshots.
 
 - **The squint test**: Blur your eyes. Can you still perceive hierarchy? Are sections visually distinct?
 - **The swap test**: Would replacing your fonts and colors with a generic dark theme make this indistinguishable from a template? If yes, push the aesthetic further.
