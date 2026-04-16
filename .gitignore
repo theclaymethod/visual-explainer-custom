@@ -1,1 +1,7 @@
 .DS_Store
+
+# Local skill-management artifacts (dev-only, not part of the project)
+.agents/
+.claude/
+.pi/
+skills-lock.json
