@@ -199,8 +199,8 @@
      bottom-right with 44px touch targets, narrow mobile bottom-full-width. */
   .theme-toggle {
     position: fixed;
-    top: 68px;
-    right: 32px;
+    top: 24px;
+    right: 24px;
     z-index: 99;
     display: flex;
     gap: 4px;
@@ -729,10 +729,9 @@
 </head>
 <body>
 
-<!-- Corner cross marks — registration anchors. Each a different accent. -->
+<!-- Cross marks — TL + BR opposing-diagonal pair. The TR corner is reserved
+     for the theme toggle; BL is dropped to keep the count at two. -->
 <span class="subq-crossmark subq-crossmark--tl">+</span>
-<span class="subq-crossmark subq-crossmark--tr">+</span>
-<span class="subq-crossmark subq-crossmark--bl">+</span>
 <span class="subq-crossmark subq-crossmark--br">+</span>
 
 <!-- Theme toggle: glyph + label pairs. Choice persists to localStorage. -->

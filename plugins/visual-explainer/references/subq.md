@@ -133,7 +133,9 @@ Applied by the OS preference (`@media (prefers-color-scheme: light)`) OR the exp
 
 ### Theme toggle (light / dark / auto)
 
-Every SubQ page ships with a three-option selector floating at the top-right. Each option pairs a geometric glyph with a visible text label: `○ Light`, `● Dark`, `◐ Auto`. The glyph carries the icon-level affordance; the word carries the meaning. Don't ship glyph-only on the assumption that users know the symbols — the cost of the extra word is paid back every first-time interaction.
+Every SubQ page ships with a three-option selector tight to the top-right corner. Each option pairs a geometric glyph with a visible text label: `○ Light`, `● Dark`, `◐ Auto`. The glyph carries the icon-level affordance; the word carries the meaning. Don't ship glyph-only on the assumption that users know the symbols — the cost of the extra word is paid back every first-time interaction.
+
+**Cross-mark interaction.** The TR corner is reserved for the toggle, so pages that include it drop to the TL + BR opposing-diagonal cross-mark pattern (still two, still on-rule per § 4). Don't keep TR or BL when the toggle is present — that's three cross marks and the reference template forbids it.
 
 ```html
 <div class="theme-toggle" role="radiogroup" aria-label="Theme">
@@ -167,7 +169,7 @@ Every SubQ page ships with a three-option selector floating at the top-right. Ea
 
 | Viewport | Position | Touch target | Notes |
 |---|---|---|---|
-| **Desktop** (≥ 769px) | Fixed, top 68px / right 32px — below the TR cross mark, clear of the nav | Click-sized (32px high, generous padding) | Hover lifts chrome; labels read quietly in the margin |
+| **Desktop** (≥ 769px) | Fixed, top 24px / right 24px — tight to the top-right corner. Cross marks drop to the TL + BR opposing-diagonal pair so the TR corner is free | Click-sized (32px high, generous padding) | Collapsed to a single circular indicator at rest; hover unfurls the full selector |
 | **Tablet / phone** (421–768px) | Fixed, bottom 24px / right 24px — thumb zone | **44px minimum height**, 12px/14px padding | Larger type (12px), looser gap, no reliance on hover |
 | **Narrow phone** (≤ 420px) | Fixed bottom bar, left 16px / right 16px, stretched full-width | Each button flexes to 1/3 of the bar, center-aligned | All three options stay visible; no hamburger, no collapse |
 
