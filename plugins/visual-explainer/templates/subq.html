@@ -249,10 +249,10 @@
                 max-width 320ms ease-out, opacity 220ms ease-out;
   }
   .theme-toggle__glyph {
-    font-family: 'Roboto Mono', 'Apple Symbols', monospace;
-    font-size: 12px;
-    line-height: 1;
+    display: block;
     flex-shrink: 0;
+    width: 12px;
+    height: 12px;
   }
   .theme-toggle__label {
     display: inline-block;
@@ -734,18 +734,27 @@
 <span class="subq-crossmark subq-crossmark--tl">+</span>
 <span class="subq-crossmark subq-crossmark--br">+</span>
 
-<!-- Theme toggle: glyph + label pairs. Choice persists to localStorage. -->
+<!-- Theme toggle: SVG glyph + label pairs. Choice persists to localStorage.
+     Icons are inline SVG so stroke weight and centering stay identical
+     regardless of font rendering. viewBox 16×16, rendered at 12×12. -->
 <div class="theme-toggle" role="radiogroup" aria-label="Theme">
   <button type="button" role="radio" data-theme="light"  aria-checked="false">
-    <span class="theme-toggle__glyph" aria-hidden="true">&#9675;</span>
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
     <span class="theme-toggle__label">Light</span>
   </button>
   <button type="button" role="radio" data-theme="dark"   aria-checked="false">
-    <span class="theme-toggle__glyph" aria-hidden="true">&#9679;</span>
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
     <span class="theme-toggle__label">Dark</span>
   </button>
   <button type="button" role="radio" data-theme="system" aria-checked="true">
-    <span class="theme-toggle__glyph" aria-hidden="true">&#9680;</span>
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M 8 3 A 5 5 0 0 1 8 13 Z" fill="currentColor"/>
+    </svg>
     <span class="theme-toggle__label">Auto</span>
   </button>
 </div>

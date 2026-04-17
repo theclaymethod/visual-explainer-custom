@@ -133,7 +133,29 @@ Applied by the OS preference (`@media (prefers-color-scheme: light)`) OR the exp
 
 ### Theme toggle (light / dark / auto)
 
-Every SubQ page ships with a three-option selector tight to the top-right corner. Each option pairs a geometric glyph with a visible text label: `○ Light`, `● Dark`, `◐ Auto`. The glyph carries the icon-level affordance; the word carries the meaning. Don't ship glyph-only on the assumption that users know the symbols — the cost of the extra word is paid back every first-time interaction.
+Every SubQ page ships with a three-option selector tight to the top-right corner. Each option pairs a geometric icon with a visible text label: ring (Light), solid disc (Dark), half-filled disc (Auto).
+
+**Icons are inline SVG, not Unicode glyphs.** Early drafts used `○ ● ◐` characters; they centered inconsistently across fonts and the circles' visual weight drifted. The canonical version is inline SVG at a 16×16 viewBox rendered at 12×12, all three sharing the same `r=5` and 1.5 stroke-width so the outer bounds line up pixel-for-pixel.
+
+```html
+<svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+  <!-- Light: ring -->
+  <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+</svg>
+
+<svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+  <!-- Dark: solid (stroke + fill for identical outer bounds with the ring) -->
+  <circle cx="8" cy="8" r="5" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
+</svg>
+
+<svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+  <!-- Auto: ring + filled right half -->
+  <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+  <path d="M 8 3 A 5 5 0 0 1 8 13 Z" fill="currentColor"/>
+</svg>
+```
+
+The word carries the meaning; the icon carries the icon-level affordance. Don't ship icon-only on the assumption that users know the symbols — the cost of the extra word is paid back every first-time interaction.
 
 **Cross-mark interaction.** The TR corner is reserved for the toggle, so pages that include it drop to the TL + BR opposing-diagonal cross-mark pattern (still two, still on-rule per § 4). Don't keep TR or BL when the toggle is present — that's three cross marks and the reference template forbids it.
 
