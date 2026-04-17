@@ -328,7 +328,43 @@ Date format in metadata rows: `2026 · 04 · 16` (dots, spaces, no slashes).
 
 ---
 
-## 16. Pre-render Gate (check these before writing HTML)
+## 16. Code Blocks — Terminal Dark with Syntax Highlighting
+
+Code blocks are the one container in Mono-Industrial that breaks the grayscale rule, and they do it loudly: a near-black background (`#0a0a0a`) with a restrained four-color token palette, regardless of whether the page is in dark or light mode. Treat every code block as a terminal pane embedded in the page — not a surface card, not a light-mode inversion.
+
+**Rationale.** Code is already its own language with its own visual conventions. A warm-cream code block on a light-mode page looks like a citation; a dark terminal block reads as *this is executable material*. The contrast against a light page is intentional.
+
+**Required setup** (see `./libraries.md` → "Prism.js — Syntax Highlighting" for the full CSS):
+
+- Load Prism core + autoloader from jsDelivr.
+- Mark up as `<pre class="code-block"><code class="language-ts">…</code></pre>`.
+- Apply the **Mono-Industrial Terminal Theme** token CSS from `libraries.md`. Do not use any stock Prism theme — they all introduce palettes that clash with the rest of the page.
+
+**Token palette (from the page's existing variables, no new colors):**
+
+| Token role | Color | Source variable |
+|---|---|---|
+| Keywords, function / class names | Warm off-white | `--fg` |
+| Variables, identifiers | Off-white 90% | `--text-primary` |
+| Operators, punctuation | Off-white 58% | `--text-secondary` |
+| Strings, numbers, attribute values | Amber | `--warn` |
+| Constants, tags, deletions | Red | `--err` |
+| Insertions (diffs) | Green | `--ok` |
+| Comments | Off-white 36%, italic | `--text-disabled` |
+
+The entire palette uses only variables already defined for status colors. No new hues, no syntax-highlight-specific tokens — the same red/amber/green that indicates warnings and errors elsewhere is doing double duty in the code block, which keeps the page visually coherent.
+
+**File header is optional and goes above the block**, never inside it. Use the `code-file` + `code-file__cap` pattern from `libraries.md`. Style: Space Mono ALL CAPS, 11px, `--text-secondary`, with the filename slightly brighter than the language label. The terminal rectangle stays undivided — no chrome, no three-dot buttons, no inline tabs.
+
+**No line numbers, no line highlighting, no copy buttons** unless the user explicitly asks for them. These add visual weight without adding information.
+
+**Diff blocks** use `language-diff` or `diff-*` prefixes. Additions get a 10%-alpha green background on the line; deletions get a 10%-alpha red. Never use solid green/red row fills — the tint is subtle, the text color carries the signal.
+
+**Snippets stay short.** Terminal code blocks dominate visually; a 60-line dump will blow out the page hierarchy. For anything over ~20 lines, wrap in `<details>` or use the file-structure-with-descriptions pattern from `css-patterns.md` → "Implementation Plans: Don't Dump Full Files."
+
+---
+
+## 17. Pre-render Gate (check these before writing HTML)
 
 Run through this list before generating. If any answer is no, stop and revise.
 
@@ -344,7 +380,7 @@ Run through this list before generating. If any answer is no, stop and revise.
 
 ---
 
-## 17. When NOT to Use Mono-Industrial
+## 18. When NOT to Use Mono-Industrial
 
 Mono-Industrial is the default, but some requests imply a different aesthetic:
 

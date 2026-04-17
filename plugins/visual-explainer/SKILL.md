@@ -50,7 +50,10 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 
 **Default aesthetic — Mono-Industrial (Swiss, monochrome, typography-first).** Inspired by Nothing, Braun, Teenage Engineering. Hierarchy is built from type scale, weight, and spacing — never from color. Grayscale canvas with status colors only (success / warning / error) on values themselves. Three-layer rule: display, primary, tertiary. Font budget: Space Grotesk + Space Mono + optional Geist Pixel Square for exactly one hero element per page. Zero on-load motion. One "moment of surprise" per page (an oversized number, a vast gap, a pixel-display word, a broken grid). **Before generating, read `./references/mono-industrial.md`.** For architecture output, base on `./templates/mono-industrial.html`. For slide decks, base on `./templates/mono-industrial-slides.html`.
 
-**Named alternatives (use only when the user explicitly requests one).** The aesthetics below exist for users who ask for Blueprint, Editorial, Paper/ink, Monochrome terminal, or an IDE-inspired palette by name. Do not rotate through them on your own initiative, and do not select them as a "change of pace" for variety.
+**Named alternatives (use only when the user explicitly requests one).** The aesthetics below exist for users who ask for SubQ, Blueprint, Editorial, Paper/ink, Monochrome terminal, or an IDE-inspired palette by name. Do not rotate through them on your own initiative, and do not select them as a "change of pace" for variety.
+
+**Brand aesthetics:**
+- **SubQ / Subquadratic** — the Subquadratic company brand. Dark-first black canvas, Libre Baskerville serif display + Manrope body + Roboto Mono labels + Roboto Serif Semi-Bold wordmark. Pixel-block accent system (yellow / blue / orange / green), cross-mark corner anchors, 40px grid texture on hero, ghost wordmark footer. **Before generating, read `./references/subq.md`.** Base on `./templates/subq.html`. Trigger: user says "subq", "subquadratic", "the SubQ brand", or "our brand" in a context that implies Subquadratic.
 
 **Constrained aesthetics (prefer these):**
 - Blueprint (technical drawing feel, subtle grid background, deep slate/blue palette, monospace labels, precise borders) — see `websocket-implementation-plan.html` for reference
@@ -165,6 +168,31 @@ rm /tmp/ve-graphic.tsx /tmp/ve-graphic.png
 ```
 
 **Poster vs surf:** use `poster` when the graphic is structural (dashboards, charts, schematics, data-art with exact layouts, diagrams you want to iterate on in code). Use `surf` when the graphic is illustrative (hero photography, conceptual art, mood imagery, anything generative). They are complements — pick based on whether you want deterministic/code-driven or generative/prompt-driven output. See `./references/poster.md` for canvas sizes, Mono-Industrial TSX idioms, and the full constraints list (no Mermaid inside posters, single-element root, etc.). Degrade gracefully — skip if `poster` isn't installed.
+
+**Recorded UI demos (optional).** When the page explains a *running UI feature* — a form flow, a hover reveal, a multi-step wizard — a short silent webm loop beats a still screenshot. The video stays self-contained in the HTML via a base64 data URI, just like surf images and poster graphics.
+
+Capture path (pick whichever is available):
+
+- **Playwright MCP (preferred).** Use `browser_navigate`, `browser_resize`, `browser_take_screenshot` to save 6–12 numbered frames (`frame-001.png` … `frame-012.png`) into `~/.agent/diagrams/<slug>/`. Wait ~400ms between beats so animations settle.
+- **`agent-browser` CLI (shortcut).** If installed, `agent-browser record start <out.webm>` / `record stop` captures continuously while you run interactions between them.
+
+Encode and embed:
+
+```bash
+# Stitch frames → webm (skip if you used agent-browser record)
+bash {{skill_dir}}/scripts/frames-to-webm.sh \
+  ~/.agent/diagrams/<slug> \
+  ~/.agent/diagrams/<slug>.webm \
+  2  # fps
+
+# Emit a self-contained <video> snippet with base64 inline
+bash {{skill_dir}}/scripts/embed-media.sh ~/.agent/diagrams/<slug>.webm
+# → <video autoplay loop muted playsinline><source src="data:video/webm;base64,..."></video>
+```
+
+Paste the `<video>` snippet directly into the section that introduces the feature. Keep the source webm under 2MB before encoding — above that, the base64-inflated HTML gets sluggish. The helper warns on stderr when you cross that line.
+
+See `./references/demo-capture.md` for the full capture workflow, frame pacing, aesthetic framing per theme, and when to skip the demo entirely. `embed-media.sh` also handles PNG/JPG/GIF/WebP/MP4, so use it anywhere you'd otherwise hand-roll a `base64 -i | sed` pipeline. Degrade gracefully — if `ffmpeg` or a browser capture tool isn't available, fall back to a still screenshot or a Mermaid illustration.
 
 ### 3. Style
 
@@ -383,7 +411,9 @@ For visualizing implementation plans, extension designs, or feature specificatio
 - Show **key snippets only** — the 5-10 lines that illustrate the core logic
 - Use **collapsible sections** for full code if truly needed
 
-**Code blocks require explicit formatting.** Without `white-space: pre-wrap`, code runs together into an unreadable wall. See the "Code Blocks" section in `./references/css-patterns.md` for the correct pattern.
+**Code blocks require explicit formatting.** Without `white-space: pre-wrap`, code runs together into an unreadable wall. See the "Code Blocks" section in `./references/css-patterns.md` for the base pattern.
+
+**Mono-Industrial code blocks are terminal-dark with syntax highlighting.** Every code block on a Mono-Industrial page uses a near-black background (`#0a0a0a`) regardless of whether the page is in light or dark mode, paired with Prism.js for syntax highlighting using the restrained token palette in `./references/libraries.md` → "Prism.js — Syntax Highlighting". The terminal block is the one place in the aesthetic that breaks the grayscale rule — it uses the existing status colors (`--warn` for strings/numbers, `--err` for tags/deletions, `--ok` for diff insertions) plus three levels of foreground opacity for everything else. No new colors are introduced. See `./references/mono-industrial.md` § 16 for the rationale and the full token mapping.
 
 **Structure for implementation plans:**
 1. Overview/purpose (what problem does this solve?)

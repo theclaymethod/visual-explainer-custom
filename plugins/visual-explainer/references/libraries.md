@@ -619,6 +619,144 @@ When using anime.js, set initial opacity to 0 in CSS so elements don't flash bef
 }
 ```
 
+## Prism.js — Syntax Highlighting
+
+Use for code blocks in HTML output. Prism is small (~6KB core + per-language grammars), configurable, and produces predictable class-named tokens that are trivial to re-theme via CSS — which matters because the default Prism themes don't match any of this skill's aesthetics and must be overridden.
+
+**CDN + autoloader** (loads language grammars on demand, so you don't need to enumerate them):
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"
+        data-autoloader-path="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/"></script>
+```
+
+**Markup:**
+
+```html
+<pre class="code-block"><code class="language-ts">const x: number = 42;
+function greet(name: string) {
+  return `hello, ${name}`;
+}
+</code></pre>
+```
+
+Prism scans for `class="language-*"` on `<code>` elements at load and highlights automatically. For post-load or dynamically inserted code, call `Prism.highlightAll()` or `Prism.highlightElement(el)`.
+
+**Supported languages (common):** `ts`, `tsx`, `js`, `jsx`, `py`, `rust`, `go`, `java`, `c`, `cpp`, `cs`, `sh` / `bash`, `json`, `yaml`, `toml`, `html`, `css`, `scss`, `md` / `markdown`, `sql`, `graphql`, `diff`. See [prismjs.com/#supported-languages](https://prismjs.com/#supported-languages) for the full list.
+
+### Mono-Industrial Terminal Theme
+
+The default Prism themes introduce palettes that clash with Mono-Industrial's rule (no color except status). The theme below uses only the existing CSS variables — string literals and numbers share the `--warn` amber, comments use `--text-disabled`, everything else is the foreground at varying opacities.
+
+Put this in the `<style>` block alongside the code block CSS:
+
+```css
+/* Force dark terminal regardless of page theme */
+pre.code-block,
+pre.code-block[class*="language-"] {
+  background: #0a0a0a;
+  color: #f2ede5;
+  border: 1px solid rgba(242, 237, 229, 0.14);
+  border-radius: 4px;
+  padding: 16px 18px;
+  font-family: 'Space Mono', 'SF Mono', Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+  tab-size: 2;
+}
+
+pre.code-block code,
+pre.code-block[class*="language-"] code {
+  background: none;
+  color: inherit;
+  font-family: inherit;
+  text-shadow: none;
+}
+
+/* Prism token palette — restrained, pulls from the page's status colors only */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata        { color: rgba(242, 237, 229, 0.36); font-style: italic; }
+.token.punctuation,
+.token.operator     { color: rgba(242, 237, 229, 0.58); }
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted      { color: #ef7b7b; }                  /* --err */
+.token.boolean,
+.token.number       { color: #f0b05a; }                  /* --warn */
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted     { color: #f0b05a; }                  /* --warn */
+.token.atrule,
+.token.attr-value,
+.token.keyword      { color: #f2ede5; font-weight: 500; } /* --fg */
+.token.function,
+.token.class-name   { color: #f2ede5; }
+.token.regex,
+.token.important,
+.token.variable     { color: rgba(242, 237, 229, 0.90); }
+
+.token.important,
+.token.bold         { font-weight: 700; }
+.token.italic       { font-style: italic; }
+```
+
+**Diff blocks** (use `language-diff` or `diff-*` prefix to colorize additions/removals):
+
+```css
+.token.deleted,
+pre.code-block .line-deleted  { background: rgba(239, 123, 123, 0.10); color: #ef7b7b; }
+.token.inserted,
+pre.code-block .line-inserted { background: rgba(107, 212, 142, 0.10); color: #6bd48e; }
+```
+
+**Light mode.** The code block stays dark even when the page is in light mode — terminals are dark, and the contrast against a warm cream page is intentional. If a user explicitly asks for a light code block (reviewer print-out, paper/ink aesthetic), invert the palette and re-map the token colors to darker equivalents.
+
+### File header pattern
+
+Pair the code block with a minimal Space Mono caption for filename + language. The header sits above the dark block, not inside it — keeps the terminal rectangle undivided.
+
+```html
+<figure class="code-file">
+  <figcaption class="code-file__cap">
+    <span class="code-file__name">src/api/auth.ts</span>
+    <span class="code-file__lang">TYPESCRIPT</span>
+  </figcaption>
+  <pre class="code-block"><code class="language-ts">...</code></pre>
+</figure>
+```
+
+```css
+.code-file { margin: 24px 0; }
+.code-file__cap {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 2px 6px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary, rgba(242, 237, 229, 0.58));
+}
+.code-file__name { color: var(--text-primary, rgba(242, 237, 229, 0.90)); }
+```
+
+### When to skip Prism
+
+- Single-token inline references (`<code>x</code>` inside prose) — plain monospace is fine.
+- Prose-heavy pages with one tiny snippet — the runtime script isn't worth it.
+- Poster output — `poster export` waits 1500ms after `networkidle`, which is often too short for Prism to finish highlighting large blocks. Pre-render tokens server-side or write them as plain `<code>` with inline color spans.
+
 ## Google Fonts — Typography
 
 Always load with `display=swap` for fast rendering. Pick a distinctive pairing — body + mono at minimum, optionally a display font for the title.

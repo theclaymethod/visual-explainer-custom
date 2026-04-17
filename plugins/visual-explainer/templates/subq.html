@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intelligence Pipeline — SubQ Reference</title>
+<!--
+  SubQ (Subquadratic brand) reference template for visual-explainer.
+
+  This is a NAMED ALTERNATIVE aesthetic, not the default. Use when the user
+  requests "subq", "subquadratic", or the SubQ brand. See
+  ./references/subq.md for the full design system and constraints.
+
+  Patterns demonstrated here:
+  - Three-typeface system: Libre Baskerville (display) + Manrope (body) + Roboto Mono (labels)
+  - Roboto Serif Semi-Bold for the "Subquadratic" wordmark only
+  - Dark-first canvas (#000000) with 40px grid texture on hero
+  - Cross-mark corner anchors (four corners, each a different accent)
+  - Pixel block hero column in the four accent colors
+  - Mermaid theme with single-accent emphasis (one edge in SubQ blue)
+  - Terminal code block with SubQ syntax palette (yellow strings, blue attributes)
+  - Cream contrast panel used ONCE — not a light mode
+  - Ghost "Subquadratic" wordmark footer at ~14% opacity
+  - Zero on-load motion
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Manrope:wght@400;500;600&family=Roboto+Mono:wght@300;400&family=Roboto+Serif:wght@600&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"
+        data-autoloader-path="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/"></script>
+
+<style>
+  /* ============ TOKENS ============ */
+  :root {
+    /* Fonts */
+    --font-display:   'Libre Baskerville', Georgia, serif;
+    --font-body:      'Manrope', system-ui, sans-serif;
+    --font-mono:      'Roboto Mono', 'SF Mono', Consolas, monospace;
+    --font-logotype:  'Roboto Serif', Georgia, serif;
+
+    /* Structure */
+    --subq-black:    #000000;
+    --subq-navy:     #080d1f;
+    --subq-charcoal: #3b362d;
+    --subq-tan:      #b7a99a;
+    --subq-gray:     #999489;
+    --subq-cream:    #fffaf3;
+
+    /* Accents */
+    --subq-yellow:   #FFE237;
+    --subq-blue:     #0834bc;
+    --subq-orange:   #eb521e;
+    --subq-green:    #3A7A35;
+
+    /* Text */
+    --text-display:   #ffffff;
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: #b7a99a;
+    --text-disabled:  rgba(255, 255, 255, 0.30);
+
+    /* Rules */
+    --rule:        rgba(183, 169, 154, 0.20);
+    --rule-strong: rgba(183, 169, 154, 0.40);
+
+    /* Spacing */
+    --space-1: 8px;
+    --space-2: 16px;
+    --space-3: 24px;
+    --space-4: 32px;
+    --space-5: 48px;
+    --space-6: 72px;
+    --space-7: 96px;
+    --space-8: 144px;
+
+    /* Type scale */
+    --size-display:  clamp(56px, 9vw, 128px);
+    --size-h1:       clamp(32px, 4vw, 56px);
+    --size-h2:       clamp(22px, 2.4vw, 32px);
+    --size-body:     16px;
+    --size-small:    13px;
+    --size-caption:  11px;
+  }
+
+  /* ============ RESET ============ */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--subq-black);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: var(--size-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  /* ============ GRID CANVAS TEXTURE (hero only) ============ */
+  .subq-grid {
+    background-color: var(--subq-black);
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: -1px -1px;
+  }
+
+  /* ============ CROSS MARKS ============ */
+  .subq-crossmark {
+    position: fixed;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1;
+    user-select: none;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .subq-crossmark--tl { top: 32px;    left: 32px;   color: var(--subq-yellow); }
+  .subq-crossmark--tr { top: 32px;    right: 32px;  color: var(--subq-blue);   }
+  .subq-crossmark--bl { bottom: 32px; left: 32px;   color: var(--subq-orange); }
+  .subq-crossmark--br { bottom: 32px; right: 32px;  color: var(--subq-green);  }
+  @media (max-width: 768px) { .subq-crossmark { display: none; } }
+
+  /* ============ NAV ============ */
+  .subq-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--space-3) var(--space-5);
+    border-bottom: 1px solid var(--rule);
+    position: relative;
+    z-index: 10;
+  }
+  .subq-logotype {
+    font-family: var(--font-logotype);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text-display);
+    letter-spacing: -0.01em;
+  }
+  .subq-navlinks {
+    display: flex; gap: var(--space-5);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+  }
+  .subq-navlinks a {
+    color: var(--text-display);
+    text-decoration: none;
+    opacity: 0.88;
+    transition: opacity 120ms ease-out;
+  }
+  .subq-navlinks a:hover { opacity: 1; }
+
+  .subq-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    transition: opacity 120ms ease-out;
+    border: 1px solid transparent;
+  }
+  .subq-btn--primary { background: var(--subq-blue); color: #ffffff; border-color: var(--subq-blue); }
+  .subq-btn--secondary { background: transparent; color: #ffffff; border-color: #ffffff; }
+  .subq-btn:hover { opacity: 0.85; }
+
+  /* ============ HERO ============ */
+  .subq-hero {
+    position: relative;
+    padding: var(--space-7) var(--space-5) var(--space-8);
+    min-height: 72vh;
+    display: grid;
+    grid-template-columns: 1fr 160px 1fr;
+    gap: var(--space-5);
+    align-items: end;
+  }
+  .subq-hero__label {
+    grid-column: 1 / 2;
+    align-self: start;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-5);
+  }
+  .subq-hero__headline {
+    grid-column: 1 / 3;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--size-display);
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    color: var(--text-display);
+    margin: 0;
+  }
+  .subq-hero__headline em {
+    font-style: italic;
+    font-weight: 400;
+  }
+  .subq-hero__sub {
+    grid-column: 1 / 2;
+    max-width: 520px;
+    font-size: 17px;
+    color: var(--text-primary);
+    margin-top: var(--space-4);
+  }
+
+  /* pixel block column — hero accent */
+  .subq-pixelstack {
+    grid-column: 2 / 3;
+    grid-row: 1 / span 3;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-self: center;
+    width: 120px;
+  }
+  .subq-pixel { width: 100%; display: block; }
+
+  @media (max-width: 900px) {
+    .subq-hero { grid-template-columns: 1fr; }
+    .subq-pixelstack { grid-column: 1; grid-row: auto; flex-direction: row; width: 100%; height: 72px; }
+    .subq-pixel { height: 100% !important; flex: 1; }
+  }
+
+  /* ============ SECTIONS ============ */
+  main { padding: 0 var(--space-5); }
+
+  .subq-section {
+    padding: var(--space-6) 0;
+    border-top: 1px solid var(--rule);
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: var(--space-6);
+  }
+  .subq-section:first-of-type { border-top: 0; }
+
+  .subq-section__meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .subq-section__label {
+    color: var(--subq-tan);
+    display: block;
+    margin-bottom: var(--space-2);
+  }
+  .subq-section__num {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-size: 48px;
+    color: var(--text-display);
+    line-height: 1;
+    margin-bottom: var(--space-3);
+  }
+
+  .subq-section__content h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: var(--size-h1);
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+    margin: 0 0 var(--space-3);
+    color: var(--text-display);
+    max-width: 18ch;
+  }
+  .subq-section__content h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: var(--size-h2);
+    line-height: 1.2;
+    margin: var(--space-5) 0 var(--space-2);
+    color: var(--text-display);
+  }
+  .subq-section__content p {
+    max-width: 62ch;
+    margin: 0 0 var(--space-3);
+  }
+
+  @media (max-width: 768px) {
+    .subq-section { grid-template-columns: 1fr; gap: var(--space-3); }
+  }
+
+  /* ============ CREAM PANEL (contrast moment — one per page) ============ */
+  .subq-panel-cream {
+    background: var(--subq-cream);
+    color: var(--subq-black);
+    padding: var(--space-6) var(--space-5);
+    border-radius: 4px;
+    margin: var(--space-5) 0;
+  }
+  .subq-panel-cream h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--subq-black);
+    margin: 0 0 var(--space-2);
+  }
+  .subq-panel-cream p { color: rgba(8, 0, 0, 0.78); margin: 0; }
+  .subq-panel-cream .subq-panel-cream__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: rgba(8, 0, 0, 0.55);
+    display: block;
+    margin-bottom: var(--space-2);
+  }
+
+  /* ============ KPI ROW ============ */
+  .subq-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-5);
+    margin: var(--space-4) 0;
+  }
+  .subq-kpi__label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: var(--space-1);
+  }
+  .subq-kpi__value {
+    font-family: var(--font-mono);
+    font-weight: 300;
+    font-size: 64px;
+    line-height: 1;
+    color: var(--text-display);
+    letter-spacing: -0.02em;
+  }
+  .subq-kpi__value--serif {
+    font-family: var(--font-display);
+    font-weight: 400;
+  }
+  .subq-kpi__delta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    margin-top: var(--space-1);
+  }
+  .subq-kpi__delta--ok { color: var(--subq-green); }
+  .subq-kpi__delta--warn { color: var(--subq-orange); }
+
+  /* ============ MERMAID ============ */
+  .mermaid-shell {
+    margin: var(--space-4) 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--subq-black);
+    overflow: hidden;
+  }
+  .mermaid-shell__cap {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--subq-tan);
+  }
+  .mermaid-wrap {
+    position: relative;
+    padding: var(--space-4);
+    min-height: 280px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .mermaid { text-align: center; }
+
+  /* ============ CODE BLOCKS ============ */
+  .code-file { margin: var(--space-4) 0; }
+  .code-file__cap {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 0 4px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--subq-tan);
+  }
+  .code-file__name { color: var(--text-primary); }
+
+  pre.code-block,
+  pre.code-block[class*="language-"] {
+    background: #050505;
+    color: #f2ede5;
+    border: 1px solid rgba(183, 169, 154, 0.22);
+    border-radius: 4px;
+    padding: 18px 20px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+    tab-size: 2;
+    margin: 0;
+  }
+  pre.code-block code {
+    background: none; color: inherit; font-family: inherit; text-shadow: none;
+  }
+
+  /* SubQ Prism token palette */
+  .token.comment, .token.prolog, .token.cdata      { color: rgba(183, 169, 154, 0.55); font-style: italic; }
+  .token.punctuation, .token.operator              { color: rgba(255, 255, 255, 0.50); }
+  .token.property, .token.tag, .token.constant,
+  .token.deleted                                   { color: var(--subq-orange); }
+  .token.boolean, .token.number                    { color: var(--subq-yellow); }
+  .token.string, .token.char, .token.builtin,
+  .token.attr-value                                { color: var(--subq-yellow); }
+  .token.selector, .token.attr-name                { color: var(--subq-blue); }
+  .token.keyword, .token.atrule                    { color: #ffffff; font-weight: 500; }
+  .token.function, .token.class-name               { color: #ffffff; }
+  .token.regex, .token.variable                    { color: rgba(255, 255, 255, 0.92); }
+  .token.inserted                                  { color: var(--subq-green); }
+  .token.important, .token.bold                    { font-weight: 700; }
+  .token.italic                                    { font-style: italic; }
+
+  /* ============ TABLE ============ */
+  .subq-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 14px;
+    margin: var(--space-3) 0;
+  }
+  .subq-table thead th {
+    position: sticky; top: 0;
+    background: var(--subq-black);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--subq-tan);
+    text-align: left;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  .subq-table tbody td {
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--rule);
+    color: var(--text-primary);
+  }
+  .subq-table tbody tr:last-child td { border-bottom: 0; }
+  .subq-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 2px 0;
+  }
+  .subq-tag--ok   { color: var(--subq-green); }
+  .subq-tag--warn { color: var(--subq-orange); }
+  .subq-tag--err  { color: var(--subq-orange); }
+
+  /* ============ FOOTER ============ */
+  .subq-footer {
+    margin-top: var(--space-7);
+    padding: var(--space-5) var(--space-5) var(--space-4);
+    border-top: 1px solid var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .subq-footer__ghost {
+    display: block;
+    font-family: var(--font-logotype);
+    font-weight: 600;
+    font-size: clamp(56px, 14vw, 180px);
+    line-height: 1;
+    color: rgba(255, 255, 255, 0.12);
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+  .subq-footer__meta {
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3);
+    margin-top: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--subq-tan);
+  }
+</style>
+</head>
+<body>
+
+<!-- Corner cross marks — registration anchors. Each a different accent. -->
+<span class="subq-crossmark subq-crossmark--tl">+</span>
+<span class="subq-crossmark subq-crossmark--tr">+</span>
+<span class="subq-crossmark subq-crossmark--bl">+</span>
+<span class="subq-crossmark subq-crossmark--br">+</span>
+
+<header class="subq-nav">
+  <span class="subq-logotype">Subquadratic</span>
+  <nav class="subq-navlinks">
+    <a href="#">STT</a>
+    <a href="#">LLM</a>
+    <a href="#">TTS</a>
+  </nav>
+  <a class="subq-btn subq-btn--primary" href="#">Contact Sales</a>
+</header>
+
+<!-- Hero: 40px grid texture, left-heavy headline, pixel block column. -->
+<section class="subq-hero subq-grid">
+  <span class="subq-hero__label">Technical Reference · v0.4</span>
+  <h1 class="subq-hero__headline">
+    Intelligence<br>
+    is <em>efficiency.</em>
+  </h1>
+  <p class="subq-hero__sub">
+    A reference pipeline for building real-time voice agents on the Subquadratic stack. Streaming speech in, language out, speech back — each stage decoupled, each budget accounted for.
+  </p>
+  <div class="subq-pixelstack" aria-hidden="true">
+    <div class="subq-pixel" style="background: var(--subq-yellow); height: 72px;"></div>
+    <div class="subq-pixel" style="background: var(--subq-orange); height: 48px;"></div>
+    <div class="subq-pixel" style="background: var(--subq-blue); height: 120px;"></div>
+    <div class="subq-pixel" style="background: var(--subq-gray); height: 40px;"></div>
+    <div class="subq-pixel" style="background: var(--subq-green); height: 64px;"></div>
+  </div>
+</section>
+
+<main>
+
+  <!-- § 01. Overview -->
+  <section class="subq-section">
+    <div class="subq-section__meta">
+      <div class="subq-section__num">01</div>
+      <span class="subq-section__label">Overview</span>
+      Updated 2026-04-16
+    </div>
+    <div class="subq-section__content">
+      <h2>Three stages, one latency budget.</h2>
+      <p>The pipeline accepts 16 kHz mono PCM on an open WebSocket, segments the stream into phrases, emits incremental transcripts as they stabilize, feeds each stable phrase to a small instruct model, and returns synthesized audio back across the same socket. The round-trip budget is 220 ms at the 50th percentile and 480 ms at the 95th.</p>
+      <p>Each stage is a separately deployable service. The orchestrator in this document is the thin JSON-RPC shim in front of them — not a runtime. Teams swap models for stages individually; the contract between stages is stable.</p>
+
+      <div class="subq-kpis">
+        <div>
+          <span class="subq-kpi__label">P50 Round-Trip</span>
+          <div class="subq-kpi__value">220<span style="font-size:32px; opacity:0.6;">ms</span></div>
+          <div class="subq-kpi__delta subq-kpi__delta--ok">▼ 18ms vs. v0.3</div>
+        </div>
+        <div>
+          <span class="subq-kpi__label">P95 Round-Trip</span>
+          <div class="subq-kpi__value">480<span style="font-size:32px; opacity:0.6;">ms</span></div>
+          <div class="subq-kpi__delta subq-kpi__delta--warn">▲ 22ms vs. v0.3</div>
+        </div>
+        <div>
+          <span class="subq-kpi__label">Concurrent Sessions</span>
+          <div class="subq-kpi__value">1,840</div>
+          <div class="subq-kpi__delta subq-kpi__delta--ok">▲ 240 vs. v0.3</div>
+        </div>
+        <div>
+          <span class="subq-kpi__label">Cost / 1k Minutes</span>
+          <div class="subq-kpi__value subq-kpi__value--serif">$2.14</div>
+          <div class="subq-kpi__delta subq-kpi__delta--ok">▼ $0.38 vs. v0.3</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 02. Architecture -->
+  <section class="subq-section">
+    <div class="subq-section__meta">
+      <div class="subq-section__num">02</div>
+      <span class="subq-section__label">Architecture</span>
+      Stages decouple over a single socket
+    </div>
+    <div class="subq-section__content">
+      <h2>One socket. Three workers. One emphasized edge.</h2>
+      <p>The orchestrator multiplexes three workers behind the client-facing socket. The stable-phrase edge — where transcript chunks cross from speech recognition into the language worker — is the one that matters for perceived latency, which is why it's the single emphasized edge in the diagram below.</p>
+
+      <div class="mermaid-shell">
+        <div class="mermaid-shell__cap">
+          <span>fig 02.1</span>
+          <span>Pipeline topology</span>
+        </div>
+        <div class="mermaid-wrap">
+          <pre class="mermaid">
+flowchart LR
+  Client((("Client")))
+  Orch["Orchestrator<br/>json-rpc shim"]
+  STT["STT Worker<br/>streaming asr"]
+  LLM["LLM Worker<br/>instruct, 3.2b"]
+  TTS["TTS Worker<br/>neural, 22 kHz"]
+
+  Client --> Orch
+  Orch  --> STT
+  STT   ==>|"stable phrase"| LLM:::primary
+  LLM   --> TTS
+  TTS   --> Orch
+  Orch  --> Client
+
+  classDef primary stroke:#0834bc,stroke-width:2px,color:#ffffff;
+          </pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 03. Implementation — code block -->
+  <section class="subq-section">
+    <div class="subq-section__meta">
+      <div class="subq-section__num">03</div>
+      <span class="subq-section__label">Implementation</span>
+      Minimum viable client
+    </div>
+    <div class="subq-section__content">
+      <h2>The smallest thing that opens the socket.</h2>
+      <p>This is the minimum viable TypeScript client. The pipeline expects 16 kHz mono PCM in 20 ms frames. Everything else — voice activity detection, barge-in handling, audio ducking — runs on the orchestrator, not the client.</p>
+
+      <figure class="code-file">
+        <figcaption class="code-file__cap">
+          <span class="code-file__name">src/client/session.ts</span>
+          <span>Typescript</span>
+        </figcaption>
+        <pre class="code-block"><code class="language-ts">import { Session, type Frame } from "@subq/client";
+
+const session = new Session({
+  endpoint: "wss://api.subquadratic.ai/v1/pipeline",
+  sampleRate: 16_000,
+  frameMs: 20,
+  stages: ["stt", "llm", "tts"],
+});
+
+session.on("transcript", (t) =&gt; {
+  if (t.stable) console.log(`[${t.at}ms]`, t.text);
+});
+
+session.on("audio", (frame: Frame) =&gt; {
+  speaker.play(frame.pcm);
+});
+
+await session.open();
+microphone.pipe(session.write);
+</code></pre>
+      </figure>
+
+      <div class="subq-panel-cream">
+        <span class="subq-panel-cream__label">Design note</span>
+        <h3>The contract is the socket, not the SDK.</h3>
+        <p>The TypeScript SDK above is a convenience wrapper — nothing more. Every event it surfaces corresponds to a framed JSON message on the wire. Teams shipping in Go, Rust, or Python open the socket directly and read the same framing spec. The SDK is not a source of truth; the WebSocket protocol is.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 04. Data — table -->
+  <section class="subq-section">
+    <div class="subq-section__meta">
+      <div class="subq-section__num">04</div>
+      <span class="subq-section__label">Stage Budgets</span>
+      Measured at p50, p95 across 72h
+    </div>
+    <div class="subq-section__content">
+      <h2>Where the latency goes.</h2>
+      <p>Across a 72-hour window against production traffic, each stage contributes a predictable slice of the round-trip. The transport column is the socket-to-socket hop between stages, not the stage itself — which is why two transports sum to the STT-to-LLM gap.</p>
+
+      <table class="subq-table">
+        <colgroup>
+          <col style="width: 22%"><col style="width: 18%"><col style="width: 18%"><col style="width: 18%"><col style="width: 24%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>P50 (ms)</th>
+            <th>P95 (ms)</th>
+            <th>Budget share</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>STT (stream → stable)</td>
+            <td>64</td>
+            <td>142</td>
+            <td>29%</td>
+            <td><span class="subq-tag subq-tag--ok">On budget</span></td>
+          </tr>
+          <tr>
+            <td>Transport (STT → LLM)</td>
+            <td>8</td>
+            <td>18</td>
+            <td>4%</td>
+            <td><span class="subq-tag subq-tag--ok">On budget</span></td>
+          </tr>
+          <tr>
+            <td>LLM (first token)</td>
+            <td>92</td>
+            <td>214</td>
+            <td>42%</td>
+            <td><span class="subq-tag subq-tag--warn">Near ceiling</span></td>
+          </tr>
+          <tr>
+            <td>Transport (LLM → TTS)</td>
+            <td>8</td>
+            <td>18</td>
+            <td>4%</td>
+            <td><span class="subq-tag subq-tag--ok">On budget</span></td>
+          </tr>
+          <tr>
+            <td>TTS (first audio frame)</td>
+            <td>48</td>
+            <td>88</td>
+            <td>21%</td>
+            <td><span class="subq-tag subq-tag--ok">On budget</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- § 05. Next -->
+  <section class="subq-section">
+    <div class="subq-section__meta">
+      <div class="subq-section__num">05</div>
+      <span class="subq-section__label">Next</span>
+      Owners and timing
+    </div>
+    <div class="subq-section__content">
+      <h2>Three threads open for v0.5.</h2>
+      <p>The LLM first-token budget is approaching its ceiling — that's the thread to pull next. Two smaller investigations sit behind it: a tokenizer swap on the speech side that should release ~12 ms at p50, and a streaming audio codec change on the synthesis side that closes the stereo gap without inflating bandwidth.</p>
+      <h3>01 / LLM first-token headroom</h3>
+      <p>KV-cache warming plus speculative decoding. Targeted ceiling: 180 ms at p95. Owner: platform. Readiness review: 2026-05-02.</p>
+      <h3>02 / Tokenizer swap on speech side</h3>
+      <p>Byte-level BPE tuned on call-center-domain audio. Expected gain: ~12 ms at p50 on streaming stability. Owner: speech. Readiness review: 2026-05-09.</p>
+      <h3>03 / Stereo synthesis without bandwidth cost</h3>
+      <p>Opus frames at 32 kbps with mid-side encoding. Subjective tests on the way. Owner: synthesis. Readiness review: 2026-05-16.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="subq-footer">
+  <span class="subq-footer__ghost">Subquadratic</span>
+  <div class="subq-footer__meta">
+    <span>Prepared by Platform</span>
+    <span>v0.4 · 2026-04-16</span>
+    <span>Proprietary &amp; Confidential</span>
+  </div>
+</footer>
+
+<!-- Mermaid -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    look: 'classic',
+    themeVariables: {
+      fontFamily: "'Manrope', system-ui, sans-serif",
+      fontSize: '15px',
+      background: '#000000',
+      primaryColor: '#000000',
+      primaryTextColor: '#ffffff',
+      primaryBorderColor: '#b7a99a',
+      lineColor: 'rgba(183, 169, 154, 0.55)',
+      tertiaryColor: '#3b362d',
+      clusterBkg: '#000000',
+      clusterBorder: 'rgba(183, 169, 154, 0.20)',
+      mainBkg: '#000000',
+      edgeLabelBackground: '#000000',
+    }
+  });
+</script>
+
+</body>
+</html>
