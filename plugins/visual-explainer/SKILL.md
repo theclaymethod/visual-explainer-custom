@@ -22,8 +22,10 @@ Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/d
 |---------|-------------|
 | `generate-web-diagram` | Generate an HTML diagram for any topic |
 | `generate-visual-plan` | Generate a visual implementation plan for a feature |
-| `generate-slides` | Generate a magazine-quality slide deck |
+| `generate-slides` | Generate a magazine-quality slide deck (vertical or `--magazine` horizontal) |
 | `generate-poster` | Generate a single-canvas rich-composition poster (HTML + PNG) via poster-ai — see `./references/poster.md` |
+| `generate-video` | Generate an explainer video (MP4) via Hyperframes; `--style=long-form\|reel` |
+| `render-video` | Convert an existing HTML deck to an MP4 via Hyperframes |
 | `diff-review` | Visual diff review with architecture comparison and code review |
 | `plan-review` | Compare a plan against the codebase with risk assessment |
 | `project-recap` | Mental model snapshot for context-switching back to a project |
@@ -510,6 +512,33 @@ An alternative output format for presenting content as a magazine-quality slide 
 **`--slides` flag on existing prompts:** When a user passes `--slides` to `/diff-review`, `/plan-review`, `/project-recap`, or other prompts, the agent gathers data using the prompt's normal data-gathering instructions, then presents the content as a slide deck instead of a scrollable page. The slide version tells the same story with different structure and pacing — but the same breadth of coverage. Don't use the slide format as an excuse to summarize or skip sections that the scrollable version would have included.
 
 **`--poster-export` flag (optional).** When the user passes `--poster-export` to `/generate-slides`, the agent produces the interactive HTML deck first (canonical), then *additionally* renders each slide to its own fixed-canvas PNG via `poster-ai`. Slides go to `~/.agent/diagrams/<deck-name>/slides/<NN>-<title>.png` at 1920×1080 (or 1600×900 for tighter 16:9). Use these PNGs to share individual slides or to import into Keynote / Google Slides. Check `which poster` first; if missing, tell the user the flag is unavailable and proceed with HTML-only. See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow.
+
+## Video Output Mode
+
+An alternative output format: MP4 / WebM video via [Hyperframes](https://github.com/heygen-com/hyperframes) (Apache 2.0, HeyGen). **Opt-in only** — the agent generates video when the user invokes `/generate-video` or `/render-video`, or explicitly asks for an "explainer video," "reel," or "mp4." Never auto-select video.
+
+**Two commands:**
+- `/generate-video` — greenfield. Takes a topic/outline, builds a Hyperframes composition from scratch, renders MP4.
+- `/render-video` — takes an existing HTML deck (from `/generate-slides` or `/generate-slides --magazine`) and converts it to MP4.
+
+**Two styles, picked explicitly:**
+- `long-form` — 16:9 landscape, 1920×1080, 60–180s, slide-paced dwell scenes, TTS narration, minor shader transitions. For meetings, onboarding, LinkedIn.
+- `reel` — 9:16 vertical, 1080×1920, 30–60s, hard cuts every 1.2–1.8s, kinetic typography, progressive diagram reveal, burned-in captions. For Shorts / Reels / TikTok silent-autoplay feeds.
+
+**Before generating video, read `./references/hyperframes.md` (runtime, constraints, CLI flags), `./references/gsap-rules.md` (hard constraints — timelines must be `{ paused: true }`, no `Math.random`, no `repeat: -1`), and — for reel style — `./references/reel-patterns.md` (beat structure, kinetic typography, progressive diagram reveal, TTS + burned-in captions).** Start compositions from `./templates/hyperframes-longform.html` or `./templates/hyperframes-reel.html`.
+
+**Runtime requirements.** Hyperframes needs Node ≥ 22 and FFmpeg on PATH. The skill runs `bash {{skill_dir}}/scripts/hyperframes-doctor.sh` at the start of any video command; if it exits non-zero, abort and forward install hints to the user. Do not attempt to render with missing deps.
+
+**Verification flow is mandatory.** Video is a high-cost command.
+1. `npx hyperframes lint && npx hyperframes validate` before render (validate runs WCAG contrast audit)
+2. `npx hyperframes render --quality draft` for fast preview
+3. `bash {{skill_dir}}/scripts/extract-keyframes.sh <draft.mp4>` → 3 keyframes (start/mid/end)
+4. Show keyframes to user, ask for approval
+5. On approval: `npx hyperframes render --quality standard` for delivery
+
+Because video is high-cost, the AskUserQuestion caveat (see `./references/clarify.md`) **always fires** for video commands — even if the user's request is otherwise clear. Minimum questions: style (long-form vs reel) and duration. Bypass only on explicit `--no-ask` flag.
+
+**Video output location:** `~/.agent/videos/<slug>.mp4` (not `~/.agent/diagrams/`). Keyframes to `~/.agent/videos/<slug>/keyframes/`. Intermediate assets (narration.wav, captions.vtt) to `~/.agent/videos/<slug>/`.
 
 ## File Structure
 
