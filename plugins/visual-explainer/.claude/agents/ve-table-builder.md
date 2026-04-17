@@ -62,6 +62,7 @@ Return a single JSON object as your final message. No prose, no code fences, no 
 ## Constraints
 
 - **Use the "Data table" component verbatim** from `components.md`. Status modifiers map to `kind`: `ok` → `.ve-table__status--ok`, `warn` → `.ve-table__status--warn`, `err` → `.ve-table__status--err`.
+- **Emit `data-label="<column header>"` on every `<td>`.** This is non-optional — the responsive stacked-row pattern (below 640px) reads `data-label` via `::before { content: attr(data-label) }` to render the column callouts. Use the human-readable column name in sentence case (e.g., `data-label="Setting"`, `data-label="What it does"`); CSS uppercases for display. Tables that omit `data-label` lose all column context on mobile.
 - **Class prefix:** every class starts with `.ve-table`, `.ve-table__`, or `.ve-table-section`. The wrapping `<section>` uses `.ve-table-section` to namespace the section-level styles (label, title, description). The `<table>` itself uses `.ve-table`.
 - **Section header:** include the "Section label" component (`.ve-section__label` with `{{NN}}` index — the orchestrator substitutes during stitching) and a section title above the table. The Section label classes are global by convention; do not redefine them in `scoped_css`.
 - **Numerics:** right-aligned, Space Mono, `tabular-nums`. Currency/units stay inside the cell, not in the header.

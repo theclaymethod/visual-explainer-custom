@@ -161,6 +161,8 @@ The diagram source goes in a `<script type="text/plain" class="ve-diagram__sourc
 
 Real `<table>`. Sticky header. No zebra. Hairline above each row. Numerics right-aligned in Space Mono with `tabular-nums`. Status colors on the value only.
 
+**Below 640px the table reformats as stacked rows.** Each `<tr>` becomes a vertical group; each `<td>`'s column label appears as a Space Mono caps callout via `::before { content: attr(data-label) }`. This honors Mono-Industrial's "no cards" rule — the rows stack with hairlines between them, like instrument-panel readouts. Sub-agents **must** emit `data-label="..."` on every `<td>` for the stack pattern to work; the value is the human-readable column name (sentence case is fine — CSS uppercases it).
+
 ```html
 <table class="ve-table">
   <thead>
@@ -173,10 +175,10 @@ Real `<table>`. Sticky header. No zebra. Hairline above each row. Numerics right
   </thead>
   <tbody>
     <tr>
-      <td>{{CELL}}</td>
-      <td>{{CELL}}</td>
-      <td class="ve-table__num">{{NUM}}</td>
-      <td><span class="ve-table__status ve-table__status--ok">{{STATUS}}</span></td>
+      <td data-label="{{COL_1}}">{{CELL}}</td>
+      <td data-label="{{COL_2}}">{{CELL}}</td>
+      <td class="ve-table__num" data-label="{{COL_NUM}}">{{NUM}}</td>
+      <td data-label="{{COL_STATUS}}"><span class="ve-table__status ve-table__status--ok">{{STATUS}}</span></td>
     </tr>
   </tbody>
 </table>
@@ -218,6 +220,52 @@ Real `<table>`. Sticky header. No zebra. Hairline above each row. Numerics right
 .ve-table__status--ok   { color: var(--ok); }
 .ve-table__status--warn { color: var(--warn); }
 .ve-table__status--err  { color: var(--err); }
+
+/* Stacked-row pattern below 640px — replaces horizontal scroll on narrow viewports.
+   The `<thead>` is visually hidden but kept in the DOM for screen readers; each
+   `<td>`'s data-label becomes the label callout via ::before. */
+@media (max-width: 640px) {
+  .ve-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+  .ve-table, .ve-table tbody, .ve-table tr, .ve-table td {
+    display: block;
+    width: 100%;
+  }
+  .ve-table tr {
+    padding: var(--space-3) 0;
+    border-top: 1px solid var(--rule);
+  }
+  .ve-table tbody tr:last-child {
+    border-bottom: 1px solid var(--rule);
+  }
+  .ve-table td {
+    border: none;
+    padding: var(--space-1) 0;
+    display: grid;
+    grid-template-columns: minmax(90px, 30%) 1fr;
+    gap: var(--space-3);
+    align-items: baseline;
+  }
+  .ve-table td::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: var(--size-caption);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  .ve-table__num {
+    text-align: left;
+  }
+}
 ```
 
 ---
