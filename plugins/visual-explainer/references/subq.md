@@ -133,22 +133,27 @@ Applied by the OS preference (`@media (prefers-color-scheme: light)`) OR the exp
 
 ### Theme toggle (light / dark / system)
 
-Every SubQ page ships with a three-way selector floating at the top-right:
+Every SubQ page ships with a three-glyph selector floating at the top-right. No chrome — just three geometric circles that double as icons: `○` (light), `●` (dark), `◐` (system).
 
 ```html
 <div class="theme-toggle" role="radiogroup" aria-label="Theme">
-  <button type="button" role="radio" data-theme="light"  aria-checked="false">Light</button>
-  <button type="button" role="radio" data-theme="dark"   aria-checked="false">Dark</button>
-  <button type="button" role="radio" data-theme="system" aria-checked="true">System</button>
+  <button type="button" role="radio" data-theme="light"  aria-label="Light mode"  aria-checked="false">&#9675;</button>
+  <button type="button" role="radio" data-theme="dark"   aria-label="Dark mode"   aria-checked="false">&#9679;</button>
+  <button type="button" role="radio" data-theme="system" aria-label="System mode" aria-checked="true">&#9680;</button>
 </div>
 ```
 
 The toggle:
 
-- Sits at `position: fixed; top: 64px; right: 32px;` — directly below the top-right cross mark, clear of the nav.
-- Fades to **opacity 0.32** when idle, returns to **1.0** on hover / focus-within. No JS timer — CSS transition handles it.
+- Sits at `position: fixed; top: 68px; right: 32px;` — below the top-right cross mark, clear of the nav.
+- No background, no border, no backdrop filter. Three 13px glyphs on the page.
+- **Resting state** — inactive glyphs at opacity 0.30, active glyph at opacity 0.88 and `font-weight: 500`. Current mode reads at a glance without the toggle shouting.
+- **Hover / focus-within** — inactive glyphs lift to 0.55, active to 1.0. Individual hover bumps any glyph to 1.0.
+- **Entrance animation** — the toggle fades in from opacity 0 to 1 over 480ms, delayed 300ms after page load so it doesn't compete with the hero paint. Honors `prefers-reduced-motion: reduce` (no animation, renders at opacity 1 immediately).
 - Writes the choice to `localStorage` under `subq-theme` and sets `document.documentElement.dataset.theme` to `"light"` or `"dark"`. "System" removes the attribute and the storage key, falling back to `prefers-color-scheme`.
-- On mobile (<768px), collapses to `bottom: 24px; right: 24px;` at a higher resting opacity (0.55) since phones don't afford a hover state.
+- On mobile (<768px), collapses to `bottom: 32px; right: 32px;`.
+
+**This is the one sanctioned exception to SubQ's "zero on-load motion" rule.** The toggle earns its fade-in because it's the page's only interactive affordance — the user needs to know it exists. Everything else still paints static.
 
 **Mermaid re-renders on change.** The diagram reads its palette from the same source of truth (`effectiveMode()` checks `data-theme` first, then `prefers-color-scheme`). On toggle click, the script stashes each block's original source, clears `data-processed`, and calls `mermaid.run()` again so the nodes flip color without a page reload.
 

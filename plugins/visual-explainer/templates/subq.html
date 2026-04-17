@@ -192,55 +192,63 @@
   @media (max-width: 768px) { .subq-crossmark { display: none; } }
 
   /* ============ THEME TOGGLE ============
-     Sits below the top-right cross mark. Fades to ~30% opacity when idle,
-     comes to full on hover or focus. Three options: Light / Dark / System. */
+     Three typographic glyphs — ○ (light), ● (dark), ◐ (system). No chrome, no
+     background, no border. Resting state: dots at 0.3 with the active one at
+     0.9 so the current mode is legible. Hover/focus-within lifts the whole
+     group toward full opacity. Entrance fades in after page load. */
   .theme-toggle {
     position: fixed;
-    top: 64px;
+    top: 68px;
     right: 32px;
     z-index: 99;
     display: flex;
-    align-items: stretch;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    letter-spacing: 0.15em;
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    overflow: hidden;
-    background: color-mix(in srgb, var(--bg) 72%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    opacity: 0.32;
-    transition: opacity 220ms ease-out;
+    gap: 14px;
+    padding: 2px;
+    opacity: 0;
+    animation: subq-toggle-in 480ms ease-out 300ms forwards;
   }
-  .theme-toggle:hover,
-  .theme-toggle:focus-within { opacity: 1; }
+
+  @keyframes subq-toggle-in {
+    to { opacity: 1; }
+  }
 
   .theme-toggle button {
     appearance: none;
     background: transparent;
-    color: var(--text-secondary);
     border: 0;
-    padding: 6px 11px;
-    font: inherit;
-    text-transform: uppercase;
-    letter-spacing: inherit;
+    padding: 2px;
+    font-family: 'Roboto Mono', 'Apple Symbols', monospace;
+    font-size: 13px;
+    line-height: 1;
+    color: var(--text-display);
     cursor: pointer;
-    transition: color 120ms ease-out, background 120ms ease-out;
-  }
-  .theme-toggle button + button { border-left: 1px solid var(--rule); }
-  .theme-toggle button:hover { color: var(--text-display); }
-  .theme-toggle button:focus-visible {
-    outline: 1px solid var(--subq-blue);
-    outline-offset: -1px;
+    opacity: 0.30;
+    transition: opacity 200ms ease-out;
   }
   .theme-toggle button[aria-checked="true"] {
-    color: var(--text-display);
-    background: color-mix(in srgb, var(--text-display) 10%, transparent);
+    opacity: 0.88;
+    font-weight: 500;
+  }
+  /* Group hover raises the inactive dots but never louder than the active one */
+  .theme-toggle:hover button,
+  .theme-toggle:focus-within button { opacity: 0.55; }
+  .theme-toggle:hover button[aria-checked="true"],
+  .theme-toggle:focus-within button[aria-checked="true"] { opacity: 1; }
+  .theme-toggle button:hover { opacity: 1; }
+
+  .theme-toggle button:focus-visible {
+    outline: 1px solid var(--subq-blue);
+    outline-offset: 4px;
+    border-radius: 50%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle { animation: none; opacity: 1; }
+    .theme-toggle button { transition: none; }
   }
 
   @media (max-width: 768px) {
-    .theme-toggle { top: auto; bottom: 24px; right: 24px; opacity: 0.55; }
+    .theme-toggle { top: auto; bottom: 32px; right: 32px; }
   }
 
   /* ============ NAV ============ */
@@ -612,11 +620,11 @@
 <span class="subq-crossmark subq-crossmark--bl">+</span>
 <span class="subq-crossmark subq-crossmark--br">+</span>
 
-<!-- Theme toggle: light / dark / system. Persists choice to localStorage. -->
+<!-- Theme toggle: ○ light · ● dark · ◐ system. Persists choice to localStorage. -->
 <div class="theme-toggle" role="radiogroup" aria-label="Theme">
-  <button type="button" role="radio" data-theme="light"  aria-checked="false">Light</button>
-  <button type="button" role="radio" data-theme="dark"   aria-checked="false">Dark</button>
-  <button type="button" role="radio" data-theme="system" aria-checked="true">System</button>
+  <button type="button" role="radio" data-theme="light"  aria-label="Light mode"  aria-checked="false">&#9675;</button>
+  <button type="button" role="radio" data-theme="dark"   aria-label="Dark mode"   aria-checked="false">&#9679;</button>
+  <button type="button" role="radio" data-theme="system" aria-label="System mode" aria-checked="true">&#9680;</button>
 </div>
 
 <header class="subq-nav">
