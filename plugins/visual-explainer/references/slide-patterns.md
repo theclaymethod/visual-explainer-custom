@@ -1676,3 +1676,60 @@ In addition to the standard verify-in-browser checks:
 - Dark pages render dark in both light and dark OS modes (dark is absolute, not mode-responsive)
 - Each page fills 100vw × 100vh with no white space at the edges
 
+## PDF Export
+
+Any slide deck or magazine can be exported to a multi-page PDF via `scripts/export-slides-pdf.mjs`. The HTML remains canonical; the PDF is a secondary artifact for email, print, or offline review. Triggered by the `--pdf` flag on `/generate-slides` — run after the HTML is written and opened.
+
+```bash
+node <skill-dir>/scripts/export-slides-pdf.mjs <input.html> <output.pdf>
+```
+
+### What the script does
+
+1. **Auto-detects mode** from the DOM: `.slide` → vertical deck, `.page` + horizontal scroll-snap → magazine, neither → flow-paginated long page.
+2. **Hides interactive chrome** — theme toggle, progress bar, nav dots, zoom controls, scroll-to-navigate hint, page counter, and any other `position: fixed` helpers. All of it is useful on screen, noise on paper.
+3. **Neutralizes live state** — resets Mermaid zoom, forces diagrams to fill their wrapper, unwraps any transform applied by pan/zoom controllers.
+4. **Screenshots each slide individually** at the configured page size (default 1920×1080), then composites the PNGs into a PDF with a hard page break between each. This bypasses Chromium's scroll-snap + `break-after: page` pagination quirks (trailing blank pages, content bleed across boundaries, fixed chrome repeating on every page).
+5. **Writes a landscape PDF** with zero margins and `printBackground: true` so dark backgrounds survive.
+
+### Flags
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `--mode=slides\|magazine\|scroll` | auto-detect | Explicit override. `scroll` uses flow-based pagination for long scrollable pages (architecture, project-recap) instead of per-element screenshots. |
+| `--orientation=landscape\|portrait` | landscape for slides/magazine, portrait for scroll | Page orientation. |
+| `--width=<px>` / `--height=<px>` | 1920 × 1080 landscape, 1080 × 1920 portrait | Override dimensions — useful for 9:16 reel-shaped stat decks or custom paper sizes. |
+| `--selector=<css>` | `.slide` for slides, `.page` for magazine | Override the per-page selector if a custom template uses different class names. |
+
+### Prerequisites
+
+Playwright + a Chromium build. Install once per project directory:
+
+```bash
+npm install playwright
+npx playwright install chromium
+```
+
+If `playwright` isn't available, skip the PDF export with a note to the user and deliver only the HTML. Don't add it to the skill as a hard dependency — the PDF is always opt-in.
+
+### Why screenshot-and-composite, not browser Print-to-PDF
+
+Chromium's native `page.pdf()` is the obvious first attempt. It reliably fails on scroll-snap slide decks for four reasons that interact:
+
+- **Trailing blank page.** `break-after: page` on the last slide creates an extra empty page because Chromium forces the break even without content after it. `:last-child { break-after: avoid }` misses when the slide isn't literally the last child of its parent (trailing whitespace nodes, sibling nav elements, etc.).
+- **Fixed chrome repeats.** Theme toggles and progress bars set to `position: fixed` render on *every* printed page. Hiding them via `@media print` works but requires knowing every class name in every template.
+- **Flex-centered Mermaid collapses.** `.mermaid-wrap { display: flex; justify-content: center }` computes the flex item's main-size from the SVG's intrinsic width in print layout, so diagrams that filled the slide on screen shrink to their authored Mermaid dimensions (often ~270px wide).
+- **Live zoom state leaks.** Pan/zoom controllers set `transform: translate(...)` or `style.zoom` on the diagram wrapper. That state persists into the print render.
+
+Per-slide screenshots capture the live view exactly as the author intended, so none of those failure modes apply. The tradeoff is file size — a 10-slide deck at 1920×1080 renders to ~1 MB instead of ~175 KB — which is acceptable for presentations and still small enough to email.
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| PDF has extra blank page(s) at the end | Check that `--mode` was auto-detected correctly; wrong selector produces no matches and the script composites zero pages. |
+| Slides render at wrong aspect ratio | Viewport didn't match page size. The script sets both to the same dimensions — confirm `--width` and `--height` match the slide's intended aspect. |
+| Chart.js canvas appears blank | The canvas-to-image shim runs at `load + 1200ms`; increase `data-pdf-ready` wait if the chart has a longer animation (edit the script or accept the delay). |
+| Interactive toggle still visible | Template uses a class name not in the chrome hide list. Add it via `el.style.display = 'none'` before the export, or extend the script's `chromeSelectors` array. |
+| Mermaid rendered at authored size, not full-slide | Zoom/transform wasn't neutralized; check the script's surgery block still runs before screenshots (look for the `.mermaid-wrap` override). |
+

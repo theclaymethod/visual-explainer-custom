@@ -1,6 +1,6 @@
 ---
 description: Generate a magazine-quality slide deck as a self-contained HTML page. Vertical (default) or --magazine horizontal.
-argument-hint: "<topic or source> [--magazine] [--poster-export] [--no-ask]"
+argument-hint: "<topic or source> [--magazine] [--poster-export] [--pdf] [--no-ask]"
 ---
 Load the visual-explainer skill, then generate a slide deck for: $@
 
@@ -34,5 +34,13 @@ If the user hasn't specified and the content is ambiguous (could work as either)
 Write output to `~/.agent/diagrams/<slug>.html` (or `<slug>-magazine.html` for `--magazine`) and open the result in the browser.
 
 **`--poster-export` flag (optional).** If the user passes this flag, after producing the interactive HTML deck/magazine, also render each slide/page to its own fixed-canvas PNG via `poster-ai`. Check `which poster`; skip the export silently if unavailable. Write per-slide PNGs to `~/.agent/diagrams/<deck-name>/slides/` at 1920×1080 (or 1080×1920 for a vertical-stat magazine page). See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow. The interactive HTML remains canonical; PNGs are a secondary artifact for sharing.
+
+**`--pdf` flag (optional).** After producing the interactive HTML deck/magazine, also render a multi-page landscape PDF (one slide/page per PDF page, 1920×1080) using the bundled Playwright-based exporter:
+
+```bash
+node <skill-dir>/scripts/export-slides-pdf.mjs <input.html> <output.pdf>
+```
+
+The script auto-detects the mode (slides vs magazine) from the DOM, screenshots each slide individually, and composites them so scroll-snap pagination quirks and live zoom/scroll state don't leak into the output. Requires `playwright` installed and a Chromium binary — install once per project directory via `npm install playwright && npx playwright install chromium`. If Playwright is unavailable, skip the export with a note to the user and deliver only the HTML. Write PDFs to `~/.agent/diagrams/<deck-name>.pdf` alongside the HTML. See `./references/slide-patterns.md` → "PDF export" for the full contract, flag list, and troubleshooting.
 
 **`--no-ask` flag.** Skip AskUserQuestion. Use the user's request verbatim + defaults.

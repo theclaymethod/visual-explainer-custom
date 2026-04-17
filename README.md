@@ -183,6 +183,13 @@ Any command that produces a scrollable page supports `--slides` to generate a sl
 /generate-slides --magazine "quarterly engineering recap"
 ```
 
+Pass `--pdf` to also render a multi-page landscape PDF (1920×1080, one slide/page per PDF page). The exporter in `plugins/visual-explainer/scripts/export-slides-pdf.mjs` auto-detects vertical deck vs horizontal magazine from the DOM, screenshots each slide individually, and composites them — bypassing Chromium's scroll-snap pagination quirks (trailing blank pages, fixed-chrome repeating on every page, flex-centered Mermaid collapsing to its authored size). Requires Playwright in the cwd (`npm install playwright && npx playwright install chromium`); the script fails gracefully with an install hint if it's missing.
+
+```
+/generate-slides --pdf "q2 roadmap"
+/generate-slides --magazine --pdf "quarterly engineering recap"
+```
+
 https://github.com/user-attachments/assets/342d3558-5fcf-4fb2-bc03-f0dd5b9e35dc
 
 ## Video Mode
@@ -222,7 +229,7 @@ plugins/
     │   ├── demo-capture.md               ← UI demo → webm workflow (this fork)
     │   ├── poster.md                     ← fixed-canvas output via poster-ai
     │   ├── responsive-nav.md             ← sticky TOC for multi-section pages
-    │   ├── slide-patterns.md             ← vertical deck + magazine (this fork)
+    │   ├── slide-patterns.md             ← vertical deck + magazine + PDF export (this fork)
     │   └── …
     ├── templates/
     │   ├── mono-industrial.html          ← default scrollable
@@ -239,6 +246,7 @@ plugins/
     └── scripts/
         ├── share.sh                      ← deploy HTML to Vercel
         ├── frames-to-webm.sh             ← PNG frames → webm (this fork)
+        ├── export-slides-pdf.mjs         ← HTML deck/magazine → multi-page PDF (this fork)
         ├── embed-media.sh                ← media → base64 inline snippet (this fork)
         ├── hyperframes-doctor.sh         ← video prereq check (this fork)
         └── extract-keyframes.sh          ← MP4 → 3 stills for review (this fork)
