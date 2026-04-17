@@ -54,6 +54,10 @@ Drop the `Roboto+Serif:wght@600` token from the URL when no wordmark appears on 
 
 Manrope italic for quoted voices and testimonials only: *"Finally! A foundation that can support my vision."* Never italicize for emphasis — use weight 500 instead.
 
+### Strict numeric rule
+
+**Every number on the page is set in Roboto Mono** — Light (300) for display/hero numbers, Normal (400) for inline metadata. This includes percentages, currency, deltas, counts, ratios, and timestamps. Libre Baskerville is for headers only; its serif `%`, `$`, and digits carry a book-type personality that clashes with the otherwise modern page. The brand deck's type-system slide demonstrates this explicitly: "01" is shown in Roboto Mono Light, not in the serif.
+
 ---
 
 ## 3. Color System
@@ -559,7 +563,7 @@ When the user requests SubQ output, translate the usual patterns:
 | Accent-colored section border | Roboto Mono tan label above the section |
 | Status pills with emoji | Roboto Mono 11px tag in status color, no background |
 | Gradient hero | Black hero with pixel-block column and 40px grid overlay |
-| Full-color KPI cards | Hero number in Libre Baskerville 400 or Roboto Mono 300, label in Roboto Mono tan above |
+| Full-color KPI cards | Hero number in Roboto Mono Light (300), label in Roboto Mono tan above. Never Libre Baskerville — that's reserved for headers per the type system. |
 | Emoji section headers | Corner cross mark (`+`) on the section + Roboto Mono label |
 | Full-page light mode | Supported via `prefers-color-scheme: light`. Cream becomes the canvas, black becomes the contrast panel. |
 
