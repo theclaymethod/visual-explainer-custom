@@ -146,10 +146,10 @@ Every SubQ page ships with a three-glyph selector floating at the top-right. No 
 The toggle:
 
 - Sits at `position: fixed; top: 68px; right: 32px;` — below the top-right cross mark, clear of the nav.
-- No background, no border, no backdrop filter. Three 13px glyphs on the page.
+- **Pill chrome** — hairline border (`var(--rule)`) and a subtle backdrop tint (`color-mix(in srgb, var(--text-display) 4%, transparent)` with an 8px backdrop-filter blur). Reads as a quiet capsule over the page but never competes with the content.
 - **Resting state** — inactive glyphs at opacity 0.30, active glyph at opacity 0.88 and `font-weight: 500`. Current mode reads at a glance without the toggle shouting.
-- **Hover / focus-within** — inactive glyphs lift to 0.55, active to 1.0. Individual hover bumps any glyph to 1.0.
-- **Entrance animation** — the toggle fades in from opacity 0 to 1 over 480ms, delayed 300ms after page load so it doesn't compete with the hero paint. Honors `prefers-reduced-motion: reduce` (no animation, renders at opacity 1 immediately).
+- **Hover / focus-within** — pill tint lifts from 4% to 8% and the border steps up to `--rule-strong`; inactive glyphs go to 0.55, active to 1.0. Individual hover bumps any glyph to 1.0.
+- **Entrance animation** — fades and slides down 4px over 520ms, delayed 300ms after page load so it doesn't compete with the hero paint. Honors `prefers-reduced-motion: reduce`.
 - Writes the choice to `localStorage` under `subq-theme` and sets `document.documentElement.dataset.theme` to `"light"` or `"dark"`. "System" removes the attribute and the storage key, falling back to `prefers-color-scheme`.
 - On mobile (<768px), collapses to `bottom: 32px; right: 32px;`.
 

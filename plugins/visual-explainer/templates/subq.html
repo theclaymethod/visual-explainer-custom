@@ -202,14 +202,26 @@
     right: 32px;
     z-index: 99;
     display: flex;
-    gap: 14px;
-    padding: 2px;
+    gap: 12px;
+    padding: 6px 12px;
+    background: color-mix(in srgb, var(--text-display) 4%, transparent);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    backdrop-filter: blur(8px) saturate(1.1);
+    -webkit-backdrop-filter: blur(8px) saturate(1.1);
     opacity: 0;
-    animation: subq-toggle-in 480ms ease-out 300ms forwards;
+    animation: subq-toggle-in 520ms ease-out 300ms forwards;
+    transition: background 240ms ease-out, border-color 240ms ease-out;
+  }
+  .theme-toggle:hover,
+  .theme-toggle:focus-within {
+    background: color-mix(in srgb, var(--text-display) 8%, transparent);
+    border-color: var(--rule-strong);
   }
 
   @keyframes subq-toggle-in {
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
   .theme-toggle button {
@@ -238,12 +250,12 @@
 
   .theme-toggle button:focus-visible {
     outline: 1px solid var(--subq-blue);
-    outline-offset: 4px;
+    outline-offset: 3px;
     border-radius: 50%;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .theme-toggle { animation: none; opacity: 1; }
+    .theme-toggle { animation: none; opacity: 1; transform: none; }
     .theme-toggle button { transition: none; }
   }
 
