@@ -1120,7 +1120,7 @@ Vary gradient direction and accent glow position across slides to create visual 
 
 Slides should reach for visuals before defaulting to text alone. If a slide could be more compelling with an image, chart, or diagram, add one.
 
-**surf-cli integration:** Check `which surf` at the start of every slide deck generation. If available, **generate 2–4 images minimum** for any deck over 10 slides. This is not optional when surf is available — a deck with AI-generated imagery is dramatically more compelling than one with only CSS gradients. Target these slides in priority order:
+**surf-cli integration:** Check `which surf` at the start of every slide deck generation. If available, **generate 2–4 images minimum** for any deck over 10 slides. This is not optional when surf is available — CSS gradients alone leave decks visually flat. Target these slides in priority order:
 
 1. **Title slide** (always): background image that sets the deck's visual tone. Match the topic and palette. Use `--aspect-ratio 16:9`. Prompt example: "abstract dark geometric pattern with green accent lines, technical and minimal" for Terminal Mono preset.
 2. **Full-bleed slide** (always if deck has one): immersive background for the deck's visual anchor moment. Style should match the preset — photo-realistic for Midnight Editorial, abstract/geometric for Swiss Clean, circuit-board or terminal aesthetic for Terminal Mono.
@@ -1404,3 +1404,275 @@ White, geometric sans, single bold accent, visible grid. Minimal and precise. Li
 ```
 
 Background: clean white or near-black, no gradients. Visible grid lines (the `--with-grid` pattern). Tight geometric layouts. Single accent color used sparingly for emphasis. Data-heavy and analytical content shines here.
+
+## Magazine Mode (Horizontal)
+
+**An orientation variant of the slide deck.** When the user passes `--magazine` to `/generate-slides` (or explicitly asks for "magazine layout," "horizontal scroll," or "editorial pages"), the deck is rendered as a horizontal scroll-snap zine instead of the default vertical deck. Same command surface, different engine.
+
+**When to choose magazine.** Editorial topics. Brand pieces. Year-in-review style content. Longer narrative arcs (12–30 pages). Topics that benefit from dwelling on full-bleed page compositions rather than the constant scroll-down rhythm of vertical slides. If in doubt, ask via AskUserQuestion: vertical deck, horizontal magazine, or video.
+
+### Engine — horizontal scroll-snap
+
+Replace the vertical scroll-snap CSS from Slide Engine Base with this:
+
+```css
+.mag {
+  width: 100vw;
+  height: 100vh;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: row;
+}
+
+.mag .page {
+  flex: 0 0 100vw;
+  width: 100vw;
+  height: 100vh;
+  scroll-snap-align: start;
+  overflow: hidden;
+  position: relative;
+}
+```
+
+Hard rules:
+- **100vw × 100vh per page.** No exceptions. No internal vertical scroll.
+- **Full-bleed edge-to-edge.** No padded cards floating on backgrounds. No outer margins. Content reaches all four edges of the viewport.
+- **No vertical scrolling on `body` or `.mag`.** `overflow-y: hidden` at both levels.
+- **Horizontal scroll-snap on the container.** `scroll-snap-type: x mandatory`.
+
+### Cover + back cover rule
+
+- **Cover page is dark.** Dark panel, oversized display type, eyebrow kicker in mono. Single focal element (stat, quote, wordmark).
+- **Back cover is dark.** Mirrors the cover visually. Final takeaway, attribution, CTA.
+- **At least three pages total must be dark** (cover, back cover, plus at least one interior dark-panel page for contrast rhythm). Dark pages break up the tint progression and give the eye a reset.
+
+### Tint adaptation across pages
+
+Every page uses a different background tint. The tint values **adapt to the active aesthetic** (see `diagram-tokens.md` for the per-aesthetic tint ramps):
+
+| Aesthetic | Tint ramp (light interior pages) | Dark panels |
+|---|---|---|
+| Mono-Industrial | `#f6f4f0`, `#efe9df`, `#e8e0d0`, `#ddd3bf`, `#d0c2a8` | `#0a0a0a`, `#16130f` |
+| SubQ | `#f7f0e4`, `#f2e9d7`, `#ebdfc6`, plus pixel-block framed accent pages | `#000000`, `#111111` |
+| Editorial-Diagram / Paper-ink | `#faf7f2`, `#f2ede4`, `#ebe2d2`, `#e2d5bc`, `#d4c29f` | `#1c1917`, `#292524` |
+| Blueprint | `#0f1b2e`, `#13233a`, `#17294a`, `#1b2f56` (dark-first — inverse to mostly dark) | `#050b18` |
+
+Tints rotate across interior pages; never the same tint on consecutive pages. Dark panels interrupt the rotation.
+
+### Layout options — full-bleed by design
+
+The following layouts are available in magazine mode. Several also work in the vertical deck (marked ✓ "vertical compatible" below).
+
+#### 1. Split (left/right color blocking) — vertical compatible ✓
+
+Two 50vw columns, each filled with its own solid color or tint. Content sits inside each column, full-height. No gutter. Hairline rule on the seam is optional.
+
+```html
+<section class="page page--split" data-left="dark" data-right="warm">
+  <div class="page__half page__half--left">
+    <span class="eyebrow">01 · PROBLEM</span>
+    <h2 class="display">Throughput</h2>
+  </div>
+  <div class="page__half page__half--right">
+    <div class="stat-xl">500<span class="stat-label">rps baseline</span></div>
+  </div>
+</section>
+```
+
+```css
+.page--split { display: grid; grid-template-columns: 1fr 1fr; }
+.page__half { padding: clamp(48px, 6vh, 96px); display: flex; flex-direction: column; justify-content: center; }
+.page__half--left[data-left="dark"]  { background: var(--ink); color: var(--paper); }
+.page__half--right[data-right="warm"] { background: var(--paper-2); color: var(--ink); }
+```
+
+#### 2. Quadrant (2×2 grid) — vertical compatible ✓
+
+Four 50vw × 50vh quadrants, each with its own tint and content. Ideal for comparison (before/after/delta/caveat) and for conceptual axes (speed vs cost, risk vs reward).
+
+```html
+<section class="page page--quadrant">
+  <div class="q q-1" data-tint="paper">...</div>
+  <div class="q q-2" data-tint="paper-2">...</div>
+  <div class="q q-3" data-tint="accent-tint">...</div>
+  <div class="q q-4" data-tint="ink">...</div>
+</section>
+```
+
+```css
+.page--quadrant { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.q { padding: clamp(40px, 5vh, 80px); overflow: hidden; }
+```
+
+Axis labels can sit on the seam lines using absolute positioning if the quadrants represent axes.
+
+#### 3. Full-bleed stat — vertical compatible ✓
+
+Single page. One enormous number or short word anchoring the entire viewport. Font size 100px+ (typically 200–360px on a 1920-wide viewport). Single-focal, dramatic whitespace.
+
+```html
+<section class="page page--stat" data-tint="dark">
+  <div class="stat-anchor">
+    <div class="stat-xl">8.4<span class="stat-suffix">×</span></div>
+    <div class="stat-label">throughput in prod</div>
+  </div>
+</section>
+```
+
+```css
+.page--stat { display: flex; align-items: center; justify-content: center; }
+.stat-xl { font-size: clamp(160px, 22vw, 360px); font-weight: 600; line-height: 1; letter-spacing: -0.03em; }
+.stat-label { font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.18em; margin-top: 24px; }
+```
+
+#### 4. Dark panel
+
+Entire page dark. Eyebrow kicker + oversized headline + optional body paragraph. Used for section dividers, problem statements, pivots, and resolution pages. At least three per deck (cover, back cover, +1 interior).
+
+```html
+<section class="page page--dark">
+  <span class="eyebrow">CHAPTER 02</span>
+  <h2 class="display">The quiet cost of context switching.</h2>
+</section>
+```
+
+#### 5. Color block (single-color bleed)
+
+One solid color fills the entire page. Content placed with generous whitespace. Color drawn from the aesthetic's accent or a tint step. Used 1–2 times per deck max.
+
+#### 6. Viewport-filling grid (editorial multi-cell) — vertical compatible ✓
+
+3×2, 4×3, or 6×4 grid of content tiles filling the entire viewport edge-to-edge. No outer padding. Each cell carries one of: stat, quote, small diagram, photo, mono label. Used for index pages, "at a glance" summaries, and visual TOCs.
+
+```css
+.page--grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); }
+.cell { padding: clamp(32px, 4vh, 64px); border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.cell:nth-child(3n) { border-right: none; }
+```
+
+### Navigation chrome
+
+Magazine navigation differs from vertical deck navigation.
+
+**Nav dots at bottom.** A horizontal row of dots centered at the bottom of the viewport, one per page. Current page is filled, others are hollow. Clicking a dot scroll-snaps to that page.
+
+```html
+<nav class="nav-dots" aria-label="Page navigation">
+  <button class="nav-dot" data-page="1" aria-label="Page 1"></button>
+  <button class="nav-dot" data-page="2" aria-label="Page 2"></button>
+  <!-- ... -->
+</nav>
+```
+
+```css
+.nav-dots {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 999px;
+  z-index: 100;
+}
+.nav-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0;
+  transition: background 120ms, transform 120ms;
+}
+.nav-dot.active { background: white; transform: scale(1.3); }
+```
+
+**Arrow-key support.** Left and right arrows scroll-snap to the previous and next page respectively. Space bar advances forward. PgUp/PgDn mirror Left/Right.
+
+```js
+document.addEventListener("keydown", (e) => {
+  const mag = document.querySelector(".mag");
+  const w = window.innerWidth;
+  if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+    e.preventDefault();
+    mag.scrollBy({ left: w, behavior: "smooth" });
+  } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+    e.preventDefault();
+    mag.scrollBy({ left: -w, behavior: "smooth" });
+  } else if (e.key === "Home") {
+    mag.scrollTo({ left: 0, behavior: "smooth" });
+  } else if (e.key === "End") {
+    mag.scrollTo({ left: mag.scrollWidth, behavior: "smooth" });
+  }
+});
+```
+
+**Touch swipe.** Native scroll-snap with `touch-action: pan-x` already handles swipe. No JS needed.
+
+**Dot highlight sync.** Use IntersectionObserver to highlight the current dot as pages snap into view.
+
+```js
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+      const pageIdx = [...document.querySelectorAll(".page")].indexOf(entry.target);
+      document.querySelectorAll(".nav-dot").forEach((d, i) => d.classList.toggle("active", i === pageIdx));
+    }
+  });
+}, { root: document.querySelector(".mag"), threshold: 0.5 });
+
+document.querySelectorAll(".page").forEach((p) => io.observe(p));
+```
+
+### Responsive behavior
+
+Magazine pages are designed for 1440px+ widescreen. On narrow viewports (< 768px), the horizontal-scroll paradigm still works — each page is still 100vw — but typography scales down via `clamp(…)` and split layouts collapse to single-column stacks. The 2×2 quadrant becomes a 1×4 stack on mobile.
+
+```css
+@media (max-width: 768px) {
+  .page--split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  .page--quadrant { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
+}
+```
+
+### Key-stat rendering
+
+Every magazine deck must include at least one full-bleed stat page where the primary number is rendered at 100px+ font size (use `clamp(160px, 22vw, 360px)` for headroom). Stats are visual anchors in the magazine format — they are what the eye lands on first.
+
+If the content doesn't have a single primary stat, generate one during outline: the most consequential number in the source gets this treatment.
+
+### The magazine flag workflow
+
+When `--magazine` is passed to `/generate-slides`:
+
+1. Use the horizontal scroll-snap engine from this section instead of the vertical deck engine.
+2. Pick tints from the active aesthetic's tint ramp; rotate across interior pages; never consecutive repeats.
+3. Enforce the dark cover + dark back cover + ≥ 1 interior dark panel rule.
+4. Insert at least one full-bleed stat page (100px+ stat anchor).
+5. Add the nav-dots strip + arrow-key handler to the output.
+6. Apply the compositional-variety rule from the existing Compositional Variety section — consecutive pages must vary layout type.
+
+### Magazine-specific compositional variety
+
+In addition to the existing Compositional Variety rules, magazine mode requires:
+- No two consecutive pages use the same layout type (split → split is forbidden)
+- Dark panels interrupt tint rotation; a tint page → dark panel → tint page is the expected rhythm
+- Full-bleed stat pages land at rhythmically significant moments (roughly every 4–6 pages, never back-to-back)
+- Grid pages (6+ cells) are used sparingly — one per deck for "at a glance" summary, never more
+
+### Verification for magazine
+
+In addition to the standard verify-in-browser checks:
+- Horizontal scrolling works via mouse wheel (with shift), trackpad swipe, arrow keys, and nav dots
+- No vertical scrollbar appears on `body` or `.mag` at any viewport size
+- Dot highlight correctly tracks the current page
+- Dark pages render dark in both light and dark OS modes (dark is absolute, not mode-responsive)
+- Each page fills 100vw × 100vh with no white space at the edges
+

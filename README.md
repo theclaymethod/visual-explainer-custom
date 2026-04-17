@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/55ebc81b-8732-40f6-a4b1-7c3781aa96ec
 
 ## What's different in this fork
 
-Three additions on top of the upstream skill. Everything else behaves the same — Mono-Industrial is still the default aesthetic, every existing command still works.
+Seven additions on top of the upstream skill. Everything else behaves the same — Mono-Industrial is still the default aesthetic, every existing command still works.
 
 ### 1. SubQ brand theme
 
@@ -70,6 +70,45 @@ bash plugins/visual-explainer/scripts/embed-media.sh \
 
 `embed-media.sh` handles any media type (png/jpg/gif/webp/webm/mp4) and warns on stderr when the file will base64-inflate past 2MB. See [`plugins/visual-explainer/references/demo-capture.md`](plugins/visual-explainer/references/demo-capture.md) for the full pattern, including `agent-browser`-based capture as an alternate path.
 
+### 4. Editorial-grade inline-SVG diagrams (13 types)
+
+Inline SVG is now the default diagram renderer for 13 editorial types (architecture, flowchart, sequence, state machine, ER, timeline, swimlane, quadrant, nested, tree, layer stack, Venn, pyramid/funnel). Rules paraphrased with attribution from [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) (MIT): shape-carries-meaning (oval/rect/diamond/dot), complexity budgets (≤ 9 nodes, ≤ 12 arrows, ≤ 2 accent uses), 4px grid on every coordinate, z-order arrows-first, opaque masking rects behind every arrow label, horizontal legend strip at the bottom, annotation callouts in italic serif + dashed leader, optional sketchy filter for narrative contexts.
+
+Tokens are aesthetic-aware — ten semantic roles (paper, ink, muted, rule, accent, link, etc.) map differently per host aesthetic, so the same rules produce Mono-Industrial grayscale inside an MI page, SubQ pixel-blocks inside a SubQ page, and the native rust-accent editorial look when a user explicitly asks for "editorial diagram" style. Mermaid remains a fallback for graphs past the complexity budget.
+
+See [`references/diagrams-svg.md`](plugins/visual-explainer/references/diagrams-svg.md), [`references/diagram-tokens.md`](plugins/visual-explainer/references/diagram-tokens.md), and [`templates/svg-diagram-starter.html`](plugins/visual-explainer/templates/svg-diagram-starter.html).
+
+### 5. Video output via Hyperframes — explainer MP4s, not just HTML
+
+Two new commands turn topics and decks into MP4 video via HeyGen's open-source [Hyperframes](https://github.com/heygen-com/hyperframes) renderer (Apache 2.0). Hyperframes is a local HTML → MP4 pipeline — headless Chrome captures frames, GSAP drives paused timelines, FFmpeg encodes. No cloud account, no API keys. Requires Node ≥ 22 and FFmpeg.
+
+- **`/generate-video`** — greenfield. Picks `--style=long-form` (16:9 slide-paced explainer, 60–180s) or `--style=reel` (9:16 brain-rot-friendly 30–60s hard-cut reel with kinetic typography, progressive diagram reveal, TTS narration, burned-in captions).
+- **`/render-video`** — converts an existing HTML deck or magazine to an MP4.
+
+Verification is mandatory for video: `hyperframes-doctor.sh` checks prerequisites, `hyperframes lint && validate` runs a contrast audit, a draft render happens first, `extract-keyframes.sh` pulls start/mid/end stills for user approval, then the final standard-quality render runs.
+
+See [`references/hyperframes.md`](plugins/visual-explainer/references/hyperframes.md), [`references/gsap-rules.md`](plugins/visual-explainer/references/gsap-rules.md), [`references/reel-patterns.md`](plugins/visual-explainer/references/reel-patterns.md), and the templates in [`templates/hyperframes-longform.html`](plugins/visual-explainer/templates/hyperframes-longform.html) and [`templates/hyperframes-reel.html`](plugins/visual-explainer/templates/hyperframes-reel.html).
+
+### 6. Magazine mode — horizontal-snap editorial layout
+
+`/generate-slides --magazine` flips the scroll-snap axis from vertical to horizontal. Each page is 100vw × 100vh, full-bleed edge-to-edge, with nav dots at the bottom and arrow-key + swipe navigation. The cover and back cover are dark; at least three pages are dark total for rhythm; each interior page uses a different tint from the active aesthetic's ramp. Every magazine includes at least one full-bleed stat page with the primary number rendered at `clamp(160px, 22vw, 360px)` as the visual anchor.
+
+Five new layout types ship — quadrant (2×2), full-bleed stat, dark panel, color block, and viewport-filling grid (3×2 or 4×3) — all of which also work in the vertical deck. The existing split layout (left/right color-block) gets magazine-style treatment too. Tints adapt to whichever aesthetic is active (MI grayscale, SubQ cream, Editorial warm-stone, Blueprint slate).
+
+See the Magazine Mode section in [`references/slide-patterns.md`](plugins/visual-explainer/references/slide-patterns.md) and [`templates/mono-industrial-magazine.html`](plugins/visual-explainer/templates/mono-industrial-magazine.html) for the 8-page reference implementation.
+
+### 7. Clarify policy — AskUserQuestion before expensive generations
+
+The skill now explicitly checks whether it can form a 1-sentence brief (topic, audience, depth, aesthetic) before generating. When any dimension is unclear, it asks 1–3 questions via `AskUserQuestion` instead of guessing. The policy is tiered by command cost:
+
+- **Tier 0 (always ask):** `/generate-video`, `/render-video`, `/generate-slides --magazine`, `/generate-poster`. High wall-clock cost; a 30-second dialog saves minutes of rework.
+- **Tier 1 (ask when ambiguous):** `/generate-web-diagram`, `/generate-visual-plan`, `/generate-slides` (vertical), `/diff-review`, `/plan-review`, `/project-recap`.
+- **Tier 2 (never ask):** `/fact-check`, `/share`. Mechanical commands with no creative choices.
+
+Escape hatches: `--no-ask` flag, phrases like "just generate" / "use defaults", or a prompt that explicitly answers all four dimensions.
+
+See [`references/clarify.md`](plugins/visual-explainer/references/clarify.md) for the full policy, question-phrasing guide, and dialog templates.
+
 ## Why
 
 Every coding agent defaults to ASCII art when you ask for a diagram. Box-drawing characters, monospace alignment hacks, text arrows. It works for trivial cases, but anything beyond a 3-box flowchart turns into an unreadable mess.
@@ -101,10 +140,12 @@ If you want the upstream (non-SubQ) version instead, see [nicobailon/visual-expl
 
 | Command | What it does |
 |---------|-------------|
-| `/generate-web-diagram` | Generate an HTML diagram for any topic |
+| `/generate-web-diagram` | Generate an HTML diagram for any topic (inline SVG by default, Mermaid fallback) |
 | `/generate-visual-plan` | Generate a visual implementation plan for a feature or extension |
-| `/generate-slides` | Generate a magazine-quality slide deck |
+| `/generate-slides` | Generate a magazine-quality slide deck (vertical, or `--magazine` for horizontal editorial layout) |
 | `/generate-poster` | Generate a single-canvas poster via poster-ai |
+| `/generate-video` | Generate an explainer MP4 via Hyperframes (`--style=long-form` or `--style=reel`) |
+| `/render-video` | Convert an existing HTML deck or magazine to an MP4 |
 | `/diff-review` | Visual diff review with architecture comparison and code review |
 | `/plan-review` | Compare a plan against the codebase with risk assessment |
 | `/project-recap` | Mental model snapshot for context-switching back to a project |
@@ -136,7 +177,25 @@ Any command that produces a scrollable page supports `--slides` to generate a sl
 /project-recap --slides 2w
 ```
 
+`/generate-slides` also accepts `--magazine` for the horizontal editorial layout (100vw × 100vh pages, dark cover + back cover, per-page tint, nav dots, arrow keys, at least one full-bleed stat page):
+
+```
+/generate-slides --magazine "quarterly engineering recap"
+```
+
 https://github.com/user-attachments/assets/342d3558-5fcf-4fb2-bc03-f0dd5b9e35dc
+
+## Video Mode
+
+Generate MP4 explainer videos locally via Hyperframes. No cloud account, no API keys — requires Node ≥ 22 and FFmpeg.
+
+```
+/generate-video "how our queue redesign works" --style=long-form
+/generate-video "one-stat hook about the 8.4x throughput" --style=reel
+/render-video ~/.agent/diagrams/quarterly-recap-magazine.html --style=reel
+```
+
+Two styles: `long-form` (16:9, 60–180s, slide-paced with TTS narration) or `reel` (9:16, 30–60s, hard-cut kinetic typography with burned-in captions). Video is a high-cost command — the skill always confirms style and duration via `AskUserQuestion` before rendering, and extracts three keyframes from a fast draft render for approval before committing to the final-quality pass.
 
 ## How It Works
 
@@ -147,30 +206,42 @@ https://github.com/user-attachments/assets/342d3558-5fcf-4fb2-bc03-f0dd5b9e35dc
 plugins/
 └── visual-explainer/
     ├── .claude-plugin/plugin.json
-    ├── SKILL.md                      ← workflow + design principles
-    ├── commands/                     ← slash commands
+    ├── SKILL.md                          ← workflow + design principles
+    ├── commands/                         ← slash commands (incl. generate-video, render-video)
     ├── references/
-    │   ├── mono-industrial.md        ← default aesthetic
-    │   ├── subq.md                   ← SubQ brand (this fork)
-    │   ├── css-patterns.md           ← layouts, animations, theming
-    │   ├── libraries.md              ← Mermaid, Chart.js, Prism.js, fonts
-    │   ├── demo-capture.md           ← UI demo → webm workflow (this fork)
-    │   ├── poster.md                 ← fixed-canvas output via poster-ai
-    │   ├── responsive-nav.md         ← sticky TOC for multi-section pages
-    │   ├── slide-patterns.md         ← slide engine, transitions, presets
+    │   ├── mono-industrial.md            ← default aesthetic
+    │   ├── subq.md                       ← SubQ brand (this fork)
+    │   ├── diagrams-svg.md               ← 13-type SVG diagram rules (this fork)
+    │   ├── diagram-tokens.md             ← per-aesthetic token maps (this fork)
+    │   ├── hyperframes.md                ← Hyperframes integration (this fork)
+    │   ├── gsap-rules.md                 ← GSAP constraints for video (this fork)
+    │   ├── reel-patterns.md              ← 9:16 fast-cut reel rules (this fork)
+    │   ├── clarify.md                    ← AskUserQuestion tier policy (this fork)
+    │   ├── css-patterns.md               ← layouts, animations, theming
+    │   ├── libraries.md                  ← Mermaid, Chart.js, Prism.js, fonts
+    │   ├── demo-capture.md               ← UI demo → webm workflow (this fork)
+    │   ├── poster.md                     ← fixed-canvas output via poster-ai
+    │   ├── responsive-nav.md             ← sticky TOC for multi-section pages
+    │   ├── slide-patterns.md             ← vertical deck + magazine (this fork)
     │   └── …
     ├── templates/
-    │   ├── mono-industrial.html      ← default scrollable
+    │   ├── mono-industrial.html          ← default scrollable
     │   ├── mono-industrial-slides.html
-    │   ├── subq.html                 ← SubQ reference (this fork)
-    │   ├── architecture.html         ← legacy
+    │   ├── mono-industrial-magazine.html ← horizontal zine (this fork)
+    │   ├── svg-diagram-starter.html      ← inline-SVG diagram ref (this fork)
+    │   ├── hyperframes-longform.html     ← 16:9 video starter (this fork)
+    │   ├── hyperframes-reel.html         ← 9:16 reel starter (this fork)
+    │   ├── subq.html                     ← SubQ reference (this fork)
+    │   ├── architecture.html             ← legacy
     │   ├── mermaid-flowchart.html
     │   ├── data-table.html
     │   └── slide-deck.html
     └── scripts/
-        ├── share.sh                  ← deploy HTML to Vercel
-        ├── frames-to-webm.sh         ← PNG frames → webm (this fork)
-        └── embed-media.sh            ← media → base64 inline snippet (this fork)
+        ├── share.sh                      ← deploy HTML to Vercel
+        ├── frames-to-webm.sh             ← PNG frames → webm (this fork)
+        ├── embed-media.sh                ← media → base64 inline snippet (this fork)
+        ├── hyperframes-doctor.sh         ← video prereq check (this fork)
+        └── extract-keyframes.sh          ← MP4 → 3 stills for review (this fork)
 ```
 
 **Output:** `~/.agent/diagrams/filename.html` → opens in browser.
@@ -189,16 +260,21 @@ Every template adapts from 1440px+ desktop down to 390px mobile. The SubQ theme'
 
 ## Limitations
 
-- Requires a browser to view
+- Requires a browser to view HTML output
 - Mermaid SVGs re-render when the SubQ theme toggle flips, but stock Mono-Industrial diagrams still need a page refresh when OS theme changes
 - Results vary by model capability
 - Demo capture requires `ffmpeg` (always) plus either Playwright MCP or `agent-browser` (either one works)
+- Video output (`/generate-video`, `/render-video`) requires Node ≥ 22 and FFmpeg; the skill runs `hyperframes-doctor.sh` at the start of any video command and aborts with install hints if prerequisites are missing
 
 ## Credits
 
 Based on [nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer). Borrows ideas from [Anthropic's frontend-design skill](https://github.com/anthropics/skills) and [interface-design](https://github.com/Dammyjay93/interface-design).
 
 SubQ brand system extracted from Subquadratic's internal V6 brand exploration deck.
+
+Diagram rules and philosophy paraphrased (with attribution) from [cathrynlavery/diagram-design](https://github.com/cathrynlavery/diagram-design) (MIT, Cocoon AI).
+
+Video output wraps [HeyGen's Hyperframes](https://github.com/heygen-com/hyperframes) (Apache 2.0) — local HTML → MP4 rendering via headless Chrome + GSAP + FFmpeg.
 
 ## License
 

@@ -1,20 +1,38 @@
 ---
-description: Generate a stunning magazine-quality slide deck as a self-contained HTML page
+description: Generate a magazine-quality slide deck as a self-contained HTML page. Vertical (default) or --magazine horizontal.
+argument-hint: "<topic or source> [--magazine] [--poster-export] [--no-ask]"
 ---
 Load the visual-explainer skill, then generate a slide deck for: $@
 
-Follow the visual-explainer skill workflow. Read the reference template at `./templates/slide-deck.html` and slide patterns at `./references/slide-patterns.md` before generating. Also read `./references/css-patterns.md` for shared patterns (Mermaid zoom controls, depth tiers, overflow protection) and `./references/libraries.md` for Mermaid theming, Chart.js, and font pairings.
+Follow the visual-explainer skill workflow. Read `./references/slide-patterns.md` before generating — it now covers both the **vertical scroll-snap deck** (default) and the **horizontal magazine mode** (triggered by `--magazine`). For Mono-Industrial output, the vertical template is `./templates/mono-industrial-slides.html`; the horizontal magazine template is `./templates/mono-industrial-magazine.html`. For legacy aesthetics the vertical template is `./templates/slide-deck.html`. Also read `./references/css-patterns.md` for shared patterns and `./references/libraries.md` for Mermaid theming, Chart.js, and font pairings.
 
-**Slide output is always opt-in.** Only generate slides when this command is invoked or the user explicitly asks for a slide deck.
+**Slide output is always opt-in.** Only generate slides when this command is invoked or the user explicitly asks for a slide deck or magazine.
 
-**Aesthetic:** Pick a distinctive direction from the 4 slide presets in slide-patterns.md (Midnight Editorial, Warm Signal, Terminal Mono, Swiss Clean) or riff on the existing 8 aesthetic directions adapted for slides. Vary from previous decks. Commit to one direction and carry it through every slide.
+**Orientation — vertical vs horizontal (magazine).** Slides can be authored in two orientations:
 
-**Narrative structure:** Slides have a temporal dimension — compose a story arc, not a list of sections. Start with impact (title), build context (overview), deep dive (content, diagrams, data), resolve (summary/next steps). Plan the slide sequence and assign a composition (centered, left-heavy, split, full-bleed) to each slide before writing HTML.
+- **Vertical (default)** — scroll-snap-type: y mandatory. Each slide is 100dvh. Deck feels like a presentation. Good for plans, reviews, recaps, any sequence where the user progresses one slide at a time.
+- **Horizontal (`--magazine`)** — scroll-snap-type: x mandatory. Each page is 100vw × 100vh. Deck feels like a print zine. Good for editorial narratives, brand pieces, year-in-review content, longer 12–30 page arcs. Nav dots at bottom, arrow-key + swipe support, dark cover + dark back cover + ≥ 1 interior dark panel, different tint per interior page (tint ramp adapts to active aesthetic — see `./references/diagram-tokens.md`), at least one full-bleed stat page with 100px+ anchor.
 
-**Visual richness:** Proactively reach for visuals. If `surf` CLI is available (`which surf`), generate images for title slide backgrounds and full-bleed slides via `surf gemini --generate-image`. Add SVG decorative accents, inline sparklines, mini-charts, and small Mermaid diagrams where they make the story more compelling. Visual-first, text-second.
+If the user hasn't specified and the content is ambiguous (could work as either), ask via AskUserQuestion: "Vertical slide deck, horizontal magazine, or video (MP4)?" See `./references/clarify.md` for the tiered ask policy — slides are a high-cost command and benefit from confirmation.
 
-**Compositional variety:** Consecutive slides must vary their spatial approach. Alternate between centered, left-heavy, right-heavy, split, edge-aligned, and full-bleed. Three centered slides in a row means push one off-axis.
+**Aesthetic.** Pick from the 4 slide presets in slide-patterns.md (Midnight Editorial, Warm Signal, Terminal Mono, Swiss Clean) or use the default Mono-Industrial. Vary from previous decks. Commit to one direction and carry it through every slide.
 
-Write to `~/.agent/diagrams/` and open the result in the browser.
+**Narrative structure.** Slides have a temporal dimension — compose a story arc, not a list of sections. Start with impact (title/cover), build context, deep dive (content, diagrams, data), resolve (summary/next steps/back cover). Plan the sequence and assign a layout per slide before writing HTML.
 
-**`--poster-export` flag (optional):** if the user passes this flag, after producing the interactive HTML deck, also render each slide to its own fixed-canvas PNG via `poster-ai`. Check `which poster`; skip the export silently if unavailable. Write per-slide PNGs to `~/.agent/diagrams/<deck-name>/slides/` at 1920×1080. See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow. The interactive HTML deck remains canonical — PNGs are a secondary artifact for sharing.
+**Visual richness.** Proactively reach for visuals. If `surf` CLI is available (`which surf`), generate images for title/cover backgrounds and full-bleed pages via `surf gemini --generate-image`. Add SVG decorative accents, inline sparklines, mini-charts, and small diagrams (use inline SVG per `./references/diagrams-svg.md`, or Mermaid as fallback). Visual-first, text-second.
+
+**Compositional variety.** Consecutive slides must vary their spatial approach — centered, left-heavy, right-heavy, split, edge-aligned, full-bleed, quadrant, grid. Three centered slides in a row means push one off-axis. For magazine mode specifically: dark panels interrupt tint rotation; full-bleed stat pages land roughly every 4–6 pages, never back-to-back.
+
+**Magazine-specific rules (when `--magazine` is passed).**
+- Cover page is dark. Back cover is dark. At least one interior dark panel (≥ 3 dark pages total).
+- Every interior page uses a different tint from the active aesthetic's tint ramp; never repeat consecutively.
+- At least one full-bleed stat page with the primary number rendered at 100px+ (`clamp(160px, 22vw, 360px)`).
+- Layouts available: title cover, content, split (left/right color-block), quadrant (2×2), full-bleed stat, dark panel, color block, viewport-filling grid (3×2 or 4×3).
+- Nav chrome: dot strip at bottom, arrow-key support, page counter top-right.
+- The horizontal-snap engine replaces the vertical engine — don't mix.
+
+Write output to `~/.agent/diagrams/<slug>.html` (or `<slug>-magazine.html` for `--magazine`) and open the result in the browser.
+
+**`--poster-export` flag (optional).** If the user passes this flag, after producing the interactive HTML deck/magazine, also render each slide/page to its own fixed-canvas PNG via `poster-ai`. Check `which poster`; skip the export silently if unavailable. Write per-slide PNGs to `~/.agent/diagrams/<deck-name>/slides/` at 1920×1080 (or 1080×1920 for a vertical-stat magazine page). See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow. The interactive HTML remains canonical; PNGs are a secondary artifact for sharing.
+
+**`--no-ask` flag.** Skip AskUserQuestion. Use the user's request verbatim + defaults.

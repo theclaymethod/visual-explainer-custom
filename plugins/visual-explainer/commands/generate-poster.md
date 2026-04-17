@@ -3,6 +3,8 @@ description: Generate a single-canvas rich-composition poster (HTML + PNG) via p
 ---
 Load the visual-explainer skill, then generate a fixed-canvas poster for: $@
 
+**Clarify.** This is a Tier 0 (high-cost) command per `./references/clarify.md`. Always ask via `AskUserQuestion` before generating, at minimum: canvas size (1600×1000 landscape / 1200×1500 portrait / 1200×628 social / 1080×1080 square), focal element (stat / headline / diagram / photo), and aesthetic. Bypass only on explicit `--no-ask`.
+
 **Read `./references/poster.md` and `./templates/mono-industrial-poster.tsx` before generating.** Poster output uses `poster-ai` (CLI binary: `poster`) to turn a single TSX file into a self-contained HTML poster and a rasterized PNG. It is **not** a replacement for the primary scrollable HTML flow — it is the right output when the content is intrinsically a fixed-canvas graphic: a shareable summary, a dashboard, an infographic, or a poster for print/social.
 
 **Before generating:**

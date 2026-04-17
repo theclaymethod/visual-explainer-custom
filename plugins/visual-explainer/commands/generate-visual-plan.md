@@ -3,6 +3,8 @@ description: Generate a visual HTML implementation plan — detailed feature spe
 ---
 Load the visual-explainer skill, then generate a comprehensive visual implementation plan for `$@` as a self-contained HTML page.
 
+**Clarify.** This is a Tier 1 command per `./references/clarify.md`. Ask via `AskUserQuestion` only if the feature scope, audience, or required depth is unclear. Skip the ask if the request + codebase context answer all four brief dimensions. Bypass with `--no-ask`.
+
 Follow the visual-explainer skill workflow. Read the reference template, CSS patterns, and mermaid theming references before generating. Use an editorial or blueprint aesthetic, but vary fonts and palette from previous diagrams.
 
 **Data gathering phase** — understand the context before designing:

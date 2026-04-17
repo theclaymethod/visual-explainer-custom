@@ -2,6 +2,8 @@
 
 Share a visual explainer HTML file instantly via Vercel. Returns a live URL with no authentication required.
 
+**Clarify.** This is a Tier 2 command per `./references/clarify.md` — it operates on an existing file and has no creative choices. Do not ask questions; just deploy.
+
 ## Usage
 
 ```

@@ -3,6 +3,8 @@ description: Generate a visual HTML plan review — current codebase state vs. p
 ---
 Load the visual-explainer skill, then generate a comprehensive visual plan review as a self-contained HTML page, comparing the current codebase against a proposed implementation plan.
 
+**Clarify.** This is a Tier 1 command per `./references/clarify.md`. If the plan path and audience are clear from the request + context, generate directly. If the plan could be interpreted multiple ways, ask 1 clarifying question before writing HTML. Bypass with `--no-ask`.
+
 Follow the visual-explainer skill workflow. Read the reference template, CSS patterns, and mermaid theming references before generating. Use a blueprint/editorial aesthetic with current-state vs. planned-state panels, but vary fonts and palette from previous diagrams.
 
 **Inputs:**

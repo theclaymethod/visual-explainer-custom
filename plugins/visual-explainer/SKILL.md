@@ -22,8 +22,10 @@ Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/d
 |---------|-------------|
 | `generate-web-diagram` | Generate an HTML diagram for any topic |
 | `generate-visual-plan` | Generate a visual implementation plan for a feature |
-| `generate-slides` | Generate a magazine-quality slide deck |
+| `generate-slides` | Generate a magazine-quality slide deck (vertical or `--magazine` horizontal) |
 | `generate-poster` | Generate a single-canvas rich-composition poster (HTML + PNG) via poster-ai — see `./references/poster.md` |
+| `generate-video` | Generate an explainer video (MP4) via Hyperframes; `--style=long-form\|reel` |
+| `render-video` | Convert an existing HTML deck to an MP4 via Hyperframes |
 | `diff-review` | Visual diff review with architecture comparison and code review |
 | `plan-review` | Compare a plan against the codebase with risk assessment |
 | `project-recap` | Mental model snapshot for context-switching back to a project |
@@ -31,6 +33,26 @@ Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/d
 | `share` | Deploy an HTML page to Vercel and get a live URL |
 
 ## Workflow
+
+### 0. Clarify before generating (when the content is ambiguous)
+
+**Before starting any generation, check whether the user's request supports a confident 1-sentence brief.** The brief must cover: **topic**, **audience**, **depth**, and **aesthetic**. If any of these is genuinely unclear, ask 1–3 questions via `AskUserQuestion` before reading references or writing HTML. A cheap question prevents an expensive misfire.
+
+**Tiered policy** (see `./references/clarify.md` for the full specification):
+
+- **Tier 0 — always ask** (high-cost commands): `/generate-video`, `/render-video`, `/generate-slides --magazine`, `/generate-poster`. Ask at least style + duration + narration (video) or aesthetic + page-count (magazine) or canvas-size + focal (poster), regardless of how clear the request otherwise is. Bypass only on explicit `--no-ask`.
+- **Tier 1 — ask when ambiguous** (most commands): `/generate-web-diagram`, `/generate-visual-plan`, `/generate-slides` (vertical), `/diff-review`, `/plan-review`, `/project-recap`. Ask only if the four-dimension brief is incomplete. Clear requests flow through unchanged.
+- **Tier 2 — never ask** (mechanical commands): `/fact-check`, `/share`. These operate on an existing target and have no creative choices.
+
+**Escape hatches.** The user can always skip questions via:
+- `--no-ask` flag
+- Phrases: "just generate", "don't ask", "go ahead", "use defaults"
+- A prompt that explicitly answers all four dimensions
+- A pre-made outline or structured brief
+
+**What NOT to ask.** Never ask implementation questions (Mermaid vs SVG, which template to use), aesthetic when the default is fine, or meta-confirmation ("ready to generate?"). Skills decide those.
+
+See `./references/clarify.md` for question phrasing guidelines, dialog templates for each Tier 0 command, and worked examples.
 
 ### 1. Think (5 seconds, not 5 minutes)
 
@@ -89,6 +111,8 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 
 **For CSS/layout patterns and SVG connectors**, read `./references/css-patterns.md`.
 
+**For diagram generation specifically** — the 13 supported diagram types (architecture, flowchart, sequence, state, ER, timeline, swimlane, quadrant, nested, tree, layer stack, Venn, pyramid/funnel) — **default to inline SVG**, not Mermaid. Read `./references/diagrams-svg.md` for the type-selection gate, shape semantics (ovals = start/end, rects = steps, diamonds = decisions, dots = merges), complexity budgets (max 9 nodes, 12 arrows, 2 accent elements), removal test, annotation primitive, sketchy filter, and anti-patterns list. Read `./references/diagram-tokens.md` for the per-aesthetic token mapping so the same diagram rules produce aesthetic-appropriate output across Mono-Industrial, SubQ, Editorial-Diagram, Blueprint, Paper/ink, Terminal, and IDE-inspired palettes. Start from `./templates/svg-diagram-starter.html` — it ships the `<defs>` block (dot pattern, arrow markers, sketchy filter), the 4px grid, masked arrow labels, and a bottom legend strip. Mermaid remains available as a fallback — see the table below.
+
 **For pages with 4+ sections** (reviews, recaps, dashboards), also read `./references/responsive-nav.md` for section navigation with sticky sidebar TOC on desktop and horizontal scrollable bar on mobile.
 
 **Choosing a rendering approach:**
@@ -96,17 +120,29 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 | Content type | Approach | Why |
 |---|---|---|
 | Architecture (text-heavy) | CSS Grid cards + flow arrows | Rich card content (descriptions, code, tool lists) needs CSS control |
-| Architecture (topology-focused) | **Mermaid** | Visible connections between components need automatic edge routing |
-| Flowchart / pipeline | **Mermaid** | Automatic node positioning and edge routing |
-| Sequence diagram | **Mermaid** | Lifelines, messages, and activation boxes need automatic layout |
-| Data flow | **Mermaid** with edge labels | Connections and data descriptions need automatic edge routing |
-| ER / schema diagram | **Mermaid** | Relationship lines between many entities need auto-routing |
-| State machine | **Mermaid** | State transitions with labeled edges need automatic layout |
-| Mind map | **Mermaid** | Hierarchical branching needs automatic positioning |
-| Class diagram | **Mermaid** | Inheritance, composition, aggregation lines with automatic routing |
-| C4 architecture | **Mermaid** | Use `graph TD` + `subgraph` for C4 (not native `C4Context` — it ignores themes) |
+| Architecture (topology, ≤ 14 nodes) | **Inline SVG** (see `./references/diagrams-svg.md`) | Editorial control, shape semantics, 4px grid, focal accent rule |
+| Architecture (topology, 15+ nodes) | **Mermaid** (hybrid: Mermaid overview + CSS Grid cards) | Auto-routing beats hand-authored coordinates above the complexity budget |
+| Flowchart / pipeline (≤ 9 nodes) | **Inline SVG** | Shape carries meaning (oval/rect/diamond/dot) — requires hand authoring |
+| Flowchart / pipeline (10+ nodes) | **Mermaid** | Auto layout needed past the budget |
+| Sequence diagram (≤ 5 lifelines) | **Inline SVG** | Activation bars, self-message U-loops, dashed return arrows are editorial decisions |
+| Sequence diagram (6+ lifelines) | **Mermaid** `sequenceDiagram` | Auto layout needed past the budget |
+| Data flow | **Mermaid** with edge labels | Auto edge routing beats hand-drawn lines for data pipelines |
+| ER / schema diagram (≤ 8 entities) | **Inline SVG** | Cardinality labels, PK/FK glyphs, aggregate-root focal rule |
+| ER / schema diagram (9+ entities) | **Mermaid** `erDiagram` | Relationship routing auto-resolves |
+| State machine (≤ 9 states) | **Inline SVG** | Self-loops, start/end glyphs, `event [guard] / action` labels |
+| State machine (10+ states) | **Mermaid** `stateDiagram-v2` / `flowchart TD` | See `stateDiagram-v2` label caveat below |
+| Timeline | **Inline SVG** with honest intervals | Unequal intervals must get unequal spacing — Mermaid can't do this |
+| Swimlane | **Inline SVG** | Lane dividers, handoff arrows, eyebrow lane labels |
+| Quadrant | **Inline SVG** | Axis-end labels, focal "do first" accent |
+| Nested containment | **Inline SVG** | Concentric rounded rects with escalating stroke opacity |
+| Tree (≤ depth 4) | **Inline SVG** | Orthogonal elbow connectors, never diagonal |
+| Layer stack | **Inline SVG** | 4–6 horizontal bands with mono index + sans name + context note |
+| Venn (2–3 circles) | **Inline SVG** | Proportional circle sizes, set-specific hairline strokes |
+| Pyramid / funnel | **Inline SVG** | Honest proportional widths — Mermaid can't enforce this |
+| Mind map | **Mermaid** `mindmap` | Radial layout is ergonomic in Mermaid and doesn't benefit from SVG control |
+| Class diagram | **Mermaid** `classDiagram` | Inheritance/composition routing is Mermaid's strength |
+| C4 architecture | **Mermaid** `graph TD` + `subgraph` | Use flowchart-as-C4 (native `C4Context` ignores themes) |
 | Data table | HTML `<table>` | Semantic markup, accessibility, copy-paste behavior |
-| Timeline | CSS (central line + cards) | Simple linear layout doesn't need a layout engine |
 | Dashboard | CSS Grid + Chart.js | Card grid with embedded charts |
 
 **Mermaid theming:** Always use `theme: 'base'` with custom `themeVariables` so colors match your page palette. Use `layout: 'elk'` for complex graphs (requires the `@mermaid-js/layout-elk` package — see `./references/libraries.md` for the CDN import). Override Mermaid's SVG classes with CSS for pixel-perfect control. See `./references/libraries.md` for full theming guide.
@@ -334,29 +370,33 @@ If you skip this step and your prose still reads as AI-generated (telltale phras
 
 ## Diagram Types
 
+**The full rules, shape semantics, complexity budgets, removal test, and anti-patterns for all 13 supported diagram types live in `./references/diagrams-svg.md`.** This section summarizes the rendering-approach decision per type. Aesthetic token mappings for every diagram type live in `./references/diagram-tokens.md`.
+
+Before authoring any diagram, pick the type via the Type Selection Gate in `diagrams-svg.md`, check the complexity budget, and run the Removal Test before emitting.
+
 ### Architecture / System Diagrams
 Three approaches depending on complexity:
 
-**Simple topology (under 10 elements):** Use Mermaid. A `graph TD` with custom `themeVariables` produces readable diagrams with automatic edge routing.
+**Topology (≤ 14 elements):** Use **inline SVG** (start from `./templates/svg-diagram-starter.html`). Group nodes by tier or trust boundary. Focal accent on 1–2 critical integration points. Dashed rectangles for region boundaries with masked boundary labels.
 
-**Text-heavy overviews (under 15 elements):** CSS Grid with explicit row/column placement. Sections as rounded cards with colored borders and monospace labels. Vertical flow arrows between sections. The reference template at `./templates/architecture.html` demonstrates this pattern. Use when cards need descriptions, code references, tool lists, or other rich content that Mermaid nodes can't hold.
+**Text-heavy overviews (under 15 elements):** CSS Grid with explicit row/column placement when cards need descriptions, code references, tool lists, or other rich content that SVG nodes can't hold. Reference: `./templates/architecture.html`.
 
-**Complex architectures (15+ elements):** Use the **hybrid pattern** — a simple Mermaid overview (5-8 nodes showing module relationships) followed by detailed CSS Grid cards for each module's internals. This gives you visual topology AND readable details. The overview diagram uses module names with `<small>` tags for key function names. The cards below show full function lists with new/modified badges. Never try to cram 15+ elements into a single Mermaid diagram — it will render unreadably small even with zoom controls.
+**Complex architectures (15+ elements):** Use the **hybrid pattern** — a simple Mermaid overview (5–8 nodes showing module relationships) followed by detailed CSS Grid cards for each module's internals. Auto-routing beats hand-authored coordinates above the complexity budget.
 
 ### Flowcharts / Pipelines
-**Use Mermaid.** Automatic node positioning and edge routing produces proper diagrams with connecting lines, decision diamonds, and parallel branches — dramatically better than CSS flexbox with arrow characters. Prefer `graph TD` (top-down); use `graph LR` only for simple 3-4 node linear flows. Color-code node types with Mermaid's `classDef` or rely on `themeVariables` for automatic styling.
+**Inline SVG for ≤ 9 nodes; Mermaid above that.** Shape carries meaning, not color: ovals (`rx=20`) for start/end, rectangles (`rx=6`) for steps, diamonds for decisions (≤ 3 exits or nest diamonds), filled dots (`r=4`) for merge points. Vertical flow. "Yes" → right, "No" → down. Label every edge. Accent on the happy path OR the most consequential decision — not every decision.
 
 ### Sequence Diagrams
-**Use Mermaid.** Lifelines, messages, activation boxes, notes, and loops all need automatic layout. Use Mermaid's `sequenceDiagram` syntax. Style actors and messages via CSS overrides on `.actor`, `.messageText`, `.activation` classes.
+**Inline SVG for ≤ 5 lifelines; Mermaid above that.** Actors in boxes at the top. Vertical dashed lifelines. Horizontal message arrows. Time flows down only. Activation bars 8px wide, muted fill, 0.8 stroke. Self-messages as U-loops. Return arrows dashed. Accent on the primary success response only.
 
 ### Data Flow Diagrams
-**Use Mermaid.** Data flow diagrams emphasize connections over boxes — exactly what Mermaid excels at. Use `graph TD` (or `graph LR` for simple linear flows) with edge labels for data descriptions. Thicker, colored edges for primary flows. Source/sink nodes styled differently from transform nodes via Mermaid's `classDef`.
+**Mermaid** with edge labels. Data flow diagrams emphasize auto-routed connections over hand-placed boxes.
 
 ### Schema / ER Diagrams
-**Use Mermaid.** Relationship lines between entities need automatic routing. Use Mermaid's `erDiagram` syntax with entity attributes. Style via `themeVariables` and CSS overrides on `.er.entityBox` and `.er.relationshipLine`.
+**Inline SVG for ≤ 8 entities; Mermaid above that.** Two-part entity shape: header (type tag + name) + field list. `#` marks PK, `→` marks FK. Cardinality (`1`, `N`, `0..1`, `1..*`) placed 10–12px from connecting edge. Cluster related entities; don't draw every FK on a huge model. Accent on the aggregate root.
 
 ### State Machines / Decision Trees
-**Use Mermaid.** Use `stateDiagram-v2` for states with labeled transitions. Supports nested states, forks, joins, and notes. Decision trees can use `graph TD` with diamond decision nodes.
+**Inline SVG for ≤ 9 states; Mermaid above that.** Rounded rects (`rx=8`) for states. Start = filled dot (`r=6`). End = ringed dot. Transition labels in the pattern `event [guard] / action`. Self-loops arc above the node. Never draw "from any state" lines from every state — annotate once.
 
 **`stateDiagram-v2` label caveat:** Transition labels have a strict parser — colons, parentheses, `<br/>`, HTML entities, and most special characters cause silent parse failures ("Syntax error in text"). If your labels need any of these (e.g., `cancel()`, `curate: true`, multi-line labels), use `flowchart TD` instead with rounded nodes and quoted edge labels (`|"label text"|`). Flowcharts handle all special characters and support `<br/>` for line breaks. Reserve `stateDiagram-v2` for simple single-word or plain-text labels.
 
@@ -397,7 +437,28 @@ Cell content:
 - Keep numeric columns right-aligned with `tabular-nums`
 
 ### Timeline / Roadmap Views
-Vertical or horizontal timeline with a central line (CSS pseudo-element). Phase markers as circles on the line. Content cards branching left/right (alternating) or all to one side. Date labels on the line. Color progression from past (muted) to future (vivid).
+**Inline SVG.** Horizontal hairline baseline. Ticks at meaningful intervals with monospace date labels. Events as dots with labels alternating above and below (thin connector lines to their dots). **Time scale must be honest** — unequal intervals get unequal spacing. Break the axis visibly when density demands it. For multi-phase roadmaps with rich content per phase, fall back to the CSS card pattern (central line pseudo-element + alternating cards).
+
+### Swimlane Diagrams
+**Inline SVG.** One lane per actor, max 5 lanes. Lane labels in the eyebrow style (mono, small, UPPERCASE, 0.18em tracking) in the left margin. 1px hairline dividers between lanes. Accent on high-impact boundary-crossing handoffs. Never assign one step to two lanes.
+
+### Quadrant / Priority Matrices
+**Inline SVG.** Centered axis cross. Axis labels at axis **ends**, not midpoints. Items as dots (`r=4`) with text labels. Accent on the "do first" item (top-right quadrant). ~12 items max. Never place items on axis lines. Never fill the four quadrants with different colors.
+
+### Nested Containment
+**Inline SVG.** 3–5 concentric rounded rects. Horizontal padding 24–32px, vertical padding 32–36px. Eyebrow label top-left on a small masked overlay across the ring. Stroke opacity escalates inward (0.30 → 0.45 → accent innermost). Accent on the innermost focal ring only.
+
+### Tree / Hierarchy
+**Inline SVG for depth ≤ 4; Mermaid `mindmap` for deeper or wider trees.** Root at top (or left). Nodes 120–180w × 40–52h. Name in sans 12px/600, optional sublabel in mono 9px. **Connectors orthogonal (elbow-style), never diagonal.** Max 5 children per level. Accent on one node only: either root or a critical leaf, not both.
+
+### Layer Stack / Abstraction Levels
+**Inline SVG.** 4–6 horizontal bands, 56–72px tall, 800–880px wide in a 1000 viewBox. Row content left-to-right: mono index · sans 600 layer name · contextual note. Fills alternate subtle shades OR all-paper with hairline dividers. Accent on the "bottleneck / pays-rent" layer. Direction indicator (arrow glyph) outside the left margin.
+
+### Venn Diagrams
+**Inline SVG.** 2 or 3 circles (never 4). Hairline 1px strokes in set-specific colors. Fills are very-low-opacity rgba versions of the same colors. Set names outside circles, intersection terms inside. One accent overlap = focal. Circle sizes proportional to cardinality, not fake-equal.
+
+### Pyramid / Funnel
+**Inline SVG.** 4–6 layers, 56–72px tall each. **Widths must be honest** (proportional to count or percentage). Centered name in sans 600 per layer, optional sublabel and optional side annotation. Accent on the apex (pyramid) or the conversion layer (funnel), never the base. Pick pyramid-up OR funnel-down and commit.
 
 ### Dashboard / Metrics Overview
 Card grid layout. Hero numbers large and prominent. Sparklines via inline SVG `<polyline>`. Progress bars via CSS `linear-gradient` on a div. For real charts (bar, line, pie), use **Chart.js via CDN** (see `./references/libraries.md`). KPI cards with trend indicators (up/down arrows, percentage deltas).
@@ -450,17 +511,28 @@ Use these sparingly within visual pages to highlight key points or provide breat
 
 **When to use:** A visual page explaining an essay might use a lead paragraph for the thesis, then cards for key arguments. A README visualization might use callout boxes for warnings but otherwise stay card/table-focused.
 
-## Slide Deck Mode
+## Slide Deck Mode (vertical + `--magazine` horizontal)
 
 An alternative output format for presenting content as a magazine-quality slide presentation instead of a scrollable page. **Opt-in only** — the agent generates slides when the user invokes `/generate-slides`, passes `--slides` to an existing prompt (e.g., `/diff-review --slides`), or explicitly asks for a slide deck. Never auto-select slide format.
 
-**Before generating slides**, read `./references/slide-patterns.md` (engine CSS, slide types, transitions, nav chrome, presets) and `./templates/slide-deck.html` (reference template showing all 10 types). Also read `./references/css-patterns.md` for shared patterns and `./references/libraries.md` for Mermaid/Chart.js theming.
+**Two orientations.**
+- **Vertical (default)** — `scroll-snap-type: y mandatory`. Each slide is 100dvh. Feels like a presentation.
+- **Horizontal (`--magazine` flag)** — `scroll-snap-type: x mandatory`. Each page is 100vw × 100vh. Feels like a print zine. Full-bleed edge-to-edge, nav dots at bottom, arrow-key + swipe navigation, dark cover + dark back cover + ≥ 1 interior dark panel, per-page tint rotation, at least one full-bleed stat page with 100px+ anchor.
 
-**Slides are not pages reformatted.** They're a different medium. Each slide is exactly one viewport tall (100dvh) with no scrolling. Typography is 2–3× larger. Compositions are bolder. The agent composes a narrative arc (impact → context → deep dive → resolution) rather than mechanically paginating the source.
+Magazine is a slide mode, not a separate format — the compositional rules, content-completeness rules, aesthetic presets, and all the slide types (title, content, split, diagram, dashboard, table, code, quote, full-bleed) work in both orientations. Magazine adds additional layouts (quadrant, full-bleed stat, dark panel, color block, viewport-filling grid) that **also work in vertical mode**. See `./references/slide-patterns.md` § Magazine Mode (Horizontal) for the full specification.
+
+**Before generating slides**, read `./references/slide-patterns.md` (engine CSS, slide types, transitions, nav chrome, presets, magazine mode) and one of:
+- `./templates/mono-industrial-slides.html` (vertical, Mono-Industrial)
+- `./templates/mono-industrial-magazine.html` (horizontal, Mono-Industrial)
+- `./templates/slide-deck.html` (vertical, legacy aesthetics)
+
+Also read `./references/css-patterns.md` for shared patterns, `./references/libraries.md` for Mermaid/Chart.js theming, and `./references/diagram-tokens.md` for the per-aesthetic tint ramps that magazine mode uses across interior pages.
+
+**Slides are not pages reformatted.** They're a different medium. Each slide is exactly one viewport (100dvh vertical or 100vw × 100vh horizontal) with no internal scrolling. Typography is 2–3× larger than scrollable pages. Compositions are bolder. The agent composes a narrative arc (impact → context → deep dive → resolution, or cover → opening → body → back cover for magazine) rather than mechanically paginating the source.
 
 **Content completeness.** Changing the medium does not mean dropping content. Follow the "Planning a Deck from a Source Document" process in `slide-patterns.md` before writing any HTML: inventory the source, map every item to slides, verify coverage. Every section, decision, data point, specification, and collapsible detail from the source must appear in the deck. If a plan has 7 sections, the deck covers all 7. If there are 6 decisions, present all 6 — not the 2 that fit on one slide. Collapsible details in the source become their own slides. Add more slides rather than cutting content. A 22-slide deck that covers everything beats a 13-slide deck that looks polished but is missing 40% of the source.
 
-**Slide types (10):** Title, Section Divider, Content, Split, Diagram, Dashboard, Table, Code, Quote, Full-Bleed. Each has a defined layout in `slide-patterns.md`. Content that exceeds a slide's density limit splits across multiple slides — never scrolls within a slide.
+**Slide types (15):** Title/Cover, Section Divider, Content, Split (left/right color-block), Diagram, Dashboard, Table, Code, Quote, Full-Bleed, plus magazine-added types usable in both orientations: Quadrant (2×2), Full-Bleed Stat (100px+ anchor), Dark Panel, Color Block, Viewport-Filling Grid (3×2 or 4×3). Each has a defined layout in `slide-patterns.md`. Content that exceeds a slide's density limit splits across multiple slides — never scrolls within a slide.
 
 **Visual richness:** Check `which surf` at the start. If surf-cli is available, generate 2–4 images (title slide background, full-bleed background, optional content illustrations) before writing HTML — see the Proactive Imagery section in `slide-patterns.md` for the workflow. Also use SVG decorative accents, per-slide background gradients, inline sparklines, and small Mermaid diagrams. Visual-first, text-second.
 
@@ -471,6 +543,33 @@ An alternative output format for presenting content as a magazine-quality slide 
 **`--slides` flag on existing prompts:** When a user passes `--slides` to `/diff-review`, `/plan-review`, `/project-recap`, or other prompts, the agent gathers data using the prompt's normal data-gathering instructions, then presents the content as a slide deck instead of a scrollable page. The slide version tells the same story with different structure and pacing — but the same breadth of coverage. Don't use the slide format as an excuse to summarize or skip sections that the scrollable version would have included.
 
 **`--poster-export` flag (optional).** When the user passes `--poster-export` to `/generate-slides`, the agent produces the interactive HTML deck first (canonical), then *additionally* renders each slide to its own fixed-canvas PNG via `poster-ai`. Slides go to `~/.agent/diagrams/<deck-name>/slides/<NN>-<title>.png` at 1920×1080 (or 1600×900 for tighter 16:9). Use these PNGs to share individual slides or to import into Keynote / Google Slides. Check `which poster` first; if missing, tell the user the flag is unavailable and proceed with HTML-only. See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow.
+
+## Video Output Mode
+
+An alternative output format: MP4 / WebM video via [Hyperframes](https://github.com/heygen-com/hyperframes) (Apache 2.0, HeyGen). **Opt-in only** — the agent generates video when the user invokes `/generate-video` or `/render-video`, or explicitly asks for an "explainer video," "reel," or "mp4." Never auto-select video.
+
+**Two commands:**
+- `/generate-video` — greenfield. Takes a topic/outline, builds a Hyperframes composition from scratch, renders MP4.
+- `/render-video` — takes an existing HTML deck (from `/generate-slides` or `/generate-slides --magazine`) and converts it to MP4.
+
+**Two styles, picked explicitly:**
+- `long-form` — 16:9 landscape, 1920×1080, 60–180s, slide-paced dwell scenes, TTS narration, minor shader transitions. For meetings, onboarding, LinkedIn.
+- `reel` — 30–60s, hard cuts every 1.2–1.8s, kinetic typography, progressive diagram reveal, burned-in captions. Supports two aspect ratios via `--aspect=9:16` (vertical 1080×1920 — Shorts/Reels/TikTok) or `--aspect=16:9` (landscape 1920×1080 — X/LinkedIn/YouTube-embedded/desktop). Same format, different canvas — see `./references/reel-patterns.md` § Two aspect ratios for what differs between them.
+
+**Before generating video, read `./references/hyperframes.md` (runtime, constraints, CLI flags), `./references/gsap-rules.md` (hard constraints — timelines must be `{ paused: true }`, no `Math.random`, no `repeat: -1`), and — for reel style — `./references/reel-patterns.md` (beat structure, kinetic typography, progressive diagram reveal, TTS + burned-in captions).** Start compositions from `./templates/hyperframes-longform.html` (16:9 long-form), `./templates/hyperframes-reel.html` (9:16 reel), or `./templates/hyperframes-reel-landscape.html` (16:9 reel).
+
+**Runtime requirements.** Hyperframes needs Node ≥ 22 and FFmpeg on PATH. The skill runs `bash {{skill_dir}}/scripts/hyperframes-doctor.sh` at the start of any video command; if it exits non-zero, abort and forward install hints to the user. Do not attempt to render with missing deps.
+
+**Verification flow is mandatory.** Video is a high-cost command.
+1. `npx hyperframes lint && npx hyperframes validate` before render (validate runs WCAG contrast audit)
+2. `npx hyperframes render --quality draft` for fast preview
+3. `bash {{skill_dir}}/scripts/extract-keyframes.sh <draft.mp4>` → 3 keyframes (start/mid/end)
+4. Show keyframes to user, ask for approval
+5. On approval: `npx hyperframes render --quality standard` for delivery
+
+Because video is high-cost, the AskUserQuestion caveat (see `./references/clarify.md`) **always fires** for video commands — even if the user's request is otherwise clear. Minimum questions: style (long-form vs reel) and duration. Bypass only on explicit `--no-ask` flag.
+
+**Video output location:** `~/.agent/videos/<slug>.mp4` (not `~/.agent/diagrams/`). Keyframes to `~/.agent/videos/<slug>/keyframes/`. Intermediate assets (narration.wav, captions.vtt) to `~/.agent/videos/<slug>/`.
 
 ## File Structure
 

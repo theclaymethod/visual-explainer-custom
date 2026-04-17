@@ -3,6 +3,8 @@ description: Verify the factual accuracy of a document against the actual codeba
 ---
 Load the visual-explainer skill, then verify the factual accuracy of a document that makes claims about a codebase. Read the file, extract every verifiable claim, check each against the actual code and git history, correct inaccuracies in place, and add a verification summary.
 
+**Clarify.** This is a Tier 2 command per `./references/clarify.md` — it operates on an existing target and has no creative choices. Do not ask questions; just verify.
+
 For HTML files: read `./references/css-patterns.md` to match the existing page's styling when inserting the verification summary.
 
 **Target file** — determine what to verify from `$1`:
