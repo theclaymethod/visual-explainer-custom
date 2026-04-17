@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/55ebc81b-8732-40f6-a4b1-7c3781aa96ec
 
 ## What's different in this fork
 
-Seven additions on top of the upstream skill. Everything else behaves the same — Mono-Industrial is still the default aesthetic, every existing command still works.
+Eight additions on top of the upstream skill. Everything else behaves the same — Mono-Industrial is still the default aesthetic, every existing command still works.
 
 ### 1. SubQ brand theme
 
@@ -109,6 +109,19 @@ Escape hatches: `--no-ask` flag, phrases like "just generate" / "use defaults", 
 
 See [`references/clarify.md`](plugins/visual-explainer/references/clarify.md) for the full policy, question-phrasing guide, and dialog templates.
 
+### 8. PDF export for slide decks and magazines
+
+`/generate-slides --pdf` renders a multi-page landscape PDF alongside the HTML (1920×1080, one slide/page per PDF page). Auto-detects vertical deck vs horizontal magazine from the DOM. Ported from the SubQ branded-infographic skill's export script and generalized.
+
+```
+/generate-slides --pdf "q2 roadmap"
+/generate-slides --magazine --pdf "quarterly engineering recap"
+```
+
+The exporter uses screenshot-and-composite rather than Chromium's native `page.pdf()`. Scroll-snap decks reliably break under native print in four interacting ways — trailing blank pages from `break-after: page` cascading past the last slide, theme toggle / progress bar / nav dots repeating on every printed page because of `position: fixed`, flex-centered Mermaid diagrams collapsing to their authored size instead of filling the slide, and live pan/zoom `transform` state leaking into the render. Per-slide `element.screenshot()` captures the live view exactly as the author intended, so none of those failure modes apply. The tradeoff is file size: ~1 MB instead of ~175 KB for a 10-slide deck, which is fine for email and still a reasonable attachment.
+
+Requires Playwright in the cwd (`npm install playwright && npx playwright install chromium`); the script fails gracefully with an install hint if it's missing. See [`plugins/visual-explainer/scripts/export-slides-pdf.mjs`](plugins/visual-explainer/scripts/export-slides-pdf.mjs) for the script itself, and [`references/slide-patterns.md`](plugins/visual-explainer/references/slide-patterns.md#pdf-export) → "PDF Export" for the full contract, flags, and troubleshooting.
+
 ## Why
 
 Every coding agent defaults to ASCII art when you ask for a diagram. Box-drawing characters, monospace alignment hacks, text arrows. It works for trivial cases, but anything beyond a 3-box flowchart turns into an unreadable mess.
@@ -183,7 +196,7 @@ Any command that produces a scrollable page supports `--slides` to generate a sl
 /generate-slides --magazine "quarterly engineering recap"
 ```
 
-Pass `--pdf` to also render a multi-page landscape PDF (1920×1080, one slide/page per PDF page). The exporter in `plugins/visual-explainer/scripts/export-slides-pdf.mjs` auto-detects vertical deck vs horizontal magazine from the DOM, screenshots each slide individually, and composites them — bypassing Chromium's scroll-snap pagination quirks (trailing blank pages, fixed-chrome repeating on every page, flex-centered Mermaid collapsing to its authored size). Requires Playwright in the cwd (`npm install playwright && npx playwright install chromium`); the script fails gracefully with an install hint if it's missing.
+Pass `--pdf` to also render a multi-page landscape PDF (1920×1080, one slide/page per PDF page). See § 8 above for the full rationale.
 
 ```
 /generate-slides --pdf "q2 roadmap"
