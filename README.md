@@ -248,9 +248,15 @@ plugins/
 
 The skill routes to the right approach automatically: Mermaid for flowcharts, CSS Grid for architecture overviews, HTML tables for data, Chart.js for dashboards.
 
+## Theme toggle
+
+Every Mono-Industrial and SubQ page ships with a three-option selector (`○ Light · ● Dark · ◐ Auto`) docked top-right. Choice persists to `localStorage` and beats the OS `prefers-color-scheme` preference; `Auto` removes the override and tracks the OS live. Mermaid diagrams re-render in the new palette on every flip — no page refresh required. The SubQ variant keys the active state off brand blue; Mono-Industrial stays monochrome (`--fg` tint only, no accent color in chrome).
+
+On hover-capable devices the pill collapses to just the active glyph and unfurls on hover. Touch devices keep all three labels visible; at ≤ 768px the pill drops to the bottom-right thumb zone with 44px targets, and at ≤ 420px it stretches full-width across the bottom.
+
 ## Responsive
 
-Every template adapts from 1440px+ desktop down to 390px mobile. The SubQ theme's toggle shifts from top-right pill to bottom-right thumb zone to full-width bottom bar at the 768px and 420px breakpoints.
+Every template adapts from 1440px+ desktop down to 390px mobile. The theme toggle shifts from top-right pill to bottom-right thumb zone to full-width bottom bar at the 768px and 420px breakpoints.
 
 <p align="center">
   <img src="docs/img/subq-roadmap-mobile.png" alt="SubQ theme on mobile" width="320">
@@ -261,7 +267,6 @@ Every template adapts from 1440px+ desktop down to 390px mobile. The SubQ theme'
 ## Limitations
 
 - Requires a browser to view HTML output
-- Mermaid SVGs re-render when the SubQ theme toggle flips, but stock Mono-Industrial diagrams still need a page refresh when OS theme changes
 - Results vary by model capability
 - Demo capture requires `ffmpeg` (always) plus either Playwright MCP or `agent-browser` (either one works)
 - Video output (`/generate-video`, `/render-video`) requires Node ≥ 22 and FFmpeg; the skill runs `hyperframes-doctor.sh` at the start of any video command and aborts with install hints if prerequisites are missing
