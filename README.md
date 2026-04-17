@@ -93,7 +93,7 @@ See [`references/hyperframes.md`](plugins/visual-explainer/references/hyperframe
 
 `/generate-slides --magazine` flips the scroll-snap axis from vertical to horizontal. Each page is 100vw × 100vh, full-bleed edge-to-edge, with nav dots at the bottom and arrow-key + swipe navigation. The cover and back cover are dark; at least three pages are dark total for rhythm; each interior page uses a different tint from the active aesthetic's ramp. Every magazine includes at least one full-bleed stat page with the primary number rendered at `clamp(160px, 22vw, 360px)` as the visual anchor.
 
-Five new layout types ship — split (left/right color-block), quadrant (2×2), full-bleed stat, dark panel, color block, and viewport-filling grid (3×2 or 4×3) — all of which also work in the vertical deck. Tints adapt to whichever aesthetic is active (MI grayscale, SubQ cream, Editorial warm-stone, Blueprint slate).
+Five new layout types ship — quadrant (2×2), full-bleed stat, dark panel, color block, and viewport-filling grid (3×2 or 4×3) — all of which also work in the vertical deck. The existing split layout (left/right color-block) gets magazine-style treatment too. Tints adapt to whichever aesthetic is active (MI grayscale, SubQ cream, Editorial warm-stone, Blueprint slate).
 
 See the Magazine Mode section in [`references/slide-patterns.md`](plugins/visual-explainer/references/slide-patterns.md) and [`templates/mono-industrial-magazine.html`](plugins/visual-explainer/templates/mono-industrial-magazine.html) for the 8-page reference implementation.
 

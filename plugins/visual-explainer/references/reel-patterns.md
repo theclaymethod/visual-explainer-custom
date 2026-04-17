@@ -103,7 +103,7 @@ Word-by-word is the workhorse. Use line-by-line for longer claims that exceed 5â
 
 ---
 
-## Progressive Diagram Reveal â€” the Killer Feature
+## Progressive Diagram Reveal
 
 For the MECHANISM beat. An inline SVG diagram (authored per `diagrams-svg.md` rules) draws itself node-by-node, then arrow-by-arrow, then labels appear last.
 

@@ -471,7 +471,6 @@
     const counterCurrent = document.getElementById("counter-current");
     const counterTotal = document.getElementById("counter-total");
 
-    // Generate dots
     pages.forEach((_, i) => {
       const btn = document.createElement("button");
       btn.className = "nav-dot" + (i === 0 ? " active" : "");
@@ -485,7 +484,6 @@
 
     counterTotal.textContent = String(pages.length).padStart(2, "0");
 
-    // Sync dot highlight + counter on scroll snap
     const io = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
@@ -502,7 +500,6 @@
 
     pages.forEach((p) => io.observe(p));
 
-    // Keyboard nav
     document.addEventListener("keydown", (e) => {
       const w = window.innerWidth;
       if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
