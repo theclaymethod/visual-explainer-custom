@@ -103,29 +103,58 @@ Two layers: **brand color constants** (never change) and **semantic role tokens*
 }
 ```
 
-### Semantic roles — light (`prefers-color-scheme: light`)
+### Semantic roles — light
+
+Applied by the OS preference (`@media (prefers-color-scheme: light)`) OR the explicit toggle override (`:root[data-theme="light"]`). The toggle's override beats the media query so a user on a dark OS can still pin a page to light.
 
 ```css
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
     --bg:            var(--subq-cream);
     --panel:         var(--subq-black);   /* panel inverts: black on cream page */
     --panel-text:    var(--subq-cream);
     --panel-text-dim: rgba(255, 250, 243, 0.80);
     --panel-label:   rgba(255, 250, 243, 0.55);
-
     --text-display:   var(--subq-black);
     --text-primary:   rgba(0, 0, 0, 0.88);
-    --text-secondary: var(--subq-charcoal);  /* charcoal replaces tan */
+    --text-secondary: var(--subq-charcoal);
     --text-disabled:  rgba(0, 0, 0, 0.36);
-
     --rule:        rgba(59, 54, 45, 0.16);
     --rule-strong: rgba(59, 54, 45, 0.32);
     --grid-line:   rgba(0, 0, 0, 0.06);
     --ghost:       rgba(0, 0, 0, 0.10);
   }
 }
+
+/* Explicit toggle overrides — beat the media query either way */
+:root[data-theme="light"] { /* same tokens as the light block above */ }
+:root[data-theme="dark"]  { /* same tokens as the canonical dark block */ }
 ```
+
+### Theme toggle (light / dark / system)
+
+Every SubQ page ships with a three-way selector floating at the top-right:
+
+```html
+<div class="theme-toggle" role="radiogroup" aria-label="Theme">
+  <button type="button" role="radio" data-theme="light"  aria-checked="false">Light</button>
+  <button type="button" role="radio" data-theme="dark"   aria-checked="false">Dark</button>
+  <button type="button" role="radio" data-theme="system" aria-checked="true">System</button>
+</div>
+```
+
+The toggle:
+
+- Sits at `position: fixed; top: 64px; right: 32px;` — directly below the top-right cross mark, clear of the nav.
+- Fades to **opacity 0.32** when idle, returns to **1.0** on hover / focus-within. No JS timer — CSS transition handles it.
+- Writes the choice to `localStorage` under `subq-theme` and sets `document.documentElement.dataset.theme` to `"light"` or `"dark"`. "System" removes the attribute and the storage key, falling back to `prefers-color-scheme`.
+- On mobile (<768px), collapses to `bottom: 24px; right: 24px;` at a higher resting opacity (0.55) since phones don't afford a hover state.
+
+**Mermaid re-renders on change.** The diagram reads its palette from the same source of truth (`effectiveMode()` checks `data-theme` first, then `prefers-color-scheme`). On toggle click, the script stashes each block's original source, clears `data-processed`, and calls `mermaid.run()` again so the nodes flip color without a page reload.
+
+**Live OS tracking in System mode.** When the user has no override set, the script listens to the `change` event on `matchMedia('(prefers-color-scheme: light)')` and re-themes Mermaid live if the OS flips.
+
+**Page-level default.** One-off pages can start in a specific mode by setting `<html lang="en" data-theme="light">` (or `dark`) in the markup. If a user has previously saved a preference, that wins — they get what they chose on their last visit.
 
 ### Inversion rules
 

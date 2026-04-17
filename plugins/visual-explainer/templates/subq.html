@@ -93,11 +93,15 @@
     --size-caption:  11px;
   }
 
-  /* Semantic role tokens — LIGHT mode (inverts neutrals; accents unchanged) */
+  /* Semantic role tokens — LIGHT mode.
+     Applied when:
+       (1) OS preference is light AND no explicit override (system mode), OR
+       (2) user has picked "light" via the theme toggle ([data-theme="light"]).
+     The [data-theme="dark"] override below forces dark regardless of OS. */
   @media (prefers-color-scheme: light) {
-    :root {
+    :root:not([data-theme="dark"]) {
       --bg:            var(--subq-cream);
-      --panel:         var(--subq-black);   /* black contrast panel on cream page */
+      --panel:         var(--subq-black);
       --panel-text:    var(--subq-cream);
       --panel-text-dim: rgba(255, 250, 243, 0.80);
       --panel-label:   rgba(255, 250, 243, 0.55);
@@ -112,6 +116,38 @@
       --grid-line:   rgba(0, 0, 0, 0.06);
       --ghost:       rgba(0, 0, 0, 0.10);
     }
+  }
+
+  /* Explicit overrides from the theme toggle (beat the media query) */
+  :root[data-theme="light"] {
+    --bg:            var(--subq-cream);
+    --panel:         var(--subq-black);
+    --panel-text:    var(--subq-cream);
+    --panel-text-dim: rgba(255, 250, 243, 0.80);
+    --panel-label:   rgba(255, 250, 243, 0.55);
+    --text-display:   var(--subq-black);
+    --text-primary:   rgba(0, 0, 0, 0.88);
+    --text-secondary: var(--subq-charcoal);
+    --text-disabled:  rgba(0, 0, 0, 0.36);
+    --rule:        rgba(59, 54, 45, 0.16);
+    --rule-strong: rgba(59, 54, 45, 0.32);
+    --grid-line:   rgba(0, 0, 0, 0.06);
+    --ghost:       rgba(0, 0, 0, 0.10);
+  }
+  :root[data-theme="dark"] {
+    --bg:            var(--subq-black);
+    --panel:         var(--subq-cream);
+    --panel-text:    var(--subq-black);
+    --panel-text-dim: rgba(0, 0, 0, 0.70);
+    --panel-label:   rgba(0, 0, 0, 0.55);
+    --text-display:   #ffffff;
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: var(--subq-tan);
+    --text-disabled:  rgba(255, 255, 255, 0.30);
+    --rule:        rgba(183, 169, 154, 0.20);
+    --rule-strong: rgba(183, 169, 154, 0.40);
+    --grid-line:   rgba(255, 255, 255, 0.05);
+    --ghost:       rgba(255, 255, 255, 0.12);
   }
 
   /* ============ RESET ============ */
@@ -154,6 +190,58 @@
   .subq-crossmark--bl { bottom: 32px; left: 32px;   color: var(--subq-orange); }
   .subq-crossmark--br { bottom: 32px; right: 32px;  color: var(--subq-green);  }
   @media (max-width: 768px) { .subq-crossmark { display: none; } }
+
+  /* ============ THEME TOGGLE ============
+     Sits below the top-right cross mark. Fades to ~30% opacity when idle,
+     comes to full on hover or focus. Three options: Light / Dark / System. */
+  .theme-toggle {
+    position: fixed;
+    top: 64px;
+    right: 32px;
+    z-index: 99;
+    display: flex;
+    align-items: stretch;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--bg) 72%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0.32;
+    transition: opacity 220ms ease-out;
+  }
+  .theme-toggle:hover,
+  .theme-toggle:focus-within { opacity: 1; }
+
+  .theme-toggle button {
+    appearance: none;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 0;
+    padding: 6px 11px;
+    font: inherit;
+    text-transform: uppercase;
+    letter-spacing: inherit;
+    cursor: pointer;
+    transition: color 120ms ease-out, background 120ms ease-out;
+  }
+  .theme-toggle button + button { border-left: 1px solid var(--rule); }
+  .theme-toggle button:hover { color: var(--text-display); }
+  .theme-toggle button:focus-visible {
+    outline: 1px solid var(--subq-blue);
+    outline-offset: -1px;
+  }
+  .theme-toggle button[aria-checked="true"] {
+    color: var(--text-display);
+    background: color-mix(in srgb, var(--text-display) 10%, transparent);
+  }
+
+  @media (max-width: 768px) {
+    .theme-toggle { top: auto; bottom: 24px; right: 24px; opacity: 0.55; }
+  }
 
   /* ============ NAV ============ */
   .subq-nav {
@@ -524,6 +612,13 @@
 <span class="subq-crossmark subq-crossmark--bl">+</span>
 <span class="subq-crossmark subq-crossmark--br">+</span>
 
+<!-- Theme toggle: light / dark / system. Persists choice to localStorage. -->
+<div class="theme-toggle" role="radiogroup" aria-label="Theme">
+  <button type="button" role="radio" data-theme="light"  aria-checked="false">Light</button>
+  <button type="button" role="radio" data-theme="dark"   aria-checked="false">Dark</button>
+  <button type="button" role="radio" data-theme="system" aria-checked="true">System</button>
+</div>
+
 <header class="subq-nav">
   <span class="subq-logotype">Subquadratic</span>
   <nav class="subq-navlinks">
@@ -772,23 +867,31 @@ microphone.pipe(session.write);
   </div>
 </footer>
 
-<!-- Mermaid — theme follows prefers-color-scheme so the diagram matches the rest of the page. -->
+<!-- Theme toggle + Mermaid.
+     The toggle writes [data-theme="light"|"dark"] to <html>, or removes it for
+     "system" (fall through to prefers-color-scheme). Mermaid picks its theme
+     from the same source of truth and re-renders when the user flips modes. -->
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
-  const isLight    = matchMedia('(prefers-color-scheme: light)').matches;
-  const nodeFill   = isLight ? '#fffaf3' : '#000000';
-  const nodeBorder = isLight ? '#3b362d' : '#b7a99a';
-  const nodeText   = isLight ? '#000000' : '#ffffff';
-  const edgeColor  = isLight ? 'rgba(59, 54, 45, 0.55)'  : 'rgba(183, 169, 154, 0.55)';
-  const clusterBd  = isLight ? 'rgba(59, 54, 45, 0.18)'  : 'rgba(183, 169, 154, 0.20)';
-  const tertiary   = isLight ? '#b7a99a' : '#3b362d';
+  const html = document.documentElement;
+  const STORAGE_KEY = 'subq-theme';
 
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: 'base',
-    look: 'classic',
-    themeVariables: {
+  function effectiveMode() {
+    const forced = html.dataset.theme;
+    if (forced === 'light' || forced === 'dark') return forced;
+    return matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+
+  function mermaidTheme() {
+    const isLight    = effectiveMode() === 'light';
+    const nodeFill   = isLight ? '#fffaf3' : '#000000';
+    const nodeBorder = isLight ? '#3b362d' : '#b7a99a';
+    const nodeText   = isLight ? '#000000' : '#ffffff';
+    const edgeColor  = isLight ? 'rgba(59, 54, 45, 0.55)'  : 'rgba(183, 169, 154, 0.55)';
+    const clusterBd  = isLight ? 'rgba(59, 54, 45, 0.18)'  : 'rgba(183, 169, 154, 0.20)';
+    const tertiary   = isLight ? '#b7a99a' : '#3b362d';
+    return {
       fontFamily: "'Manrope', system-ui, sans-serif",
       fontSize: '15px',
       background: nodeFill,
@@ -801,7 +904,65 @@ microphone.pipe(session.write);
       clusterBorder: clusterBd,
       mainBkg: nodeFill,
       edgeLabelBackground: nodeFill,
+    };
+  }
+
+  // Stash each Mermaid block's source so we can re-render on theme change.
+  // Source comes from the page author (template), not user input — but using
+  // textContent here keeps it unambiguous for the XSS linter.
+  document.querySelectorAll('pre.mermaid').forEach(el => {
+    el.dataset.source = el.textContent;
+  });
+
+  function initMermaid() {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      look: 'classic',
+      themeVariables: mermaidTheme(),
+    });
+  }
+
+  async function renderMermaid() {
+    initMermaid();
+    document.querySelectorAll('pre.mermaid').forEach(el => {
+      el.textContent = el.dataset.source;
+      el.removeAttribute('data-processed');
+    });
+    await mermaid.run({ querySelector: 'pre.mermaid' });
+  }
+
+  renderMermaid();
+
+  // Theme toggle wiring
+  const toggle = document.querySelector('.theme-toggle');
+  const buttons = toggle ? [...toggle.querySelectorAll('button')] : [];
+
+  function applyMode(choice) {
+    if (choice === 'system') {
+      delete html.dataset.theme;
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      html.dataset.theme = choice;
+      localStorage.setItem(STORAGE_KEY, choice);
     }
+    buttons.forEach(b => {
+      b.setAttribute('aria-checked', String(b.dataset.theme === choice));
+    });
+    renderMermaid();
+  }
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  const initial = saved === 'light' || saved === 'dark' ? saved : 'system';
+  if (initial !== 'system') html.dataset.theme = initial;
+  buttons.forEach(b => {
+    b.setAttribute('aria-checked', String(b.dataset.theme === initial));
+    b.addEventListener('click', () => applyMode(b.dataset.theme));
+  });
+
+  // In "system" mode, follow OS changes live.
+  matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+    if (!html.dataset.theme) renderMermaid();
   });
 </script>
 
