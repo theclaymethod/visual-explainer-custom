@@ -23,25 +23,25 @@ Ask your agent to explain a system architecture, review a diff, or compare requi
   <em>Long-form explainer generated via <code>/generate-video --style=long-form</code>. Local render — no cloud, no API keys.</em>
 </p>
 
+<p align="center">
+  <img src="docs/img/mi-readme-light.png" alt="Mono-Industrial aesthetic — light mode" width="820">
+  <br>
+  <em>Mono-Industrial — the default aesthetic. Space Grotesk display, Space Mono labels, optional Geist Pixel Square for one moment of surprise per page. Grayscale canvas, status colors only on values.</em>
+</p>
+
+<p align="center">
+  <img src="docs/img/mi-readme-dark.png" alt="Mono-Industrial aesthetic — dark mode" width="820">
+  <br>
+  <em>Same page, dark mode. The aesthetic inverts cleanly through semantic role tokens — hierarchy stays anchored to type scale and spacing, never color.</em>
+</p>
+
 ## What's different in this fork
 
 Eight additions on top of the upstream skill. Everything else behaves the same — Mono-Industrial is still the default aesthetic, every existing command still works.
 
 ### 1. SubQ brand theme
 
-A named alternative aesthetic for pages that need to live inside Subquadratic surfaces. Serif display (Libre Baskerville) + sans body (Manrope) + monospace labels (Roboto Mono) + Roboto Serif Semi-Bold wordmark. Pixel-block accent system, cross-mark corner anchors, 40px grid texture on hero, ghost wordmark footer. Full light / dark / auto support.
-
-<p align="center">
-  <img src="docs/img/subq-roadmap-light.png" alt="SubQ theme — light mode" width="820">
-  <br>
-  <em>Light mode: cream canvas, black contrast panel, blue CTA. Theme toggle at top-right (collapsed on hover-capable devices).</em>
-</p>
-
-<p align="center">
-  <img src="docs/img/subq-roadmap-dark.png" alt="SubQ theme — dark mode" width="820">
-  <br>
-  <em>Dark mode: same page, same layout, inverted neutrals. Accent palette (yellow / blue / orange / green) stays identical across modes.</em>
-</p>
+A named alternative aesthetic for pages that need to live inside Subquadratic surfaces. Serif display (Libre Baskerville) + sans body (Manrope) + monospace labels (Roboto Mono) + Roboto Serif Semi-Bold wordmark. Pixel-block accent system, cross-mark corner anchors, 40px grid texture on hero, ghost wordmark footer. Full light / dark / auto support — cream canvas + black contrast panel + blue CTA in light, inverted neutrals in dark, accent palette (yellow / blue / orange / green) identical across modes.
 
 **Triggers.** The agent activates SubQ when you mention "subq", "subquadratic", "the SubQ brand", or "our brand" in a Subquadratic context. Otherwise Mono-Industrial stays the default.
 
