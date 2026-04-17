@@ -160,6 +160,7 @@ Every SubQ page ships with a three-option selector floating at the top-right. Ea
 - **Resting** — labels sit in `var(--text-secondary)`, no pill fill.
 - **Hover / focus** on an individual button — label flips to `var(--text-display)` in 180ms.
 - **Active (aria-checked)** — label in `var(--text-display)` plus a SubQ-blue tinted pill (`color-mix(in srgb, var(--subq-blue) 14%, transparent)`). The blue connects visually to the primary CTA — "selected" and "primary action" share one accent, which is intentional.
+- **Collapsed by default on hover-capable devices.** Only the three glyphs show; labels animate out via `max-width` + `opacity` under `@media (hover: hover) and (pointer: fine)`. Hovering or focusing the pill expands it — labels unfurl over 280ms. Touch devices skip the collapse block entirely since they have no hover affordance, so labels are permanently visible there.
 - **Entrance** — opacity 0 → 1 with a 4px translateY slide, over 520ms, delayed 300ms after page load. Honors `prefers-reduced-motion: reduce`. This is SubQ's one sanctioned exception to the "zero on-load motion" rule because the toggle is the page's only interactive affordance; users need a cue that it exists.
 
 **Responsive behavior (the /adapt pass):**

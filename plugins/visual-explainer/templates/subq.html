@@ -241,12 +241,21 @@
     color: var(--text-secondary);
     cursor: pointer;
     border-radius: 999px;
-    transition: color 180ms ease-out, background 180ms ease-out;
+    transition: color 180ms ease-out, background 180ms ease-out,
+                padding 240ms ease-out, gap 240ms ease-out;
   }
   .theme-toggle__glyph {
     font-family: 'Roboto Mono', 'Apple Symbols', monospace;
     font-size: 12px;
     line-height: 1;
+  }
+  .theme-toggle__label {
+    display: inline-block;
+    max-width: 80px;
+    opacity: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 280ms ease-out, opacity 200ms ease-out 40ms;
   }
   .theme-toggle button:hover { color: var(--text-display); }
   .theme-toggle button[aria-checked="true"] {
@@ -259,9 +268,25 @@
     outline-offset: 2px;
   }
 
+  /* Hover-capable devices: collapse to glyphs-only by default, unfurl labels
+     on hover/focus-within. Touch devices skip this block entirely — labels
+     are always visible since there's no hover affordance. */
+  @media (hover: hover) and (pointer: fine) {
+    .theme-toggle button { padding: 7px 9px; gap: 0; }
+    .theme-toggle__label { max-width: 0; opacity: 0; }
+    .theme-toggle:hover button,
+    .theme-toggle:focus-within button { padding: 7px 12px; gap: 6px; }
+    .theme-toggle:hover .theme-toggle__label,
+    .theme-toggle:focus-within .theme-toggle__label {
+      max-width: 80px;
+      opacity: 1;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .theme-toggle { animation: none; opacity: 1; transform: none; }
-    .theme-toggle button { transition: none; }
+    .theme-toggle button,
+    .theme-toggle__label { transition: none; }
   }
 
   /* Tablet / phone: move to bottom-right, enforce 44px touch targets. */
@@ -669,15 +694,15 @@
 <div class="theme-toggle" role="radiogroup" aria-label="Theme">
   <button type="button" role="radio" data-theme="light"  aria-checked="false">
     <span class="theme-toggle__glyph" aria-hidden="true">&#9675;</span>
-    <span>Light</span>
+    <span class="theme-toggle__label">Light</span>
   </button>
   <button type="button" role="radio" data-theme="dark"   aria-checked="false">
     <span class="theme-toggle__glyph" aria-hidden="true">&#9679;</span>
-    <span>Dark</span>
+    <span class="theme-toggle__label">Dark</span>
   </button>
   <button type="button" role="radio" data-theme="system" aria-checked="true">
     <span class="theme-toggle__glyph" aria-hidden="true">&#9680;</span>
-    <span>Auto</span>
+    <span class="theme-toggle__label">Auto</span>
   </button>
 </div>
 
@@ -1015,8 +1040,14 @@ microphone.pipe(session.write);
   }
 
   const saved = localStorage.getItem(STORAGE_KEY);
-  const initial = saved === 'light' || saved === 'dark' ? saved : 'system';
-  if (initial !== 'system') html.dataset.theme = initial;
+  // Saved preference wins; otherwise fall back to whatever the markup
+  // declared (<html data-theme="…">) or 'system' if nothing was set.
+  const markup = html.dataset.theme;
+  const initial = saved === 'light' || saved === 'dark'
+    ? saved
+    : (markup === 'light' || markup === 'dark' ? markup : 'system');
+  if (initial === 'system') delete html.dataset.theme;
+  else html.dataset.theme = initial;
   buttons.forEach(b => {
     b.setAttribute('aria-checked', String(b.dataset.theme === initial));
     b.addEventListener('click', () => applyMode(b.dataset.theme));
