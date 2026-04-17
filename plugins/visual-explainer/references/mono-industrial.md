@@ -140,6 +140,38 @@ Grayscale carries hierarchy. **Status is the only color on the page** — succes
 
 **Forbidden:** gradients in chrome, gradient text, colored cards, colored borders (except status), colored row backgrounds, accent-dim washes. Nothing tinted. If you're about to add an accent color because the page feels "too quiet," the page is working. Leave it.
 
+### Theme toggle (light / dark / auto) — required on every page
+
+Every Mono-Industrial page ships with a three-option selector (`Light` · `Dark` · `Auto`) docked to the top-right corner. This mirrors the SubQ pattern, but the active state uses `--fg` (monochrome) instead of brand blue — the whole aesthetic forbids accent color in chrome.
+
+- **Icons are inline SVG**, not Unicode glyphs (`○ ● ◐` drift across fonts). All three share `r=5` at viewBox `16×16`, rendered at `12×12`, so the outer bounds line up pixel-for-pixel.
+- **Dock**: desktop fixed top-right (`top: 24px; right: 24px`); tablet/phone swap to bottom-right with 44px touch targets; narrow phone stretches full-width across the bottom.
+- **Collapse at rest**: on hover-capable devices the pill collapses to the active indicator only; unfurls on `:hover` / `:focus-within`. Touch devices keep all three labels visible (no hover affordance).
+- **Active tint**: `color-mix(in srgb, var(--fg) 10%, transparent)`. Never a new color. The label flips to `var(--text-display)`.
+- **Persistence**: writes the choice to `localStorage` under `mono-industrial-theme`. `"system"` removes the key and falls back to `prefers-color-scheme`. A saved preference wins over the markup default.
+- **Mermaid re-renders on toggle change.** Diagrams read their palette from `effectiveMode()` (which checks `data-theme` first, then the OS). On toggle click, the script clears `data-processed`, restores each block's stashed source, and calls `mermaid.run()` so nodes flip color without a page reload.
+- **Live OS tracking in system mode.** The script listens to `matchMedia('(prefers-color-scheme: dark)')` and re-themes Mermaid if the OS flips while `data-theme` is unset.
+- **Page-level default** (optional): `<html lang="en" data-theme="light">` or `"dark"` in the markup pins the default, but a user's saved preference still wins on return visits.
+
+### Token gating for the toggle
+
+The standard `prefers-color-scheme` media query must be gated with `:not([data-theme="opposite-mode"])` so the toggle can override the OS. Then add an explicit `:root[data-theme="light|dark"]` override block that beats the media query either way.
+
+```css
+/* Dark page, light inversion — the pattern used in mono-industrial-slides.html */
+:root { /* dark values */ }
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { /* light values */ }
+}
+
+:root[data-theme="light"] { /* light values (duplicated — explicit override) */ }
+```
+
+The reverse applies if the page is light-first (`:root` = light, `@media (prefers-color-scheme: dark)` gated with `:not([data-theme="light"])`, `:root[data-theme="dark"]` explicit override).
+
+The reference templates (`./templates/mono-industrial.html` and `./templates/mono-industrial-slides.html`) show the full wiring — CSS tokens, chrome, markup, and script.
+
 ---
 
 ## 5. Spacing as Structure
@@ -377,6 +409,10 @@ Run through this list before generating. If any answer is no, stop and revise.
 - [ ] Does the squint test pass (hierarchy legible even when blurred)?
 - [ ] Did I default to spacing over containers, and hairlines over boxes?
 - [ ] Do my metadata labels read like instrument panel callouts (Space Mono, ALL CAPS)?
+- [ ] Does the page ship the Light / Dark / Auto toggle (top-right desktop, bottom-right mobile), wired to `localStorage` and `data-theme` overrides?
+- [ ] Are the color tokens gated so the toggle's `data-theme` actually beats `prefers-color-scheme`?
+- [ ] Does Mermaid re-render on toggle change (theme read from `effectiveMode()`, `data-processed` cleared, sources stashed)?
+- [ ] Have I verified the page in BOTH modes before delivering?
 
 ---
 

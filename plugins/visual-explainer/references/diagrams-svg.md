@@ -40,6 +40,7 @@ Run this checklist before emitting any SVG diagram. If any answer is "no," the d
 
 **Technical**
 - [ ] Are arrows drawn before nodes in z-order (so nodes sit on top of lines)?
+- [ ] Is every arrow endpoint computed from its node's bounding box with a 6–10px air gap (never placed by eye, never landing inside a node)?
 - [ ] Does every arrow label have an opaque paper-colored rect behind it (so it doesn't collide with strokes)?
 - [ ] Is the legend a horizontal strip at the bottom of the SVG (never floating inside)?
 - [ ] Is there no vertical `writing-mode` text on arrows?
@@ -227,6 +228,17 @@ Define three markers in `<defs>`:
 ### Z-order
 Draw arrows first, nodes second. This is a hard rule. Nodes must sit on top of lines, not the other way around.
 
+### Arrow endpoint anchoring
+Arrows terminate at the **outer edge** of a node's bounding box, never at its center, never at an arbitrary offset that happens to land inside the node. A 6–10px air gap between arrowhead tip and node border keeps the arrow visually detached from the border stroke.
+
+Compute endpoints from the node's own geometry, not by eyeballing coordinates:
+
+- **Rect node at `(x, y, w, h)`** → right-edge anchor is `(x + w + gap, y + h/2)`; left-edge anchor is `(x - gap, y + h/2)`; top/bottom mirror this.
+- **Diamond node centered at `(cx, cy)` with half-width `hw`, half-height `hh`** → right tip is `(cx + hw + gap, cy)`; bottom tip is `(cx, cy + hh + gap)`.
+- **Ellipse/pill** → project from center along the connector angle to the ellipse boundary, then add `gap`.
+
+If the arrow must route around a sibling node, add an orthogonal elbow (one or two right-angle segments) rather than letting a diagonal segment graze other nodes. An arrow that originates or terminates **visually inside** any node — its own or a neighbor — is a routing bug, not a styling choice.
+
 ### Arrow label masking
 Every arrow label is preceded by a small `<rect>` filled with the paper color, slightly larger than the label's bounding box. Prevents the label from colliding with the stroke it sits on.
 
@@ -286,6 +298,7 @@ For every figure, verify:
 
 - **Annotation callouts: leader must visibly connect text to its target node.** Never float to empty whitespace. The leader ends at a landing dot, and the callout text reads continuously from that dot (or sits immediately adjacent). If the leader lands far from the text, or the text sits visually detached below/above an orphan dot, the callout has failed its primitive contract and must be repaired.
 - **Arrow labels sit on paper-colored masking rects**, not on bare strokes. No collision between label glyphs and the arrow they label.
+- **Arrow endpoints land in the air gap outside each node's border**, never inside the node's text box. Trace every arrow from tail to head: if the stroke passes through a node's name, sublabel, or eyebrow kicker (including the source node's own label), the endpoint is wrong — repair with the Arrow endpoint anchoring rule above.
 - **Bottom horizontal legend strip**, separated from the diagram body by a hairline rule (`var(--rule)`). Legend items match what is actually drawn above — no ghost items, no missing items.
 - **≤ 2 accent uses per diagram.** Accent lives on exactly one focal element plus at most one supporting cue (e.g., the happy-path arrow).
 - **Z-order: arrows drawn before nodes.** Nodes sit on top of lines, not the other way around. If you see an arrowhead covering a node label, z-order is wrong.
@@ -308,6 +321,7 @@ For every figure, verify:
 |---|---|
 | Leader lands in empty whitespace | Reroute the path so it terminates at a landing dot adjacent to the callout text. Prefer approaching the dot from a direction that keeps the last segment short. |
 | Leader crosses another node or label | Reroute via a control point that takes the curve around the obstacle. Start from a different edge of the source node (bottom/side) if needed. |
+| Arrow passes through a node's text (its own or a neighbor's) | Recompute the endpoint from the node's bounding box with a 6–10px air gap (see Arrow endpoint anchoring). Never set arrow `x`/`y` by eye — derive them from the node's `x + w` / `x - gap` / `y + h/2`. If the source and target overlap on the chosen axis, add an orthogonal elbow so no segment grazes another node's body. |
 | Label colliding with arrow stroke | Enlarge the masking `<rect>` behind the label. Mask width should exceed the glyph bounds by ~4px each side. |
 | Legend lists an item not in the diagram | Remove the legend entry, or add the missing element to the diagram body. |
 | Density forces overlapping text | Drop a node per the Removal Test, or split into two diagrams. If neither is acceptable, escalate to Mermaid. |

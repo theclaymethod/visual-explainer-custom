@@ -58,8 +58,12 @@
     --mermaid-container: #0c0c0c;
   }
 
+  /* Light mode applies when:
+       (1) OS prefers light AND no explicit override, OR
+       (2) the user picked "light" via the theme toggle ([data-theme="light"]).
+     The [data-theme="dark"] override pins the page to dark regardless of OS. */
   @media (prefers-color-scheme: light) {
-    :root {
+    :root:not([data-theme="dark"]) {
       --bg: #f6f4f0;
       --fg: #16130f;
       --text-display: rgba(22, 19, 15, 1.00);
@@ -73,6 +77,129 @@
       --err:  #a51818;
       --mermaid-container: #ffffff;
     }
+  }
+
+  /* Explicit toggle override — beats the media query either way. */
+  :root[data-theme="light"] {
+    --bg: #f6f4f0;
+    --fg: #16130f;
+    --text-display: rgba(22, 19, 15, 1.00);
+    --text-primary: rgba(22, 19, 15, 0.90);
+    --text-secondary: rgba(22, 19, 15, 0.56);
+    --text-disabled: rgba(22, 19, 15, 0.36);
+    --rule: rgba(22, 19, 15, 0.12);
+    --rule-strong: rgba(22, 19, 15, 0.24);
+    --ok:   #2f7a3e;
+    --warn: #b36b00;
+    --err:  #a51818;
+    --mermaid-container: #ffffff;
+  }
+
+  /* ============ THEME TOGGLE ============
+     Same chrome as ./mono-industrial.html. Docked top-right on desktop,
+     bottom-right on mobile. Mono-Industrial accent: --fg tint, no brand blue. */
+  .theme-toggle {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 99;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: color-mix(in srgb, var(--fg) 4%, transparent);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    transition: background 240ms ease-out, border-color 240ms ease-out,
+                padding 260ms ease-out, gap 260ms ease-out;
+  }
+  .theme-toggle:hover,
+  .theme-toggle:focus-within {
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+    border-color: var(--rule-strong);
+  }
+  .theme-toggle button {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 7px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 999px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: color 180ms ease-out, background 180ms ease-out,
+                padding 260ms ease-out, gap 240ms ease-out,
+                max-width 320ms ease-out, opacity 220ms ease-out;
+  }
+  .theme-toggle__glyph { display: block; flex-shrink: 0; width: 12px; height: 12px; }
+  .theme-toggle__label {
+    display: inline-block;
+    max-width: 80px;
+    opacity: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 300ms ease-out, opacity 220ms ease-out 40ms;
+  }
+  .theme-toggle button:hover { color: var(--text-display); }
+  .theme-toggle button[aria-checked="true"] {
+    color: var(--text-display);
+    background: color-mix(in srgb, var(--fg) 10%, transparent);
+  }
+  .theme-toggle button:focus-visible {
+    outline: 1px solid var(--text-display);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .theme-toggle { gap: 0; padding: 3px; }
+    .theme-toggle button:not([aria-checked="true"]) { max-width: 0; padding: 0; opacity: 0; }
+    .theme-toggle button[aria-checked="true"] { background: transparent; padding: 7px; gap: 0; }
+    .theme-toggle button[aria-checked="true"] .theme-toggle__label { max-width: 0; opacity: 0; }
+    .theme-toggle:hover, .theme-toggle:focus-within { padding: 4px; gap: 2px; }
+    .theme-toggle:hover button:not([aria-checked="true"]),
+    .theme-toggle:focus-within button:not([aria-checked="true"]) {
+      max-width: 120px; padding: 7px 12px; opacity: 1;
+    }
+    .theme-toggle:hover button[aria-checked="true"],
+    .theme-toggle:focus-within button[aria-checked="true"] {
+      background: color-mix(in srgb, var(--fg) 10%, transparent);
+      padding: 7px 12px; gap: 6px;
+    }
+    .theme-toggle:hover button[aria-checked="true"] .theme-toggle__label,
+    .theme-toggle:focus-within button[aria-checked="true"] .theme-toggle__label {
+      max-width: 80px; opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle button,
+    .theme-toggle__label { transition: none; }
+  }
+  @media (max-width: 768px) {
+    .theme-toggle {
+      top: auto; bottom: 24px; right: 24px;
+      padding: 6px; gap: 6px;
+    }
+    .theme-toggle button {
+      padding: 12px 14px; min-height: 44px; font-size: 12px;
+    }
+    .theme-toggle__glyph { width: 13px; height: 13px; }
+  }
+  @media (max-width: 420px) {
+    .theme-toggle {
+      left: 16px; right: 16px; bottom: 16px;
+      justify-content: space-around;
+    }
+    .theme-toggle button { flex: 1; justify-content: center; }
   }
 
   /* ============ RESET ============ */
@@ -638,6 +765,30 @@
 </head>
 <body>
 
+<!-- Theme toggle: Light / Dark / Auto. Choice persists to localStorage. -->
+<div class="theme-toggle" role="radiogroup" aria-label="Theme">
+  <button type="button" role="radio" data-theme="light"  aria-checked="false">
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <span class="theme-toggle__label">Light</span>
+  </button>
+  <button type="button" role="radio" data-theme="dark"   aria-checked="false">
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <span class="theme-toggle__label">Dark</span>
+  </button>
+  <button type="button" role="radio" data-theme="system" aria-checked="true">
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M 8 3 A 5 5 0 0 1 8 13 Z" fill="currentColor"/>
+    </svg>
+    <span class="theme-toggle__label">Auto</span>
+  </button>
+</div>
+
+
 <div class="deck">
 
   <!-- SLIDE 1 — TITLE -->
@@ -889,18 +1040,22 @@ graph LR
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const html = document.documentElement;
+  const STORAGE_KEY = 'mono-industrial-theme';
 
-  const nodeFill   = isDark ? '#000000' : '#ffffff';
-  const nodeBorder = isDark ? 'rgba(242, 237, 229, 0.58)' : 'rgba(22, 19, 15, 0.56)';
-  const nodeText   = isDark ? 'rgba(242, 237, 229, 0.95)' : 'rgba(22, 19, 15, 0.95)';
-  const edgeColor  = isDark ? 'rgba(242, 237, 229, 0.40)' : 'rgba(22, 19, 15, 0.40)';
+  function effectiveMode() {
+    const forced = html.dataset.theme;
+    if (forced === 'light' || forced === 'dark') return forced;
+    return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
 
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: 'base',
-    look: 'classic',
-    themeVariables: {
+  function mermaidTheme() {
+    const isDark = effectiveMode() === 'dark';
+    const nodeFill   = isDark ? '#000000' : '#ffffff';
+    const nodeBorder = isDark ? 'rgba(242, 237, 229, 0.58)' : 'rgba(22, 19, 15, 0.56)';
+    const nodeText   = isDark ? 'rgba(242, 237, 229, 0.95)' : 'rgba(22, 19, 15, 0.95)';
+    const edgeColor  = isDark ? 'rgba(242, 237, 229, 0.40)' : 'rgba(22, 19, 15, 0.40)';
+    return {
       primaryColor: nodeFill,
       primaryBorderColor: nodeBorder,
       primaryTextColor: nodeText,
@@ -916,7 +1071,21 @@ graph LR
       noteBkgColor: nodeFill,
       noteTextColor: nodeText,
       noteBorderColor: nodeBorder,
-    }
+    };
+  }
+
+  function initMermaid() {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      look: 'classic',
+      themeVariables: mermaidTheme(),
+    });
+  }
+
+  // Preserve each block's source so theme flips can re-render cleanly.
+  document.querySelectorAll('pre.mermaid, div.mermaid').forEach(el => {
+    el.dataset.source = el.textContent.trim();
   });
 
   function autoFit() {
@@ -928,9 +1097,52 @@ graph LR
     });
   }
 
-  mermaid.run().then(function() {
+  async function renderMermaid() {
+    initMermaid();
+    document.querySelectorAll('pre.mermaid, div.mermaid').forEach(el => {
+      if (el.dataset.source) el.textContent = el.dataset.source;
+      el.removeAttribute('data-processed');
+    });
+    await mermaid.run();
     autoFit();
+  }
+
+  renderMermaid().then(function() {
     new SlideEngine();
+  });
+
+  // ============ THEME TOGGLE WIRING ============
+  const toggle = document.querySelector('.theme-toggle');
+  const buttons = toggle ? [...toggle.querySelectorAll('button')] : [];
+
+  function applyMode(choice) {
+    if (choice === 'system') {
+      delete html.dataset.theme;
+      localStorage.removeItem(STORAGE_KEY);
+    } else {
+      html.dataset.theme = choice;
+      localStorage.setItem(STORAGE_KEY, choice);
+    }
+    buttons.forEach(b => {
+      b.setAttribute('aria-checked', String(b.dataset.theme === choice));
+    });
+    renderMermaid();
+  }
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  const markup = html.dataset.theme;
+  const initial = saved === 'light' || saved === 'dark'
+    ? saved
+    : (markup === 'light' || markup === 'dark' ? markup : 'system');
+  if (initial === 'system') delete html.dataset.theme;
+  else html.dataset.theme = initial;
+  buttons.forEach(b => {
+    b.setAttribute('aria-checked', String(b.dataset.theme === initial));
+    b.addEventListener('click', () => applyMode(b.dataset.theme));
+  });
+
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (!html.dataset.theme) renderMermaid();
   });
 </script>
 
