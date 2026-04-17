@@ -3,6 +3,8 @@ description: Generate a visual HTML project recap — rebuild mental model of a 
 ---
 Load the visual-explainer skill, then generate a comprehensive visual project recap as a self-contained HTML page.
 
+**Clarify.** This is a Tier 1 command per `./references/clarify.md`. The time window usually comes from `$1` (e.g., `2w`, `30d`, `3m`) or defaults to `2w`. If audience or depth is unclear (team onboarding vs. self-recall vs. leadership summary), ask 1 question. Bypass with `--no-ask`.
+
 Follow the visual-explainer skill workflow. Read the reference template, CSS patterns, and mermaid theming references before generating. Use a warm editorial or paper/ink aesthetic with muted blues and greens, but vary fonts and palette from previous diagrams.
 
 **Time window** — determine the recency window from `$1`:

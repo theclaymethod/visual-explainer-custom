@@ -3,6 +3,8 @@ description: Generate a visual HTML diff review — before/after architecture co
 ---
 Load the visual-explainer skill, then generate a comprehensive visual diff review as a self-contained HTML page.
 
+**Clarify.** This is a Tier 1 command per `./references/clarify.md`. Diff scope is usually clear from `$1` (branch / commit / PR). If the target is ambiguous or the audience / depth is unclear from the user's request, ask 1–2 questions via `AskUserQuestion`. Bypass with `--no-ask`.
+
 Follow the visual-explainer skill workflow. Read the reference template, CSS patterns, and mermaid theming references before generating. Use a GitHub-diff-inspired aesthetic with red/green before/after panels, but vary fonts and palette from previous diagrams.
 
 **Scope detection** — determine what to diff based on `$1`:

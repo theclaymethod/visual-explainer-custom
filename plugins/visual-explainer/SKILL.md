@@ -34,6 +34,26 @@ Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/d
 
 ## Workflow
 
+### 0. Clarify before generating (when the content is ambiguous)
+
+**Before starting any generation, check whether the user's request supports a confident 1-sentence brief.** The brief must cover: **topic**, **audience**, **depth**, and **aesthetic**. If any of these is genuinely unclear, ask 1–3 questions via `AskUserQuestion` before reading references or writing HTML. A cheap question prevents an expensive misfire.
+
+**Tiered policy** (see `./references/clarify.md` for the full specification):
+
+- **Tier 0 — always ask** (high-cost commands): `/generate-video`, `/render-video`, `/generate-slides --magazine`, `/generate-poster`. Ask at least style + duration + narration (video) or aesthetic + page-count (magazine) or canvas-size + focal (poster), regardless of how clear the request otherwise is. Bypass only on explicit `--no-ask`.
+- **Tier 1 — ask when ambiguous** (most commands): `/generate-web-diagram`, `/generate-visual-plan`, `/generate-slides` (vertical), `/diff-review`, `/plan-review`, `/project-recap`. Ask only if the four-dimension brief is incomplete. Clear requests flow through unchanged.
+- **Tier 2 — never ask** (mechanical commands): `/fact-check`, `/share`. These operate on an existing target and have no creative choices.
+
+**Escape hatches.** The user can always skip questions via:
+- `--no-ask` flag
+- Phrases: "just generate", "don't ask", "go ahead", "use defaults"
+- A prompt that explicitly answers all four dimensions
+- A pre-made outline or structured brief
+
+**What NOT to ask.** Never ask implementation questions (Mermaid vs SVG, which template to use), aesthetic when the default is fine, or meta-confirmation ("ready to generate?"). Skills decide those.
+
+See `./references/clarify.md` for question phrasing guidelines, dialog templates for each Tier 0 command, and worked examples.
+
 ### 1. Think (5 seconds, not 5 minutes)
 
 Before writing HTML, commit to a direction. Don't default to "dark theme with blue accents" every time.

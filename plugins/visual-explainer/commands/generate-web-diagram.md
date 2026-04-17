@@ -3,6 +3,8 @@ description: Generate a beautiful standalone HTML diagram and open it in the bro
 ---
 Load the visual-explainer skill, then generate an HTML diagram for: $@
 
+**Clarify.** This is a Tier 1 command per `./references/clarify.md`. Before generating, check that you can form a 1-sentence brief covering topic, audience, depth, and aesthetic. If any dimension is unclear, ask 1–3 questions via `AskUserQuestion`. If all four are answerable from the request + context, generate directly. Bypass with `--no-ask`.
+
 Follow the visual-explainer skill workflow. Read the reference template and CSS patterns before generating. Default to the Mono-Industrial aesthetic (Geist Pixel Square hero, Space Grotesk + Space Mono body) unless the user explicitly requests a named alternative.
 
 ## Sub-agent fan-out (default for 3+ sections)
