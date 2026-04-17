@@ -17,7 +17,11 @@ Ask your agent to explain a system architecture, review a diff, or compare requi
 > generate this as subq
 ```
 
-https://github.com/user-attachments/assets/55ebc81b-8732-40f6-a4b1-7c3781aa96ec
+<p align="center">
+  <video src="demos/videos/longform-16x9.mp4" controls muted playsinline width="820"></video>
+  <br>
+  <em>Long-form explainer generated via <code>/generate-video --style=long-form</code>. Local render — no cloud, no API keys.</em>
+</p>
 
 ## What's different in this fork
 
@@ -203,7 +207,11 @@ Pass `--pdf` to also render a multi-page landscape PDF (1920×1080, one slide/pa
 /generate-slides --magazine --pdf "quarterly engineering recap"
 ```
 
-https://github.com/user-attachments/assets/342d3558-5fcf-4fb2-bc03-f0dd5b9e35dc
+<p align="center">
+  <video src="demos/videos/reel-16x9.mp4" controls muted playsinline width="820"></video>
+  <br>
+  <em>16:9 reel — kinetic-typography fast-cut variant via <code>/generate-video --style=reel</code>.</em>
+</p>
 
 ## Video Mode
 
@@ -216,6 +224,12 @@ Generate MP4 explainer videos locally via Hyperframes. No cloud account, no API 
 ```
 
 Two styles: `long-form` (16:9, 60–180s, slide-paced with TTS narration) or `reel` (9:16, 30–60s, hard-cut kinetic typography with burned-in captions). Video is a high-cost command — the skill always confirms style and duration via `AskUserQuestion` before rendering, and extracts three keyframes from a fast draft render for approval before committing to the final-quality pass.
+
+<p align="center">
+  <video src="demos/videos/reel-9x16.mp4" controls muted playsinline width="320"></video>
+  <br>
+  <em>9:16 vertical reel — phone-shaped output for social sharing.</em>
+</p>
 
 ## How It Works
 
