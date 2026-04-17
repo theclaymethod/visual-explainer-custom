@@ -491,17 +491,28 @@ Use these sparingly within visual pages to highlight key points or provide breat
 
 **When to use:** A visual page explaining an essay might use a lead paragraph for the thesis, then cards for key arguments. A README visualization might use callout boxes for warnings but otherwise stay card/table-focused.
 
-## Slide Deck Mode
+## Slide Deck Mode (vertical + `--magazine` horizontal)
 
 An alternative output format for presenting content as a magazine-quality slide presentation instead of a scrollable page. **Opt-in only** — the agent generates slides when the user invokes `/generate-slides`, passes `--slides` to an existing prompt (e.g., `/diff-review --slides`), or explicitly asks for a slide deck. Never auto-select slide format.
 
-**Before generating slides**, read `./references/slide-patterns.md` (engine CSS, slide types, transitions, nav chrome, presets) and `./templates/slide-deck.html` (reference template showing all 10 types). Also read `./references/css-patterns.md` for shared patterns and `./references/libraries.md` for Mermaid/Chart.js theming.
+**Two orientations.**
+- **Vertical (default)** — `scroll-snap-type: y mandatory`. Each slide is 100dvh. Feels like a presentation.
+- **Horizontal (`--magazine` flag)** — `scroll-snap-type: x mandatory`. Each page is 100vw × 100vh. Feels like a print zine. Full-bleed edge-to-edge, nav dots at bottom, arrow-key + swipe navigation, dark cover + dark back cover + ≥ 1 interior dark panel, per-page tint rotation, at least one full-bleed stat page with 100px+ anchor.
 
-**Slides are not pages reformatted.** They're a different medium. Each slide is exactly one viewport tall (100dvh) with no scrolling. Typography is 2–3× larger. Compositions are bolder. The agent composes a narrative arc (impact → context → deep dive → resolution) rather than mechanically paginating the source.
+Magazine is a slide mode, not a separate format — the compositional rules, content-completeness rules, aesthetic presets, and all the slide types (title, content, split, diagram, dashboard, table, code, quote, full-bleed) work in both orientations. Magazine adds additional layouts (quadrant, full-bleed stat, dark panel, color block, viewport-filling grid) that **also work in vertical mode**. See `./references/slide-patterns.md` § Magazine Mode (Horizontal) for the full specification.
+
+**Before generating slides**, read `./references/slide-patterns.md` (engine CSS, slide types, transitions, nav chrome, presets, magazine mode) and one of:
+- `./templates/mono-industrial-slides.html` (vertical, Mono-Industrial)
+- `./templates/mono-industrial-magazine.html` (horizontal, Mono-Industrial)
+- `./templates/slide-deck.html` (vertical, legacy aesthetics)
+
+Also read `./references/css-patterns.md` for shared patterns, `./references/libraries.md` for Mermaid/Chart.js theming, and `./references/diagram-tokens.md` for the per-aesthetic tint ramps that magazine mode uses across interior pages.
+
+**Slides are not pages reformatted.** They're a different medium. Each slide is exactly one viewport (100dvh vertical or 100vw × 100vh horizontal) with no internal scrolling. Typography is 2–3× larger than scrollable pages. Compositions are bolder. The agent composes a narrative arc (impact → context → deep dive → resolution, or cover → opening → body → back cover for magazine) rather than mechanically paginating the source.
 
 **Content completeness.** Changing the medium does not mean dropping content. Follow the "Planning a Deck from a Source Document" process in `slide-patterns.md` before writing any HTML: inventory the source, map every item to slides, verify coverage. Every section, decision, data point, specification, and collapsible detail from the source must appear in the deck. If a plan has 7 sections, the deck covers all 7. If there are 6 decisions, present all 6 — not the 2 that fit on one slide. Collapsible details in the source become their own slides. Add more slides rather than cutting content. A 22-slide deck that covers everything beats a 13-slide deck that looks polished but is missing 40% of the source.
 
-**Slide types (10):** Title, Section Divider, Content, Split, Diagram, Dashboard, Table, Code, Quote, Full-Bleed. Each has a defined layout in `slide-patterns.md`. Content that exceeds a slide's density limit splits across multiple slides — never scrolls within a slide.
+**Slide types (15):** Title/Cover, Section Divider, Content, Split (left/right color-block), Diagram, Dashboard, Table, Code, Quote, Full-Bleed, plus magazine-added types usable in both orientations: Quadrant (2×2), Full-Bleed Stat (100px+ anchor), Dark Panel, Color Block, Viewport-Filling Grid (3×2 or 4×3). Each has a defined layout in `slide-patterns.md`. Content that exceeds a slide's density limit splits across multiple slides — never scrolls within a slide.
 
 **Visual richness:** Check `which surf` at the start. If surf-cli is available, generate 2–4 images (title slide background, full-bleed background, optional content illustrations) before writing HTML — see the Proactive Imagery section in `slide-patterns.md` for the workflow. Also use SVG decorative accents, per-slide background gradients, inline sparklines, and small Mermaid diagrams. Visual-first, text-second.
 

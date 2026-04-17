@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Magazine — Mono-Industrial</title>
+<!--
+  Horizontal scroll-snap magazine in the Mono-Industrial aesthetic.
+
+  Engine:   100vw x 100vh pages, horizontal scroll-snap-type: x mandatory.
+  Nav:      Arrow keys (left/right), PgUp/PgDn, Space (forward), Home/End,
+            touch swipe, nav dots (click to jump).
+  Tints:    Grayscale ramp across interior pages. Cover + back cover dark.
+            >=3 dark pages total for rhythm.
+
+  Full rules: references/slide-patterns.md § Magazine Mode (Horizontal).
+  Tokens:    references/diagram-tokens.md § Mono-Industrial.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  :root {
+    /* Mono-Industrial tint ramp across pages */
+    --paper:      #f6f4f0;
+    --paper-2:    #efe9df;
+    --paper-3:    #e8e0d0;
+    --paper-4:    #ddd3bf;
+    --paper-5:    #d0c2a8;
+
+    --ink:         #16130f;
+    --ink-deep:    #0a0a0a;
+    --muted:       #57534e;
+    --soft:        #78716c;
+    --rule:        rgba(22, 19, 15, 0.10);
+    --rule-solid:  rgba(22, 19, 15, 0.22);
+    --accent:      #d97706;    /* warn status color as focal */
+
+    --font-display: "Space Grotesk", system-ui, sans-serif;
+    --font-body:    "Space Grotesk", system-ui, sans-serif;
+    --font-mono:    "Space Mono", ui-monospace, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:     #16130f;
+      --paper-2:   #1e1b16;
+      --paper-3:   #272320;
+      --paper-4:   #322e29;
+      --paper-5:   #3d3832;
+      --ink:       #f2ede5;
+      --muted:     rgba(242, 237, 229, 0.68);
+      --soft:      rgba(242, 237, 229, 0.42);
+      --rule:      rgba(242, 237, 229, 0.12);
+      --rule-solid:rgba(242, 237, 229, 0.22);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--ink-deep);
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* ===== Magazine engine ===== */
+  .mag {
+    width: 100vw;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: row;
+    scrollbar-width: none;
+  }
+  .mag::-webkit-scrollbar { display: none; }
+
+  .page {
+    flex: 0 0 100vw;
+    width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ===== Tints (interior pages rotate) ===== */
+  .page--t1 { background: var(--paper); }
+  .page--t2 { background: var(--paper-2); }
+  .page--t3 { background: var(--paper-3); }
+  .page--t4 { background: var(--paper-4); }
+  .page--t5 { background: var(--paper-5); }
+
+  /* Dark panels (cover, back cover, interior dark panel) */
+  .page--dark {
+    background: var(--ink-deep);
+    color: #f2ede5;
+  }
+  .page--dark .eyebrow { color: rgba(242, 237, 229, 0.55); }
+  .page--dark .muted { color: rgba(242, 237, 229, 0.60); }
+
+  /* ===== Typography scale (magazine-sized) ===== */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 0.9vw, 14px);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(56px, 7.5vw, 128px);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+
+  .body-lg {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: clamp(20px, 1.6vw, 28px);
+    line-height: 1.5;
+    color: var(--muted);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 0.85vw, 13px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--soft);
+  }
+
+  .stat-xl {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(160px, 22vw, 360px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .stat-suffix { font-size: 0.55em; color: var(--muted); }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: clamp(14px, 1vw, 20px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 24px;
+  }
+
+  /* ===== Page layouts ===== */
+
+  /* Cover — dark, single focal */
+  .page--cover {
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: clamp(48px, 5vh, 96px);
+  }
+  .page--cover .meta-row { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+  .page--cover .display-stack { max-width: 80%; }
+
+  /* Content page */
+  .page--content {
+    padding: clamp(64px, 7vh, 120px);
+    justify-content: flex-end;
+    gap: 32px;
+  }
+
+  /* Split — left/right color block */
+  .page--split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0;
+  }
+  .page--split .half {
+    padding: clamp(48px, 6vh, 96px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 24px;
+    overflow: hidden;
+  }
+  .page--split .half--dark { background: var(--ink-deep); color: #f2ede5; }
+  .page--split .half--dark .muted { color: rgba(242, 237, 229, 0.65); }
+  .page--split .half--warm { background: var(--paper-3); }
+
+  /* 2x2 quadrant */
+  .page--quadrant {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 0;
+  }
+  .q {
+    padding: clamp(40px, 5vh, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    overflow: hidden;
+  }
+  .q:nth-child(2n) { border-right: none; }
+  .q:nth-child(n+3) { border-bottom: none; }
+  .q .eyebrow { margin-bottom: 8px; }
+  .q .q-head {
+    font-family: var(--font-display);
+    font-size: clamp(32px, 3.2vw, 56px);
+    font-weight: 500;
+    line-height: 1.1;
+  }
+  .q .q-body { font-size: clamp(16px, 1.2vw, 20px); line-height: 1.5; color: var(--muted); }
+  .q-1 { background: var(--paper); }
+  .q-2 { background: var(--paper-2); }
+  .q-3 { background: var(--paper-3); }
+  .q-4 { background: var(--ink-deep); color: #f2ede5; }
+  .q-4 .q-body { color: rgba(242, 237, 229, 0.7); }
+  .q-4 .eyebrow { color: rgba(242, 237, 229, 0.55); }
+
+  /* Full-bleed stat */
+  .page--stat {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(48px, 6vh, 96px);
+  }
+  .page--stat .stat-anchor { display: flex; flex-direction: column; align-items: center; }
+
+  /* Viewport-filling grid (6 cells) */
+  .page--grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    padding: 0;
+  }
+  .cell {
+    padding: clamp(24px, 3vh, 48px);
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    overflow: hidden;
+  }
+  .cell:nth-child(3n) { border-right: none; }
+  .cell:nth-child(n+4) { border-bottom: none; }
+  .cell-head {
+    font-family: var(--font-display);
+    font-size: clamp(24px, 2.2vw, 40px);
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  /* ===== Nav dots ===== */
+  .nav-dots {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 999px;
+    z-index: 100;
+  }
+  .nav-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+    padding: 0;
+    transition: background 120ms ease, transform 120ms ease;
+  }
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.35); }
+  .nav-dot.active { background: white; transform: scale(1.4); border-color: white; }
+
+  /* ===== Page counter ===== */
+  .counter {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: rgba(255, 255, 255, 0.7);
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(6px);
+    padding: 6px 10px;
+    border-radius: 4px;
+    z-index: 100;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 768px) {
+    .page--split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+    .page--quadrant { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
+    .q:nth-child(2n) { border-right: 1px solid var(--rule); }
+    .q:nth-child(n+3) { border-bottom: 1px solid var(--rule); }
+    .page--grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr); }
+    .cell:nth-child(3n) { border-right: 1px solid var(--rule); }
+    .cell:nth-child(2n) { border-right: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="counter"><span id="counter-current">01</span> / <span id="counter-total">08</span></div>
+
+<div class="mag" id="mag" aria-label="Magazine">
+
+  <!-- Page 1: COVER (dark) -->
+  <section class="page page--dark page--cover" aria-label="Cover">
+    <div class="meta-row">
+      <span class="eyebrow">Issue 01 — 2026</span>
+      <span class="eyebrow">Dispatch</span>
+    </div>
+    <div class="display-stack" style="flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 32px;">
+      <span class="eyebrow">Feature</span>
+      <h1 class="display" style="font-size: clamp(72px, 9vw, 160px);">The queue that outgrew itself.</h1>
+      <p class="body-lg" style="color: rgba(242, 237, 229, 0.72);">A post-mortem on the failure mode nobody saw coming — and the one line of config that made it go away.</p>
+    </div>
+    <div class="meta-row">
+      <span class="mono-label" style="color: rgba(242, 237, 229, 0.5);">24 MIN READ</span>
+      <span class="mono-label" style="color: rgba(242, 237, 229, 0.5);">visual-explainer</span>
+    </div>
+  </section>
+
+  <!-- Page 2: Content (tint 1) -->
+  <section class="page page--t1 page--content" aria-label="Opening">
+    <span class="eyebrow">01 · Opening</span>
+    <h2 class="display">What looked like a spike turned out to be a ceiling.</h2>
+    <p class="body-lg">The dashboard said throughput was fine. The queue depth graph said otherwise. Between the two of them, we lost three customers before anyone thought to reconcile the gap.</p>
+  </section>
+
+  <!-- Page 3: Split (left dark, right warm) — vertical compatible -->
+  <section class="page page--split" aria-label="Before and after">
+    <div class="half half--dark">
+      <span class="eyebrow">Before</span>
+      <div class="display" style="font-size: clamp(48px, 5.5vw, 96px); color: #f2ede5;">500 rps</div>
+      <p class="body-lg" style="color: rgba(242, 237, 229, 0.72);">Throughput ceiling. Not the average — the ceiling. Past this point the queue depth climbed linearly until workers OOM'd.</p>
+    </div>
+    <div class="half half--warm">
+      <span class="eyebrow">After</span>
+      <div class="display" style="font-size: clamp(48px, 5.5vw, 96px);">4,200 rps</div>
+      <p class="body-lg">Throughput ceiling after partitioning by tenant rather than by message type. 8.4&times; the previous headroom, same hardware.</p>
+    </div>
+  </section>
+
+  <!-- Page 4: Full-bleed stat -->
+  <section class="page page--t3 page--stat" aria-label="Key stat">
+    <div class="stat-anchor">
+      <div class="stat-xl" style="color: var(--accent);">8.4<span class="stat-suffix">&times;</span></div>
+      <div class="stat-label">throughput in production</div>
+    </div>
+  </section>
+
+  <!-- Page 5: Quadrant — vertical compatible -->
+  <section class="page page--quadrant" aria-label="Four trade-offs">
+    <div class="q q-1">
+      <span class="eyebrow">Latency</span>
+      <h3 class="q-head">P99 down 68%.</h3>
+      <p class="q-body">No head-of-line blocking from oversize payloads anymore.</p>
+    </div>
+    <div class="q q-2">
+      <span class="eyebrow">Throughput</span>
+      <h3 class="q-head">8.4&times; ceiling.</h3>
+      <p class="q-body">Same hardware, no horizontal scaling event.</p>
+    </div>
+    <div class="q q-3">
+      <span class="eyebrow">Cost</span>
+      <h3 class="q-head">No change.</h3>
+      <p class="q-body">The fix was a partition key, not more boxes.</p>
+    </div>
+    <div class="q q-4">
+      <span class="eyebrow">Regressions</span>
+      <h3 class="q-head">Zero so far.</h3>
+      <p class="q-body">Tenant ordering is already our contract; partitioning by it is lossless.</p>
+    </div>
+  </section>
+
+  <!-- Page 6: Dark panel (interior — the 3rd dark page) -->
+  <section class="page page--dark page--content" aria-label="Reframe">
+    <span class="eyebrow">Reframe</span>
+    <h2 class="display">Partition by tenant, not by type.</h2>
+    <p class="body-lg" style="color: rgba(242, 237, 229, 0.72);">One line in the topic config. The rest of the architecture stays untouched.</p>
+  </section>
+
+  <!-- Page 7: 6-cell grid -->
+  <section class="page page--t2 page--grid" aria-label="Takeaways at a glance">
+    <div class="cell">
+      <span class="eyebrow">01</span>
+      <h4 class="cell-head">Read the two graphs together, or don't read either.</h4>
+      <span class="mono-label">OBSERVABILITY</span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">02</span>
+      <h4 class="cell-head">Throughput ceilings hide in averages.</h4>
+      <span class="mono-label">MEASUREMENT</span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">03</span>
+      <h4 class="cell-head">Partition keys encode your real contract.</h4>
+      <span class="mono-label">DESIGN</span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">04</span>
+      <h4 class="cell-head">The fix is almost always a config change.</h4>
+      <span class="mono-label">OPERATIONS</span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">05</span>
+      <h4 class="cell-head">Write the post-mortem before the memory fades.</h4>
+      <span class="mono-label">POSTMORTEM</span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">06</span>
+      <h4 class="cell-head">Ship the one-line fix. Then write the essay.</h4>
+      <span class="mono-label">FOLLOWUP</span>
+    </div>
+  </section>
+
+  <!-- Page 8: BACK COVER (dark) -->
+  <section class="page page--dark page--cover" aria-label="Back cover">
+    <div class="meta-row">
+      <span class="eyebrow">End of dispatch</span>
+      <span class="eyebrow">No. 01</span>
+    </div>
+    <div class="display-stack" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 24px;">
+      <span class="eyebrow">Closing</span>
+      <h2 class="display" style="font-size: clamp(64px, 8vw, 140px);">Next issue — the cache key that outlived the cache.</h2>
+    </div>
+    <div class="meta-row">
+      <span class="mono-label" style="color: rgba(242, 237, 229, 0.5);">visual-explainer &middot; mono-industrial</span>
+      <span class="mono-label" style="color: rgba(242, 237, 229, 0.5);">issue 01 / 2026</span>
+    </div>
+  </section>
+
+</div>
+
+<nav class="nav-dots" aria-label="Page navigation">
+  <!-- One button per page; generated dynamically below. -->
+</nav>
+
+<script>
+  (function () {
+    const mag = document.getElementById("mag");
+    const pages = Array.from(mag.querySelectorAll(".page"));
+    const nav = document.querySelector(".nav-dots");
+    const counterCurrent = document.getElementById("counter-current");
+    const counterTotal = document.getElementById("counter-total");
+
+    // Generate dots
+    pages.forEach((_, i) => {
+      const btn = document.createElement("button");
+      btn.className = "nav-dot" + (i === 0 ? " active" : "");
+      btn.setAttribute("data-page", String(i + 1));
+      btn.setAttribute("aria-label", "Go to page " + (i + 1));
+      btn.addEventListener("click", () => {
+        mag.scrollTo({ left: i * window.innerWidth, behavior: "smooth" });
+      });
+      nav.appendChild(btn);
+    });
+
+    counterTotal.textContent = String(pages.length).padStart(2, "0");
+
+    // Sync dot highlight + counter on scroll snap
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          const idx = pages.indexOf(entry.target);
+          if (idx >= 0) {
+            document.querySelectorAll(".nav-dot").forEach((d, i) =>
+              d.classList.toggle("active", i === idx)
+            );
+            counterCurrent.textContent = String(idx + 1).padStart(2, "0");
+          }
+        }
+      });
+    }, { root: mag, threshold: [0.5] });
+
+    pages.forEach((p) => io.observe(p));
+
+    // Keyboard nav
+    document.addEventListener("keydown", (e) => {
+      const w = window.innerWidth;
+      if (e.key === "ArrowRight" || e.key === "PageDown" || e.key === " ") {
+        e.preventDefault();
+        mag.scrollBy({ left: w, behavior: "smooth" });
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        mag.scrollBy({ left: -w, behavior: "smooth" });
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        mag.scrollTo({ left: 0, behavior: "smooth" });
+      } else if (e.key === "End") {
+        e.preventDefault();
+        mag.scrollTo({ left: mag.scrollWidth, behavior: "smooth" });
+      }
+    });
+
+    // Wheel nav (vertical wheel translates to horizontal scroll)
+    mag.addEventListener("wheel", (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        mag.scrollBy({ left: e.deltaY, behavior: "auto" });
+      }
+    }, { passive: false });
+  })();
+</script>
+</body>
+</html>
