@@ -131,29 +131,52 @@ Applied by the OS preference (`@media (prefers-color-scheme: light)`) OR the exp
 :root[data-theme="dark"]  { /* same tokens as the canonical dark block */ }
 ```
 
-### Theme toggle (light / dark / system)
+### Theme toggle (light / dark / auto)
 
-Every SubQ page ships with a three-glyph selector floating at the top-right. No chrome — just three geometric circles that double as icons: `○` (light), `●` (dark), `◐` (system).
+Every SubQ page ships with a three-option selector floating at the top-right. Each option pairs a geometric glyph with a visible text label: `○ Light`, `● Dark`, `◐ Auto`. The glyph carries the icon-level affordance; the word carries the meaning. Don't ship glyph-only on the assumption that users know the symbols — the cost of the extra word is paid back every first-time interaction.
 
 ```html
 <div class="theme-toggle" role="radiogroup" aria-label="Theme">
-  <button type="button" role="radio" data-theme="light"  aria-label="Light mode"  aria-checked="false">&#9675;</button>
-  <button type="button" role="radio" data-theme="dark"   aria-label="Dark mode"   aria-checked="false">&#9679;</button>
-  <button type="button" role="radio" data-theme="system" aria-label="System mode" aria-checked="true">&#9680;</button>
+  <button type="button" role="radio" data-theme="light"  aria-checked="false">
+    <span class="theme-toggle__glyph" aria-hidden="true">&#9675;</span>
+    <span>Light</span>
+  </button>
+  <button type="button" role="radio" data-theme="dark"   aria-checked="false">
+    <span class="theme-toggle__glyph" aria-hidden="true">&#9679;</span>
+    <span>Dark</span>
+  </button>
+  <button type="button" role="radio" data-theme="system" aria-checked="true">
+    <span class="theme-toggle__glyph" aria-hidden="true">&#9680;</span>
+    <span>Auto</span>
+  </button>
 </div>
 ```
 
-The toggle:
+**Label choice: "Auto", not "System".** "Auto" is one syllable shorter, reads faster in a tight monospace label, and matches the term macOS and iOS use for the same concept. "System" is still a valid alias in documentation; the visible UI word is "Auto".
 
-- Sits at `position: fixed; top: 68px; right: 32px;` — below the top-right cross mark, clear of the nav.
-- **Pill chrome** — hairline border (`var(--rule)`) and a subtle backdrop tint (`color-mix(in srgb, var(--text-display) 4%, transparent)` with an 8px backdrop-filter blur). Reads as a quiet capsule over the page but never competes with the content.
-- **Resting state** — inactive glyphs at opacity 0.30, active glyph at opacity 0.88 and `font-weight: 500`. Current mode reads at a glance without the toggle shouting.
-- **Hover / focus-within** — pill tint lifts from 4% to 8% and the border steps up to `--rule-strong`; inactive glyphs go to 0.55, active to 1.0. Individual hover bumps any glyph to 1.0.
-- **Entrance animation** — fades and slides down 4px over 520ms, delayed 300ms after page load so it doesn't compete with the hero paint. Honors `prefers-reduced-motion: reduce`.
-- Writes the choice to `localStorage` under `subq-theme` and sets `document.documentElement.dataset.theme` to `"light"` or `"dark"`. "System" removes the attribute and the storage key, falling back to `prefers-color-scheme`.
-- On mobile (<768px), collapses to `bottom: 32px; right: 32px;`.
+**Chrome and state:**
 
-**This is the one sanctioned exception to SubQ's "zero on-load motion" rule.** The toggle earns its fade-in because it's the page's only interactive affordance — the user needs to know it exists. Everything else still paints static.
+- **Pill container** — hairline `var(--rule)` border, 4% text-color tint, 10px backdrop blur with light saturation boost. On hover/focus-within the tint steps to 8% and the border to `var(--rule-strong)`.
+- **Resting** — labels sit in `var(--text-secondary)`, no pill fill.
+- **Hover / focus** on an individual button — label flips to `var(--text-display)` in 180ms.
+- **Active (aria-checked)** — label in `var(--text-display)` plus a SubQ-blue tinted pill (`color-mix(in srgb, var(--subq-blue) 14%, transparent)`). The blue connects visually to the primary CTA — "selected" and "primary action" share one accent, which is intentional.
+- **Entrance** — opacity 0 → 1 with a 4px translateY slide, over 520ms, delayed 300ms after page load. Honors `prefers-reduced-motion: reduce`. This is SubQ's one sanctioned exception to the "zero on-load motion" rule because the toggle is the page's only interactive affordance; users need a cue that it exists.
+
+**Responsive behavior (the /adapt pass):**
+
+| Viewport | Position | Touch target | Notes |
+|---|---|---|---|
+| **Desktop** (≥ 769px) | Fixed, top 68px / right 32px — below the TR cross mark, clear of the nav | Click-sized (32px high, generous padding) | Hover lifts chrome; labels read quietly in the margin |
+| **Tablet / phone** (421–768px) | Fixed, bottom 24px / right 24px — thumb zone | **44px minimum height**, 12px/14px padding | Larger type (12px), looser gap, no reliance on hover |
+| **Narrow phone** (≤ 420px) | Fixed bottom bar, left 16px / right 16px, stretched full-width | Each button flexes to 1/3 of the bar, center-aligned | All three options stay visible; no hamburger, no collapse |
+
+The bottom-right placement on mobile is deliberate: at desktop sizes the toggle is a quiet secondary affordance in the margin, but on mobile it's closer to the thumb and slightly more prominent because there's no hover to reveal it.
+
+**Script contract:**
+
+- Writes the choice to `localStorage` under `subq-theme` and sets `document.documentElement.dataset.theme` to `"light"` or `"dark"`.
+- `"system"` removes the attribute and the storage key, falling back to `prefers-color-scheme`.
+- Mermaid diagrams re-render in the new palette on every toggle change — see § 9 for the `effectiveMode()` helper.
 
 **Mermaid re-renders on change.** The diagram reads its palette from the same source of truth (`effectiveMode()` checks `data-theme` first, then `prefers-color-scheme`). On toggle click, the script stashes each block's original source, clears `data-processed`, and calls `mermaid.run()` again so the nodes flip color without a page reload.
 
