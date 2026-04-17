@@ -241,13 +241,17 @@
     color: var(--text-secondary);
     cursor: pointer;
     border-radius: 999px;
+    overflow: hidden;
+    white-space: nowrap;
     transition: color 180ms ease-out, background 180ms ease-out,
-                padding 240ms ease-out, gap 240ms ease-out;
+                padding 260ms ease-out, gap 240ms ease-out,
+                max-width 320ms ease-out, opacity 220ms ease-out;
   }
   .theme-toggle__glyph {
     font-family: 'Roboto Mono', 'Apple Symbols', monospace;
     font-size: 12px;
     line-height: 1;
+    flex-shrink: 0;
   }
   .theme-toggle__label {
     display: inline-block;
@@ -255,7 +259,7 @@
     opacity: 1;
     overflow: hidden;
     white-space: nowrap;
-    transition: max-width 280ms ease-out, opacity 200ms ease-out 40ms;
+    transition: max-width 300ms ease-out, opacity 220ms ease-out 40ms;
   }
   .theme-toggle button:hover { color: var(--text-display); }
   .theme-toggle button[aria-checked="true"] {
@@ -268,16 +272,42 @@
     outline-offset: 2px;
   }
 
-  /* Hover-capable devices: collapse to glyphs-only by default, unfurl labels
-     on hover/focus-within. Touch devices skip this block entirely — labels
-     are always visible since there's no hover affordance. */
+  /* Hover-capable devices: collapse to a SINGLE indicator (just the active
+     glyph) at rest. Expand to the full three-option selector on hover or
+     focus-within. Touch devices skip this block — full pill is the default. */
   @media (hover: hover) and (pointer: fine) {
-    .theme-toggle button { padding: 7px 9px; gap: 0; }
-    .theme-toggle__label { max-width: 0; opacity: 0; }
-    .theme-toggle:hover button,
-    .theme-toggle:focus-within button { padding: 7px 12px; gap: 6px; }
-    .theme-toggle:hover .theme-toggle__label,
-    .theme-toggle:focus-within .theme-toggle__label {
+    .theme-toggle { gap: 0; }
+    .theme-toggle button:not([aria-checked="true"]) {
+      max-width: 0;
+      padding-left: 0;
+      padding-right: 0;
+      opacity: 0;
+    }
+    .theme-toggle button[aria-checked="true"] {
+      padding: 7px 9px;
+      gap: 0;
+    }
+    .theme-toggle button[aria-checked="true"] .theme-toggle__label {
+      max-width: 0;
+      opacity: 0;
+    }
+
+    .theme-toggle:hover,
+    .theme-toggle:focus-within { gap: 2px; }
+    .theme-toggle:hover button:not([aria-checked="true"]),
+    .theme-toggle:focus-within button:not([aria-checked="true"]) {
+      max-width: 120px;
+      padding-left: 12px;
+      padding-right: 12px;
+      opacity: 1;
+    }
+    .theme-toggle:hover button[aria-checked="true"],
+    .theme-toggle:focus-within button[aria-checked="true"] {
+      padding: 7px 12px;
+      gap: 6px;
+    }
+    .theme-toggle:hover button[aria-checked="true"] .theme-toggle__label,
+    .theme-toggle:focus-within button[aria-checked="true"] .theme-toggle__label {
       max-width: 80px;
       opacity: 1;
     }
