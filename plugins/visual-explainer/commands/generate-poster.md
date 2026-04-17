@@ -13,14 +13,14 @@ Load the visual-explainer skill, then generate a fixed-canvas poster for: $@
    - Portrait editorial: `w-[1200px] h-[1500px]`
    - Social card (Twitter/LinkedIn): `w-[1200px] h-[628px]`
    - Square (Slack, Instagram): `w-[1080px] h-[1080px]`
-3. Commit to the Mono-Industrial aesthetic by default (Swiss, monochrome, hierarchy-first, Space Grotesk + Space Mono + optional Doto hero). Follow `./references/mono-industrial.md` for tokens and the pre-render gate. Use a named alternative only if the user requests one.
+3. Commit to the Mono-Industrial aesthetic by default (Swiss, monochrome, hierarchy-first, Space Grotesk + Space Mono + optional Geist Pixel Square hero). Follow `./references/mono-industrial.md` for tokens and the pre-render gate. Use a named alternative only if the user requests one.
 
 **Authoring:**
 
 - The root of the component MUST be a single element (not a Fragment). Poster measures one element for the canvas.
-- Load Google Fonts via a `<link>` inside the root element.
+- Load Google Fonts via a `<link>` inside the root element. Geist Pixel Square is **not** on Google Fonts — load it via an inline `<style>` `@font-face` block from jsDelivr. See `templates/mono-industrial-poster.tsx` for the pattern.
 - Avoid Mermaid — poster's rasterizer doesn't wait long enough for Mermaid's async render. Use custom SVG, Recharts, or a pre-rendered Mermaid SVG as an `<img>`.
-- Exactly one moment of surprise per poster (Doto display number, oversized word, broken-grid element).
+- Exactly one moment of surprise per poster (Geist Pixel display number, oversized word, broken-grid element).
 
 **Workflow:**
 

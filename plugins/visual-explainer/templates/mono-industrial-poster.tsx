@@ -7,17 +7,28 @@
 // Content that overflows the canvas is clipped on export; design to fit.
 //
 // Aesthetic: see references/mono-industrial.md.
-// - 2 font families (Space Grotesk + Space Mono) + 1 Doto accent (hero only)
+// - 2 font families (Space Grotesk + Space Mono) + 1 Geist Pixel accent (hero only)
 // - grayscale text tiers, status colors only
 // - spacing-grouped sections, no cards, no borders (except hairlines)
-// - exactly one moment of surprise (here: the 1.2M Doto number)
+// - exactly one moment of surprise (here: the 1.2M Geist Pixel number)
 
 const FONTS_HREF =
-  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&family=Doto:wght@400;700&display=swap";
+  "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&display=swap";
+
+// Geist Pixel ships via npm (jsDelivr CDN), not Google Fonts. Inject @font-face inline.
+const GEIST_PIXEL_FACE = `
+  @font-face {
+    font-family: 'Geist Pixel Square';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+`;
 
 const SG = "'Space Grotesk', system-ui, sans-serif";
 const SM = "'Space Mono', 'SF Mono', Consolas, monospace";
-const DT = "'Doto', 'Space Grotesk', system-ui, sans-serif";
+const GP = "'Geist Pixel Square', 'Space Grotesk', system-ui, sans-serif";
 
 // Tokens — mirror the CSS tokens in references/mono-industrial.md
 const BG = "#000000";
@@ -102,6 +113,7 @@ export default function MonoIndustrialPoster() {
       }}
     >
       <link href={FONTS_HREF} rel="stylesheet" />
+      <style>{GEIST_PIXEL_FACE}</style>
         {/* Metadata row */}
         <header
           className="flex justify-between items-baseline pb-4"
@@ -121,7 +133,7 @@ export default function MonoIndustrialPoster() {
           </div>
         </header>
 
-        {/* Hero: headline left, Doto number right (the one moment of surprise) */}
+        {/* Hero: headline left, Geist Pixel number right (the one moment of surprise) */}
         <section className="grid grid-cols-[1fr_auto] items-end" style={{ gap: 48, paddingTop: 16 }}>
           <div>
             <h1
@@ -153,7 +165,7 @@ export default function MonoIndustrialPoster() {
           <div className="text-right">
             <div
               style={{
-                fontFamily: DT,
+                fontFamily: GP,
                 fontSize: 180,
                 fontWeight: 400,
                 lineHeight: 0.9,

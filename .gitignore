@@ -1,7 +1,14 @@
 .DS_Store
 
 # Local skill-management artifacts (dev-only, not part of the project)
-.agents/
-.claude/
-.pi/
+# Scope to repo root — plugins/*/.claude/ ships agent definitions and must be tracked.
+/.agents/
+/.claude/
+/.pi/
 skills-lock.json
+
+# Browser-verification artifacts (Playwright MCP)
+.playwright-mcp/
+/orchestrated-*.png
+/mono-industrial-*-geist-pixel.png
+/slides-*.png

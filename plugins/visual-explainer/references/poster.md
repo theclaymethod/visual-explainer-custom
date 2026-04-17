@@ -71,7 +71,7 @@ poster build entry.tsx -o out.html --json --quiet
 
 - **The root must be a single element, not a Fragment.** Poster measures one element for the canvas. `<>` will fail with "Node is either not visible or not an HTMLElement."
 - **Tailwind is loaded via CDN** — arbitrary values work (`text-[72px]`, `bg-[#000]`, `w-[1600px]`).
-- **Google Fonts** load via a `<link>` placed inside the root element (Google Fonts CSS works from body). For Mono-Industrial: `Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&family=Doto:wght@400;700`.
+- **Google Fonts** load via a `<link>` placed inside the root element (Google Fonts CSS works from body). For Mono-Industrial: `Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700`. Geist Pixel Square (the hero font) is **not** on Google Fonts — load it via `<style>{...}</style>` inside the root with an `@font-face` block pointing at `https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2`. See `templates/mono-industrial-poster.tsx` for the exact pattern.
 - **Recharts, lucide-react, shadcn/ui** are available as normal imports — esbuild bundles them at build time.
 - **No Mermaid.** Either render the diagram as custom SVG inside the TSX, or render Mermaid separately (`mmdc` CLI or hand-written SVG) and `<img>` it into the poster.
 - **No file system access at runtime.** Everything is embedded at build time.
@@ -85,9 +85,9 @@ poster build entry.tsx -o out.html --json --quiet
 The canonical TSX reference is `./templates/mono-industrial-poster.tsx`. It demonstrates:
 
 - 1600×1000 canvas with the full token system expressed as constants (`T_PRIMARY`, `RULE`, `OK`, `WARN`, etc.)
-- Google Fonts loaded via `<link>` inside the root
-- Three-layer hierarchy: metadata row → oversized headline + Doto hero number → section clusters and a latency table
-- One moment of surprise (the 1.2M Doto number)
+- Google Fonts loaded via `<link>` inside the root; Geist Pixel via inline `<style>` `@font-face` from jsDelivr
+- Three-layer hierarchy: metadata row → oversized headline + Geist Pixel hero number → section clusters and a latency table
+- One moment of surprise (the 1.2M Geist Pixel number)
 - Grayscale palette with status colors only on the "OVER · 17%" cell
 - Spacing-grouped sections, no cards, single hairlines
 
@@ -106,8 +106,22 @@ const ERR = "#ef7b7b";
 
 const SG = "'Space Grotesk', system-ui, sans-serif";
 const SM = "'Space Mono', 'SF Mono', Consolas, monospace";
-const DT = "'Doto', 'Space Grotesk', system-ui, sans-serif";
+const GP = "'Geist Pixel Square', 'Space Grotesk', system-ui, sans-serif";
+
+// Geist Pixel ships via npm only — inline @font-face inside the root.
+const GEIST_PIXEL_FACE = `
+  @font-face {
+    font-family: 'Geist Pixel Square';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+`;
+// Then inside the root JSX: <style>{GEIST_PIXEL_FACE}</style>
 ```
+
+**Hero variants.** Five Geist Pixel variants ship in the same package — `Square` (default), `Grid`, `Circle`, `Triangle`, `Line`. Swap the `src` URL filename and the `font-family` value to use a different particle shape. Doto remains as a legacy alternative if the user explicitly requests an organic dot-matrix feel: `family=Doto:wght@400;700` from Google Fonts.
 
 **Light-mode poster:** swap the BG / FG / T_* / RULE / status constants to their light-theme values from `./mono-industrial.md`. A poster is single-theme by design — pick one at render time. If both are needed, emit two posters.
 
@@ -168,7 +182,7 @@ Tool chain matches SKILL.md § 6 Verify — prefer Playwright MCP (`browser_navi
 2. **Does any element get cut by the canvas boundary?** Card bottoms disappearing, a hero number half-visible, footer metadata pushed off-frame.
 3. **Is there suspiciously large empty space at one edge?** Often means a grid collapsed to one column, a section wrapped in an unexpected way, or the content is far too small for the declared canvas.
 4. **Does the hierarchy still read?** Canvas fit sometimes forces shrinking the display type until it stops dominating — if the display no longer wins the squint test, the fit is broken even if nothing is clipped.
-5. **Does the moment of surprise survive?** If the Doto hero number got shrunk to fit, it's not a moment of surprise anymore.
+5. **Does the moment of surprise survive?** If the Geist Pixel hero number got shrunk to fit, it's not a moment of surprise anymore.
 6. **Do status colors still appear only on values?** Rework sometimes drifts here — the color starts leaking into backgrounds or labels as the author tries to "fit more in."
 
 **On any failure, rework the TSX and re-export until the PNG passes.** The reworks available to you, roughly in order of preference:

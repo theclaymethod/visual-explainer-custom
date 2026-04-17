@@ -11,28 +11,40 @@
 
   Patterns demonstrated here:
   - Three-layer hierarchy: display / body / metadata (Space Mono ALL CAPS)
-  - Font budget: Space Grotesk + Space Mono + one optional Doto hero
+  - Font budget: Space Grotesk + Space Mono + one optional Geist Pixel hero
   - Grayscale-only Mermaid theme (status colors reserved for edges if needed)
   - Spacing-grouped sections, NOT bordered cards
   - Asymmetric layout: headline left-anchored, metadata top-right
-  - One "moment of surprise" per page (here: the Doto hero number)
+  - One "moment of surprise" per page (here: the Geist Pixel hero number)
   - Zero on-load motion. User-triggered interactions only.
   - Status colors only on values (not row backgrounds, not labels)
   - Full Mermaid zoom/pan/expand preserved
 
   When the page has NO genuine hero number or display word, remove the
-  Doto link and the .hero-number block entirely. Doto is never loaded
-  on pages that don't use it.
+  Geist Pixel @font-face and the .hero-number block entirely. The pixel
+  font is never loaded on pages that don't use it.
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&family=Doto:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* Geist Pixel Square — the hero/display font (SIL OFL, Vercel + basement.studio).
+     Loaded from jsDelivr because Geist Pixel is npm-only, not on Google Fonts.
+     Other variants (Grid, Circle, Triangle, Line) available at the same path. */
+  @font-face {
+    font-family: 'Geist Pixel Square';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
   /* ============ TOKENS ============ */
   :root {
     --font-body: 'Space Grotesk', system-ui, sans-serif;
     --font-mono: 'Space Mono', 'SF Mono', Consolas, monospace;
-    --font-display: 'Doto', 'Space Grotesk', system-ui, sans-serif;
+    --font-display: 'Geist Pixel Square', 'Space Grotesk', system-ui, sans-serif;
 
     /* Light mode — warm off-white, near-black */
     --bg: #f6f4f0;
@@ -186,7 +198,7 @@
     color: var(--text-secondary);
   }
 
-  /* The ONE moment of surprise: a Doto display number.
+  /* The ONE moment of surprise: a Geist Pixel display number.
      Omit this block entirely when the page has no genuine hero value. */
   .hero-number {
     font-family: var(--font-display);
@@ -482,8 +494,8 @@
     </span>
   </header>
 
-  <!-- HERO: oversized headline left, Doto display number right.
-       The Doto number is the one moment of surprise. -->
+  <!-- HERO: oversized headline left, Geist Pixel display number right.
+       The pixel number is the one moment of surprise. -->
   <section class="hero">
     <div>
       <h1 class="hero__headline">A write-first ledger for request and response telemetry.</h1>

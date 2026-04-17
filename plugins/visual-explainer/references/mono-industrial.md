@@ -29,7 +29,7 @@ Every page has exactly three layers of importance. Not two, not five.
 
 | Layer | Role | Treatment |
 |-------|------|-----------|
-| **Display** | The one thing the user sees first | Space Grotesk at display size, or Doto if a hero number warrants it. `--text-display`. Generous negative space around it. |
+| **Display** | The one thing the user sees first | Space Grotesk at display size, or Geist Pixel Square if a hero number warrants it. `--text-display`. Generous negative space around it. |
 | **Primary** | Supporting context, body copy, section titles | Space Grotesk at body/heading sizes. `--text-primary`. Grouped tight to the display. |
 | **Tertiary** | Metadata, labels, nav, system info | Space Mono ALL CAPS. `--text-secondary` or `--text-disabled`. Pushed to edges. |
 
@@ -39,13 +39,13 @@ Every page has exactly three layers of importance. Not two, not five.
 
 ## 3. Font Budget (strict)
 
-**2 families per page + optional 1 Doto accent.**
+**2 families per page + optional 1 pixel-display accent.**
 
 | Family | Role | Load always? |
 |--------|------|--------------|
 | Space Grotesk | Display + body + section titles | Yes |
 | Space Mono | Labels, metadata, code, zoom buttons, all ALL-CAPS treatment | Yes |
-| Doto | One element only — a hero number, a display word, a single break-the-grid moment | **Only when used.** Otherwise do not include it in the `<link>`. |
+| Geist Pixel Square | One element only — a hero number, a display word, a single break-the-grid moment | **Only when used.** Otherwise do not include the `@font-face` block. |
 
 **Per-page limits:**
 - 3 font sizes maximum (one display, one body, one caption)
@@ -54,13 +54,43 @@ Every page has exactly three layers of importance. Not two, not five.
 
 If you reach for a new font size: it's probably a spacing problem. Add distance instead.
 
-```html
-<!-- With Doto -->
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&family=Doto:wght@400;700&display=swap" rel="stylesheet">
+### Loading the fonts
 
-<!-- Without Doto (page has no hero moment) -->
+Space Grotesk + Space Mono load from Google Fonts. Geist Pixel ships via npm only, so it loads from jsDelivr with `@font-face` inside the `<style>` block — Google Fonts does not host it.
+
+```html
+<!-- Always-loaded (Space Grotesk + Space Mono only) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- Add only when the page has a hero number / display word -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<style>
+  @font-face {
+    font-family: 'Geist Pixel Square';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
 ```
+
+### Hero font variants (named alternatives)
+
+`Geist Pixel Square` is the default for the moment-of-surprise. Four sibling variants and one legacy alternative are available — switch only when the user asks for a specific particle shape or a softer, organic feel.
+
+| Variant | Particle | When to use | Path |
+|---|---|---|---|
+| **Geist Pixel Square** *(default)* | Solid square | Default hero. Most architectural, most legible at large sizes. | `…/geist-pixel/GeistPixel-Square.woff2` |
+| Geist Pixel Grid | Outlined square | Slightly lighter feel; engineering / schematic vibe | `…/geist-pixel/GeistPixel-Grid.woff2` |
+| Geist Pixel Circle | Solid dot | Closest to Doto; softer, friendlier | `…/geist-pixel/GeistPixel-Circle.woff2` |
+| Geist Pixel Triangle | Solid triangle | Aggressive, directional, brand-y | `…/geist-pixel/GeistPixel-Triangle.woff2` |
+| Geist Pixel Line | Hairline strokes | Most delicate; works as oversized words, less so as numbers | `…/geist-pixel/GeistPixel-Line.woff2` |
+| Doto | Variable dot-matrix (legacy) | Use only if the user explicitly asks for Doto. Loads from Google Fonts: `family=Doto:wght@400;700`. | Google Fonts |
+
+To switch variants: change the `@font-face` `src` URL and rename the `font-family` to match (or alias `--font-display` to whichever variant you loaded).
 
 ---
 
@@ -169,9 +199,9 @@ Current templates in this skill default to tier 4 (rounded cards, elevated shado
 Every Mono-Industrial page breaks its own pattern in **exactly one place**. That one break IS the design. Without it: sterile grid. With more than one: visual noise.
 
 Candidates for the surprise (pick one per page):
-- A Doto display number (events/sec, version, page count)
+- A Geist Pixel display number (events/sec, version, page count)
 - A vast gap where everything else is tight
-- A single oversized Doto word ("END.", "01.", "NOW")
+- A single oversized Geist Pixel word ("END.", "01.", "NOW")
 - A circular element among rectangles
 - A slide that aligns against the grid rather than with it
 
@@ -202,7 +232,7 @@ When generating output in Mono-Industrial, translate the usual patterns:
 | Role-colored nodes in Mermaid | Grayscale nodes, labels carry the role |
 | Zebra striping in tables | No zebra; row-top hairline only |
 | Colored badges | Space Mono ALL CAPS text with `--ok` / `--warn` / `--err` |
-| KPI card with gradient number | Bare Doto or Space Mono number with ALL-CAPS label above |
+| KPI card with gradient number | Bare Geist Pixel or Space Mono number with ALL-CAPS label above |
 | Animated KPI reveal | Static, instant |
 | Emoji section headers | Numbered index in Space Mono: `<span class="index">01</span>` |
 
@@ -303,7 +333,7 @@ Date format in metadata rows: `2026 · 04 · 16` (dots, spaces, no slashes).
 Run through this list before generating. If any answer is no, stop and revise.
 
 - [ ] Do I have exactly 3 layers of importance? (display / primary / tertiary)
-- [ ] Am I using at most 2 font families + optional 1 Doto accent?
+- [ ] Am I using at most 2 font families + optional 1 Geist Pixel (or named alternative) accent?
 - [ ] Am I using at most 3 sizes and 2 weights?
 - [ ] Is every color on the page either grayscale or a status value?
 - [ ] Is there zero on-load motion?

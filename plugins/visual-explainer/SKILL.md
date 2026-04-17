@@ -48,7 +48,7 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 
 **What aesthetic?** **Default to Mono-Industrial** unless the user names a different one. The other aesthetics listed below remain available, but they are opt-in — they do not rotate in by default.
 
-**Default aesthetic — Mono-Industrial (Swiss, monochrome, typography-first).** Inspired by Nothing, Braun, Teenage Engineering. Hierarchy is built from type scale, weight, and spacing — never from color. Grayscale canvas with status colors only (success / warning / error) on values themselves. Three-layer rule: display, primary, tertiary. Font budget: Space Grotesk + Space Mono + optional Doto for exactly one hero element per page. Zero on-load motion. One "moment of surprise" per page (an oversized number, a vast gap, a Doto word, a broken grid). **Before generating, read `./references/mono-industrial.md`.** For architecture output, base on `./templates/mono-industrial.html`. For slide decks, base on `./templates/mono-industrial-slides.html`.
+**Default aesthetic — Mono-Industrial (Swiss, monochrome, typography-first).** Inspired by Nothing, Braun, Teenage Engineering. Hierarchy is built from type scale, weight, and spacing — never from color. Grayscale canvas with status colors only (success / warning / error) on values themselves. Three-layer rule: display, primary, tertiary. Font budget: Space Grotesk + Space Mono + optional Geist Pixel Square for exactly one hero element per page. Zero on-load motion. One "moment of surprise" per page (an oversized number, a vast gap, a pixel-display word, a broken grid). **Before generating, read `./references/mono-industrial.md`.** For architecture output, base on `./templates/mono-industrial.html`. For slide decks, base on `./templates/mono-industrial-slides.html`.
 
 **Named alternatives (use only when the user explicitly requests one).** The aesthetics below exist for users who ask for Blueprint, Editorial, Paper/ink, Monochrome terminal, or an IDE-inspired palette by name. Do not rotate through them on your own initiative, and do not select them as a "change of pace" for variety.
 
@@ -168,7 +168,7 @@ rm /tmp/ve-graphic.tsx /tmp/ve-graphic.png
 
 ### 3. Style
 
-**If generating Mono-Industrial (the default), follow `./references/mono-industrial.md` — not the rules below.** The guidance in this section (font rotation, multi-accent palettes, staggered fade-in animation) applies only when the user has explicitly requested a named alternative aesthetic (Blueprint, Editorial, Paper/ink, Monochrome terminal, IDE-inspired). Mono-Industrial overrides all of it: fixed typography (Space Grotesk + Space Mono + optional Doto), grayscale palette with status colors only, zero on-load motion.
+**If generating Mono-Industrial (the default), follow `./references/mono-industrial.md` — not the rules below.** The guidance in this section (font rotation, multi-accent palettes, staggered fade-in animation) applies only when the user has explicitly requested a named alternative aesthetic (Blueprint, Editorial, Paper/ink, Monochrome terminal, IDE-inspired). Mono-Industrial overrides all of it: fixed typography (Space Grotesk + Space Mono + optional Geist Pixel Square), grayscale palette with status colors only, zero on-load motion.
 
 Apply these principles to every diagram in a **named alternative aesthetic**:
 

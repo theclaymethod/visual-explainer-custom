@@ -13,7 +13,7 @@
   - 9 slides, all 10 slide-type roles covered across them
   - Instant-cut transitions: slides pop in without fade/scale/reveal stagger
   - Three-layer composition per slide (display / body / metadata)
-  - Font budget: Space Grotesk + Space Mono + one Doto hero
+  - Font budget: Space Grotesk + Space Mono + one Geist Pixel hero
   - Grayscale Mermaid at presentation scale
   - One slide per deck breaks its own grid (the "moment of surprise")
   - Status colors only on values, never row backgrounds
@@ -21,13 +21,24 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&family=Doto:wght@400;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  /* Geist Pixel Square — the hero/display font (SIL OFL, Vercel + basement.studio).
+     Loaded from jsDelivr because Geist Pixel is npm-only, not on Google Fonts. */
+  @font-face {
+    font-family: 'Geist Pixel Square';
+    src: url('https://cdn.jsdelivr.net/npm/geist@1.7.0/dist/fonts/geist-pixel/GeistPixel-Square.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
   /* ============ TOKENS ============ */
   :root {
     --font-body: 'Space Grotesk', system-ui, sans-serif;
     --font-mono: 'Space Mono', 'SF Mono', Consolas, monospace;
-    --font-display: 'Doto', 'Space Grotesk', system-ui, sans-serif;
+    --font-display: 'Geist Pixel Square', 'Space Grotesk', system-ui, sans-serif;
 
     --bg: #000000;
     --fg: #f2ede5;
@@ -586,7 +597,7 @@
   }
 
   /* FULL-BLEED / BREAK-THE-GRID:
-     This is the one moment of surprise. A single Doto display character
+     This is the one moment of surprise. A single Geist Pixel display character
      fills the slide; everything else is pushed to the corners. */
   .slide--bleed {
     display: grid;
@@ -642,7 +653,7 @@
     </footer>
   </section>
 
-  <!-- SLIDE 2 — SECTION DIVIDER (break: huge Doto number) -->
+  <!-- SLIDE 2 — SECTION DIVIDER (break: huge Geist Pixel number) -->
   <section class="slide slide--section">
     <header class="slide__label">
       <span>Part One</span>
