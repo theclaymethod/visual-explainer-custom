@@ -213,8 +213,8 @@
       <dd>claude/video-and-fullscreen-layouts-dPDFB</dd>
     </div>
     <div class="meta">
-      <dt>Commits ahead of main</dt>
-      <dd>7</dd>
+      <dt>Rendered MP4s</dt>
+      <dd>3 · in <code style="font-family: var(--font-mono); font-size: 12px;">demos/videos/</code></dd>
     </div>
     <div class="meta">
       <dt>Plugin version</dt>
@@ -284,8 +284,9 @@
         <li>GSAP timeline is paused in Hyperframes capture mode (gated by `window.__hyperframesCapture`)</li>
       </ul>
       <div class="card__links">
-        <a class="btn btn--primary" href="video-longform.html">Open long-form →</a>
-        <span class="note">templates/hyperframes-longform.html · gsap-rules.md</span>
+        <a class="btn btn--primary" href="video-longform.html">Open HTML preview →</a>
+        <a class="btn" href="videos/longform-16x9.mp4">Rendered MP4 (3.2 MB)</a>
+        <span class="note">templates/hyperframes-longform.html</span>
       </div>
     </div>
   </section>
@@ -293,10 +294,10 @@
   <section class="card">
     <div class="card__num">04</div>
     <div class="card__body">
-      <p class="card__kicker">Commit 2 · Hyperframes reel</p>
-      <h2>Brain-rot reel composition</h2>
+      <p class="card__kicker">Commit 2 · Hyperframes reel · 9:16 vertical</p>
+      <h2>Brain-rot reel — phone / Shorts / Reels</h2>
       <p class="card__desc">
-        A 32-second 9:16 reel on "Partition by tenant, not by type." Seven beats (HOOK → PROBLEM → CONTEXT → MECHANISM → PROOF → RESOLUTION → CTA), hard cuts every 1.2–1.8s, word-by-word kinetic typography, two-stage progressive diagram reveal, burned-in captions synced to beat boundaries. Vertical preview scales to fit the window.
+        A 32-second vertical reel on "Partition by tenant, not by type." Seven beats (HOOK → PROBLEM → CONTEXT → MECHANISM → PROOF → RESOLUTION → CTA), hard cuts every 1.2–1.8s, word-by-word kinetic typography, two-stage progressive diagram reveal, burned-in captions in the phone safe-zone.
       </p>
       <ul class="checklist">
         <li>HOOK (0–2s): 4,200 counts up; "requests per second" label lands</li>
@@ -307,14 +308,38 @@
         <li>No console errors; all GSAP constraints satisfied</li>
       </ul>
       <div class="card__links">
-        <a class="btn btn--primary" href="video-reel.html">Open reel →</a>
-        <span class="note">templates/hyperframes-reel.html · reel-patterns.md</span>
+        <a class="btn btn--primary" href="video-reel.html">Open HTML preview →</a>
+        <a class="btn" href="videos/reel-9x16.mp4">Rendered MP4 (2.6 MB)</a>
+        <span class="note">templates/hyperframes-reel.html</span>
       </div>
     </div>
   </section>
 
   <section class="card">
     <div class="card__num">05</div>
+    <div class="card__body">
+      <p class="card__kicker">Commit 2 · Hyperframes reel · 16:9 landscape</p>
+      <h2>Same reel, landscape canvas</h2>
+      <p class="card__desc">
+        Same 32-second 7-beat reel content, rendered at 1920×1080 instead of 1080×1920. Same pacing, same kinetic typography, same captions — but the MECHANISM beat becomes a native before/after split-screen, the hook stat sits beside its label on one row, and the caption track is a centered bar instead of a bottom strip. Use this aspect for X/LinkedIn/desktop shares.
+      </p>
+      <ul class="checklist">
+        <li>Hook row: "4,200 / requests per second" on one line (side-by-side, not stacked)</li>
+        <li>MECHANISM: "One shared queue / every tenant fights" ← → "One queue per tenant / nobody waits", both halves stagger in</li>
+        <li>Caption bar centered 48px from bottom, max-width 1400px</li>
+        <li>Safe zone relaxes to 60px top, 140px bottom (no phone chrome)</li>
+        <li>Same 32s duration, same cut pacing, same dual-mode gate</li>
+      </ul>
+      <div class="card__links">
+        <a class="btn btn--primary" href="video-reel-landscape.html">Open HTML preview →</a>
+        <a class="btn" href="videos/reel-16x9.mp4">Rendered MP4 (2.1 MB)</a>
+        <span class="note">templates/hyperframes-reel-landscape.html · reel-patterns.md § Two aspect ratios</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card__num">06</div>
     <div class="card__body">
       <p class="card__kicker">Commit 4 · Clarify policy</p>
       <h2>Not demo-able as an artifact</h2>

@@ -554,9 +554,9 @@ An alternative output format: MP4 / WebM video via [Hyperframes](https://github.
 
 **Two styles, picked explicitly:**
 - `long-form` — 16:9 landscape, 1920×1080, 60–180s, slide-paced dwell scenes, TTS narration, minor shader transitions. For meetings, onboarding, LinkedIn.
-- `reel` — 9:16 vertical, 1080×1920, 30–60s, hard cuts every 1.2–1.8s, kinetic typography, progressive diagram reveal, burned-in captions. For Shorts / Reels / TikTok silent-autoplay feeds.
+- `reel` — 30–60s, hard cuts every 1.2–1.8s, kinetic typography, progressive diagram reveal, burned-in captions. Supports two aspect ratios via `--aspect=9:16` (vertical 1080×1920 — Shorts/Reels/TikTok) or `--aspect=16:9` (landscape 1920×1080 — X/LinkedIn/YouTube-embedded/desktop). Same format, different canvas — see `./references/reel-patterns.md` § Two aspect ratios for what differs between them.
 
-**Before generating video, read `./references/hyperframes.md` (runtime, constraints, CLI flags), `./references/gsap-rules.md` (hard constraints — timelines must be `{ paused: true }`, no `Math.random`, no `repeat: -1`), and — for reel style — `./references/reel-patterns.md` (beat structure, kinetic typography, progressive diagram reveal, TTS + burned-in captions).** Start compositions from `./templates/hyperframes-longform.html` or `./templates/hyperframes-reel.html`.
+**Before generating video, read `./references/hyperframes.md` (runtime, constraints, CLI flags), `./references/gsap-rules.md` (hard constraints — timelines must be `{ paused: true }`, no `Math.random`, no `repeat: -1`), and — for reel style — `./references/reel-patterns.md` (beat structure, kinetic typography, progressive diagram reveal, TTS + burned-in captions).** Start compositions from `./templates/hyperframes-longform.html` (16:9 long-form), `./templates/hyperframes-reel.html` (9:16 reel), or `./templates/hyperframes-reel-landscape.html` (16:9 reel).
 
 **Runtime requirements.** Hyperframes needs Node ≥ 22 and FFmpeg on PATH. The skill runs `bash {{skill_dir}}/scripts/hyperframes-doctor.sh` at the start of any video command; if it exits non-zero, abort and forward install hints to the user. Do not attempt to render with missing deps.
 

@@ -27,16 +27,19 @@ Two styles, picked via `--style` or confirmed via AskUserQuestion.
 - **Animations:** Fade-ups, count-ups, cross-fades between scenes, optional shader transitions at major beat boundaries
 - **Audio:** TTS narration over dwell scenes; optional soft bed
 
-### `reel`
+### `reel` (supports two aspect ratios)
 
-- **Aspect:** 9:16 vertical, 1080×1920
+- **Aspect:** `--aspect=9:16` (default, vertical 1080×1920) OR `--aspect=16:9` (landscape 1920×1080)
 - **Duration:** 30–60 seconds (default 45s)
 - **Pacing:** Hard cuts every 1.2–1.8s; 6–8 beats; hook within 2s
-- **Audience:** Shorts / Reels / TikTok silent-autoplay feeds
-- **Template:** `templates/hyperframes-reel.html`
-- **Animations:** Kinetic typography (word-by-word), progressive diagram reveal, Ken Burns on imagery, shader transitions at beat boundaries
-- **Audio:** TTS narration with burned-in captions; bottom-third safe-zone respected
-- **Read:** `references/reel-patterns.md` before generating — it's the authoritative guide
+- **Audience — 9:16:** Shorts / Reels / TikTok silent-autoplay feeds
+- **Audience — 16:9:** X/Twitter embeds, LinkedIn, YouTube-embedded, desktop shares, conference intro stings
+- **Templates:**
+  - `templates/hyperframes-reel.html` (9:16)
+  - `templates/hyperframes-reel-landscape.html` (16:9)
+- **Animations:** Kinetic typography (word-by-word), progressive diagram reveal, Ken Burns on imagery, shader transitions at beat boundaries. 16:9 MECHANISM beats use native split-screen (before/after side-by-side) instead of vertical stacks.
+- **Audio:** TTS narration with burned-in captions; safe zones adapt (9:16 bottom 200px for phone chrome, 16:9 bottom 140px centered caption bar)
+- **Read:** `references/reel-patterns.md` § Two aspect ratios — authoritative guide for picking between 9:16 and 16:9 and the layout rules that differ between them.
 
 ---
 
@@ -142,6 +145,7 @@ Report:
 | Flag | Default | Notes |
 |---|---|---|
 | `--style=<long-form\|reel>` | ask | Required if ambiguous |
+| `--aspect=<9:16\|16:9>` | 16:9 (long-form), 9:16 (reel) | Only meaningful for `--style=reel` (long-form is always 16:9) |
 | `--duration=<Ns>` | 60 (long-form), 45 (reel) | Enforced ranges 30–180s |
 | `--voice=<name>` | `af_nova` | Hyperframes TTS voice |
 | `--no-narration` | off | Skip TTS; silent video |

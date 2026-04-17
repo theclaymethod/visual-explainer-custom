@@ -1,8 +1,43 @@
 # Reel Patterns — Brain-Rot-Friendly Fast-Cut Explainer Video
 
-**What this is.** The vertical 9:16 fast-paced explainer format. 30–60 seconds total. Hard cuts every 1–2 seconds. Burned-in captions. TTS narration. Kinetic typography. Progressive diagram reveal. Designed to hold attention on silent-autoplay feeds (Shorts, Reels, TikTok).
+**What this is.** The fast-paced explainer format. 30–60 seconds total. Hard cuts every 1–2 seconds. Burned-in captions. TTS narration. Kinetic typography. Progressive diagram reveal. Designed to hold attention in silent-autoplay feeds.
 
-This format is a sibling of `long-form` (16:9 dwell slides). Pick one per render; don't mix.
+This format is a sibling of `long-form` (slide-paced dwell scenes). Pick one per render; don't mix.
+
+---
+
+## Two aspect ratios — same format, different canvases
+
+Reel is defined by **pacing and structure** (hard cuts, 7-beat narrative, kinetic typography, burned-in captions), not by orientation. Two canvases are supported; content compresses the same way into either.
+
+| Aspect | Resolution | Template | Where it lives |
+|---|---|---|---|
+| **9:16 vertical** (default) | 1080 × 1920 | `templates/hyperframes-reel.html` | Shorts, Reels, TikTok — phone silent-autoplay feeds |
+| **16:9 landscape** | 1920 × 1080 | `templates/hyperframes-reel-landscape.html` | X/Twitter embeds, LinkedIn, YouTube-embedded, desktop Slack/Discord, conference intro stings |
+
+Pick by asking where the video will be watched. If the primary surface is a feed you'd scroll on a phone, pick `9:16`. If it's embedded in an article, posted to LinkedIn, or played on a desktop screen, pick `16:9`.
+
+### What differs between the two aspects
+
+| | 9:16 | 16:9 |
+|---|---|---|
+| Safe zone | 100px top, 200px bottom (phone chrome + caption area) | 60px top, 140px bottom (caption bar) |
+| Hook stat | fills vertically, stat on top / label below | stat + label side-by-side on one row |
+| Claim text | stacked narrow rows, 1 line per phrase | wider rows, 2 lines of 6–8 words |
+| Captions | full-bleed bottom strip, bottom 120px | centered bar 48px from bottom, max-width 1400px |
+| MECHANISM | vertical stack (before state → after state) | split left/right (native to 16:9) |
+
+### What stays identical
+
+- Beat structure (HOOK → PROBLEM → CONTEXT → MECHANISM → PROOF → RESOLUTION → CTA)
+- Cut pacing (hard cuts every 1.2–1.8s during body beats)
+- Total duration target (30–60s; default 45s)
+- Kinetic typography timing (word/line staggers)
+- GSAP constraints (paused timeline, no `Math.random`, no `repeat: -1`, dual-mode gate)
+- Caption synchronization to beat boundaries
+- TTS + burned-in captions pattern
+
+Pick aspect via the `--aspect=9:16` or `--aspect=16:9` flag on `/generate-video` when `--style=reel`. If the user doesn't specify, ask via `AskUserQuestion` (reel is a Tier 0 command — aspect is a first-class question).
 
 ---
 
