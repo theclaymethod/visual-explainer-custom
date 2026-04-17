@@ -89,6 +89,8 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 
 **For CSS/layout patterns and SVG connectors**, read `./references/css-patterns.md`.
 
+**For diagram generation specifically** — the 13 supported diagram types (architecture, flowchart, sequence, state, ER, timeline, swimlane, quadrant, nested, tree, layer stack, Venn, pyramid/funnel) — **default to inline SVG**, not Mermaid. Read `./references/diagrams-svg.md` for the type-selection gate, shape semantics (ovals = start/end, rects = steps, diamonds = decisions, dots = merges), complexity budgets (max 9 nodes, 12 arrows, 2 accent elements), removal test, annotation primitive, sketchy filter, and anti-patterns list. Read `./references/diagram-tokens.md` for the per-aesthetic token mapping so the same diagram rules produce aesthetic-appropriate output across Mono-Industrial, SubQ, Editorial-Diagram, Blueprint, Paper/ink, Terminal, and IDE-inspired palettes. Start from `./templates/svg-diagram-starter.html` — it ships the `<defs>` block (dot pattern, arrow markers, sketchy filter), the 4px grid, masked arrow labels, and a bottom legend strip. Mermaid remains available as a fallback — see the table below.
+
 **For pages with 4+ sections** (reviews, recaps, dashboards), also read `./references/responsive-nav.md` for section navigation with sticky sidebar TOC on desktop and horizontal scrollable bar on mobile.
 
 **Choosing a rendering approach:**
@@ -96,17 +98,29 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 | Content type | Approach | Why |
 |---|---|---|
 | Architecture (text-heavy) | CSS Grid cards + flow arrows | Rich card content (descriptions, code, tool lists) needs CSS control |
-| Architecture (topology-focused) | **Mermaid** | Visible connections between components need automatic edge routing |
-| Flowchart / pipeline | **Mermaid** | Automatic node positioning and edge routing |
-| Sequence diagram | **Mermaid** | Lifelines, messages, and activation boxes need automatic layout |
-| Data flow | **Mermaid** with edge labels | Connections and data descriptions need automatic edge routing |
-| ER / schema diagram | **Mermaid** | Relationship lines between many entities need auto-routing |
-| State machine | **Mermaid** | State transitions with labeled edges need automatic layout |
-| Mind map | **Mermaid** | Hierarchical branching needs automatic positioning |
-| Class diagram | **Mermaid** | Inheritance, composition, aggregation lines with automatic routing |
-| C4 architecture | **Mermaid** | Use `graph TD` + `subgraph` for C4 (not native `C4Context` — it ignores themes) |
+| Architecture (topology, ≤ 14 nodes) | **Inline SVG** (see `./references/diagrams-svg.md`) | Editorial control, shape semantics, 4px grid, focal accent rule |
+| Architecture (topology, 15+ nodes) | **Mermaid** (hybrid: Mermaid overview + CSS Grid cards) | Auto-routing beats hand-authored coordinates above the complexity budget |
+| Flowchart / pipeline (≤ 9 nodes) | **Inline SVG** | Shape carries meaning (oval/rect/diamond/dot) — requires hand authoring |
+| Flowchart / pipeline (10+ nodes) | **Mermaid** | Auto layout needed past the budget |
+| Sequence diagram (≤ 5 lifelines) | **Inline SVG** | Activation bars, self-message U-loops, dashed return arrows are editorial decisions |
+| Sequence diagram (6+ lifelines) | **Mermaid** `sequenceDiagram` | Auto layout needed past the budget |
+| Data flow | **Mermaid** with edge labels | Auto edge routing beats hand-drawn lines for data pipelines |
+| ER / schema diagram (≤ 8 entities) | **Inline SVG** | Cardinality labels, PK/FK glyphs, aggregate-root focal rule |
+| ER / schema diagram (9+ entities) | **Mermaid** `erDiagram` | Relationship routing auto-resolves |
+| State machine (≤ 9 states) | **Inline SVG** | Self-loops, start/end glyphs, `event [guard] / action` labels |
+| State machine (10+ states) | **Mermaid** `stateDiagram-v2` / `flowchart TD` | See `stateDiagram-v2` label caveat below |
+| Timeline | **Inline SVG** with honest intervals | Unequal intervals must get unequal spacing — Mermaid can't do this |
+| Swimlane | **Inline SVG** | Lane dividers, handoff arrows, eyebrow lane labels |
+| Quadrant | **Inline SVG** | Axis-end labels, focal "do first" accent |
+| Nested containment | **Inline SVG** | Concentric rounded rects with escalating stroke opacity |
+| Tree (≤ depth 4) | **Inline SVG** | Orthogonal elbow connectors, never diagonal |
+| Layer stack | **Inline SVG** | 4–6 horizontal bands with mono index + sans name + context note |
+| Venn (2–3 circles) | **Inline SVG** | Proportional circle sizes, set-specific hairline strokes |
+| Pyramid / funnel | **Inline SVG** | Honest proportional widths — Mermaid can't enforce this |
+| Mind map | **Mermaid** `mindmap` | Radial layout is ergonomic in Mermaid and doesn't benefit from SVG control |
+| Class diagram | **Mermaid** `classDiagram` | Inheritance/composition routing is Mermaid's strength |
+| C4 architecture | **Mermaid** `graph TD` + `subgraph` | Use flowchart-as-C4 (native `C4Context` ignores themes) |
 | Data table | HTML `<table>` | Semantic markup, accessibility, copy-paste behavior |
-| Timeline | CSS (central line + cards) | Simple linear layout doesn't need a layout engine |
 | Dashboard | CSS Grid + Chart.js | Card grid with embedded charts |
 
 **Mermaid theming:** Always use `theme: 'base'` with custom `themeVariables` so colors match your page palette. Use `layout: 'elk'` for complex graphs (requires the `@mermaid-js/layout-elk` package — see `./references/libraries.md` for the CDN import). Override Mermaid's SVG classes with CSS for pixel-perfect control. See `./references/libraries.md` for full theming guide.
@@ -334,29 +348,33 @@ If you skip this step and your prose still reads as AI-generated (telltale phras
 
 ## Diagram Types
 
+**The full rules, shape semantics, complexity budgets, removal test, and anti-patterns for all 13 supported diagram types live in `./references/diagrams-svg.md`.** This section summarizes the rendering-approach decision per type. Aesthetic token mappings for every diagram type live in `./references/diagram-tokens.md`.
+
+Before authoring any diagram, pick the type via the Type Selection Gate in `diagrams-svg.md`, check the complexity budget, and run the Removal Test before emitting.
+
 ### Architecture / System Diagrams
 Three approaches depending on complexity:
 
-**Simple topology (under 10 elements):** Use Mermaid. A `graph TD` with custom `themeVariables` produces readable diagrams with automatic edge routing.
+**Topology (≤ 14 elements):** Use **inline SVG** (start from `./templates/svg-diagram-starter.html`). Group nodes by tier or trust boundary. Focal accent on 1–2 critical integration points. Dashed rectangles for region boundaries with masked boundary labels.
 
-**Text-heavy overviews (under 15 elements):** CSS Grid with explicit row/column placement. Sections as rounded cards with colored borders and monospace labels. Vertical flow arrows between sections. The reference template at `./templates/architecture.html` demonstrates this pattern. Use when cards need descriptions, code references, tool lists, or other rich content that Mermaid nodes can't hold.
+**Text-heavy overviews (under 15 elements):** CSS Grid with explicit row/column placement when cards need descriptions, code references, tool lists, or other rich content that SVG nodes can't hold. Reference: `./templates/architecture.html`.
 
-**Complex architectures (15+ elements):** Use the **hybrid pattern** — a simple Mermaid overview (5-8 nodes showing module relationships) followed by detailed CSS Grid cards for each module's internals. This gives you visual topology AND readable details. The overview diagram uses module names with `<small>` tags for key function names. The cards below show full function lists with new/modified badges. Never try to cram 15+ elements into a single Mermaid diagram — it will render unreadably small even with zoom controls.
+**Complex architectures (15+ elements):** Use the **hybrid pattern** — a simple Mermaid overview (5–8 nodes showing module relationships) followed by detailed CSS Grid cards for each module's internals. Auto-routing beats hand-authored coordinates above the complexity budget.
 
 ### Flowcharts / Pipelines
-**Use Mermaid.** Automatic node positioning and edge routing produces proper diagrams with connecting lines, decision diamonds, and parallel branches — dramatically better than CSS flexbox with arrow characters. Prefer `graph TD` (top-down); use `graph LR` only for simple 3-4 node linear flows. Color-code node types with Mermaid's `classDef` or rely on `themeVariables` for automatic styling.
+**Inline SVG for ≤ 9 nodes; Mermaid above that.** Shape carries meaning, not color: ovals (`rx=20`) for start/end, rectangles (`rx=6`) for steps, diamonds for decisions (≤ 3 exits or nest diamonds), filled dots (`r=4`) for merge points. Vertical flow. "Yes" → right, "No" → down. Label every edge. Accent on the happy path OR the most consequential decision — not every decision.
 
 ### Sequence Diagrams
-**Use Mermaid.** Lifelines, messages, activation boxes, notes, and loops all need automatic layout. Use Mermaid's `sequenceDiagram` syntax. Style actors and messages via CSS overrides on `.actor`, `.messageText`, `.activation` classes.
+**Inline SVG for ≤ 5 lifelines; Mermaid above that.** Actors in boxes at the top. Vertical dashed lifelines. Horizontal message arrows. Time flows down only. Activation bars 8px wide, muted fill, 0.8 stroke. Self-messages as U-loops. Return arrows dashed. Accent on the primary success response only.
 
 ### Data Flow Diagrams
-**Use Mermaid.** Data flow diagrams emphasize connections over boxes — exactly what Mermaid excels at. Use `graph TD` (or `graph LR` for simple linear flows) with edge labels for data descriptions. Thicker, colored edges for primary flows. Source/sink nodes styled differently from transform nodes via Mermaid's `classDef`.
+**Mermaid** with edge labels. Data flow diagrams emphasize auto-routed connections over hand-placed boxes.
 
 ### Schema / ER Diagrams
-**Use Mermaid.** Relationship lines between entities need automatic routing. Use Mermaid's `erDiagram` syntax with entity attributes. Style via `themeVariables` and CSS overrides on `.er.entityBox` and `.er.relationshipLine`.
+**Inline SVG for ≤ 8 entities; Mermaid above that.** Two-part entity shape: header (type tag + name) + field list. `#` marks PK, `→` marks FK. Cardinality (`1`, `N`, `0..1`, `1..*`) placed 10–12px from connecting edge. Cluster related entities; don't draw every FK on a huge model. Accent on the aggregate root.
 
 ### State Machines / Decision Trees
-**Use Mermaid.** Use `stateDiagram-v2` for states with labeled transitions. Supports nested states, forks, joins, and notes. Decision trees can use `graph TD` with diamond decision nodes.
+**Inline SVG for ≤ 9 states; Mermaid above that.** Rounded rects (`rx=8`) for states. Start = filled dot (`r=6`). End = ringed dot. Transition labels in the pattern `event [guard] / action`. Self-loops arc above the node. Never draw "from any state" lines from every state — annotate once.
 
 **`stateDiagram-v2` label caveat:** Transition labels have a strict parser — colons, parentheses, `<br/>`, HTML entities, and most special characters cause silent parse failures ("Syntax error in text"). If your labels need any of these (e.g., `cancel()`, `curate: true`, multi-line labels), use `flowchart TD` instead with rounded nodes and quoted edge labels (`|"label text"|`). Flowcharts handle all special characters and support `<br/>` for line breaks. Reserve `stateDiagram-v2` for simple single-word or plain-text labels.
 
@@ -397,7 +415,28 @@ Cell content:
 - Keep numeric columns right-aligned with `tabular-nums`
 
 ### Timeline / Roadmap Views
-Vertical or horizontal timeline with a central line (CSS pseudo-element). Phase markers as circles on the line. Content cards branching left/right (alternating) or all to one side. Date labels on the line. Color progression from past (muted) to future (vivid).
+**Inline SVG.** Horizontal hairline baseline. Ticks at meaningful intervals with monospace date labels. Events as dots with labels alternating above and below (thin connector lines to their dots). **Time scale must be honest** — unequal intervals get unequal spacing. Break the axis visibly when density demands it. For multi-phase roadmaps with rich content per phase, fall back to the CSS card pattern (central line pseudo-element + alternating cards).
+
+### Swimlane Diagrams
+**Inline SVG.** One lane per actor, max 5 lanes. Lane labels in the eyebrow style (mono, small, UPPERCASE, 0.18em tracking) in the left margin. 1px hairline dividers between lanes. Accent on high-impact boundary-crossing handoffs. Never assign one step to two lanes.
+
+### Quadrant / Priority Matrices
+**Inline SVG.** Centered axis cross. Axis labels at axis **ends**, not midpoints. Items as dots (`r=4`) with text labels. Accent on the "do first" item (top-right quadrant). ~12 items max. Never place items on axis lines. Never fill the four quadrants with different colors.
+
+### Nested Containment
+**Inline SVG.** 3–5 concentric rounded rects. Horizontal padding 24–32px, vertical padding 32–36px. Eyebrow label top-left on a small masked overlay across the ring. Stroke opacity escalates inward (0.30 → 0.45 → accent innermost). Accent on the innermost focal ring only.
+
+### Tree / Hierarchy
+**Inline SVG for depth ≤ 4; Mermaid `mindmap` for deeper or wider trees.** Root at top (or left). Nodes 120–180w × 40–52h. Name in sans 12px/600, optional sublabel in mono 9px. **Connectors orthogonal (elbow-style), never diagonal.** Max 5 children per level. Accent on one node only: either root or a critical leaf, not both.
+
+### Layer Stack / Abstraction Levels
+**Inline SVG.** 4–6 horizontal bands, 56–72px tall, 800–880px wide in a 1000 viewBox. Row content left-to-right: mono index · sans 600 layer name · contextual note. Fills alternate subtle shades OR all-paper with hairline dividers. Accent on the "bottleneck / pays-rent" layer. Direction indicator (arrow glyph) outside the left margin.
+
+### Venn Diagrams
+**Inline SVG.** 2 or 3 circles (never 4). Hairline 1px strokes in set-specific colors. Fills are very-low-opacity rgba versions of the same colors. Set names outside circles, intersection terms inside. One accent overlap = focal. Circle sizes proportional to cardinality, not fake-equal.
+
+### Pyramid / Funnel
+**Inline SVG.** 4–6 layers, 56–72px tall each. **Widths must be honest** (proportional to count or percentage). Centered name in sans 600 per layer, optional sublabel and optional side annotation. Accent on the apex (pyramid) or the conversion layer (funnel), never the base. Pick pyramid-up OR funnel-down and commit.
 
 ### Dashboard / Metrics Overview
 Card grid layout. Hero numbers large and prominent. Sparklines via inline SVG `<polyline>`. Progress bars via CSS `linear-gradient` on a div. For real charts (bar, line, pie), use **Chart.js via CDN** (see `./references/libraries.md`). KPI cards with trend indicators (up/down arrows, percentage deltas).
