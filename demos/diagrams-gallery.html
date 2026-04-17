@@ -350,12 +350,16 @@
         <text x="480" y="438" class="t-node-name" text-anchor="middle">Dead letter queue</text>
       </g>
 
-      <!-- ====== annotation callout (editorial primitive) ====== -->
+      <!-- ====== annotation callout (editorial primitive) ======
+           Leader must visibly connect callout text to its target node.
+           Routed below the DLQ node so the dashed line doesn't cross
+           any other node, then approaches the landing dot from above
+           so it terminates cleanly before the italic text begins. -->
       <g>
-        <path d="M 660 408 C 620 460, 460 500, 360 508"
+        <path d="M 660 408 C 720 496, 400 512, 56 528"
               stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3" fill="none" />
-        <circle cx="360" cy="508" r="2.5" fill="var(--accent)" />
-        <text x="60" y="544" class="t-callout">The enricher is the only component that owns state worth protecting. Everything else can be re-derived.</text>
+        <circle cx="56" cy="528" r="2.5" fill="var(--accent)" />
+        <text x="64" y="540" class="t-callout">The enricher is the only component that owns state worth protecting. Everything else can be re-derived.</text>
       </g>
 
       <!-- ====== legend (horizontal bottom strip) ====== -->
@@ -889,12 +893,15 @@
         <text x="200" y="420" class="t-pct" text-anchor="end" fill="var(--accent)">3.0M /d</text>
       </g>
 
-      <!-- Drop-off side annotation (neutral callout) -->
+      <!-- Drop-off annotation (neutral callout).
+           Leader connects the apex (conversion) layer to the italic
+           callout text below the funnel. Routed from the apex's
+           bottom-left corner so it clears the "3.0M /d" rail label. -->
       <g>
-        <path d="M 876 200 C 930 220, 940 280, 930 340"
+        <path d="M 212 448 C 160 472, 92 484, 56 488"
               stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" fill="none" />
-        <circle cx="930" cy="340" r="2.5" fill="var(--muted)" />
-        <text x="60" y="496" class="t-callout">A 28-point drop from raw to queryable. Most of it is schema; very little is warehouse.</text>
+        <circle cx="56" cy="488" r="2.5" fill="var(--muted)" />
+        <text x="64" y="492" class="t-callout">A 28-point drop from raw to queryable. Most of it is schema; very little is warehouse.</text>
       </g>
 
       <!-- ====== legend ====== -->

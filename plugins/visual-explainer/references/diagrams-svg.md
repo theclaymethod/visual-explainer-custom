@@ -20,6 +20,8 @@ The best diagrams are done when nothing can be removed, not when everything has 
 
 ## The Removal Test — Pre-Output Gate
 
+The Removal Test runs BEFORE emit; the Screenshot QA Gate (§ below) runs AFTER emit. Both are mandatory.
+
 Run this checklist before emitting any SVG diagram. If any answer is "no," the diagram is not ready.
 
 **Type fit**
@@ -259,6 +261,59 @@ A diagram renders inside a page. Fonts and colors come from whichever aesthetic 
 - Inside other named aesthetics → inherit host tokens, preserve shape semantics and the 4px grid
 
 Shape semantics, the 4px grid, arrow-label masking, z-order, complexity budgets, and the removal test are **aesthetic-independent** and apply to every diagram in every aesthetic.
+
+---
+
+## Screenshot QA Gate — Post-Generation Verification
+
+The Removal Test (above) runs BEFORE emit. The Screenshot QA Gate runs AFTER emit. Both are mandatory — a clean file write is not a green signal. Inline SVG regularly looks correct in source and ships broken: leader lines land in empty whitespace, arrow labels collide with strokes, density forces overlapping text, and none of it surfaces until the page is actually rendered.
+
+### When to run
+
+After authoring ANY inline-SVG diagram (all 13 supported types), open the rendered output in a browser and capture a **per-figure screenshot** before reporting the diagram as done. If the host page contains multiple figures, screenshot each one individually (scroll the figure into view or screenshot its element). A full-page screenshot alone is not sufficient — individual figures need individual inspection.
+
+### Playwright MCP flow (same tool set as SKILL.md § 6 Verify in a Browser)
+
+1. If `file://` is blocked in the local environment, serve the host directory via `python3 -m http.server <port> --directory <root>` and navigate to `http://localhost:<port>/<path>`.
+2. `browser_navigate` to the rendered page.
+3. `browser_resize` to `1440 × 900` (desktop editorial reading width).
+4. For each figure: scroll it into view via `browser_evaluate` (`element.scrollIntoView({block:'start'})`) then `browser_take_screenshot` with a descriptive `filename` (e.g. `fig01-architecture.png`).
+5. `browser_console_messages` to catch JS errors (font 404s, Mermaid parse errors if a hybrid page).
+
+### Per-figure checks (the LLM reads the screenshot)
+
+For every figure, verify:
+
+- **Annotation callouts: leader must visibly connect text to its target node.** Never float to empty whitespace. The leader ends at a landing dot, and the callout text reads continuously from that dot (or sits immediately adjacent). If the leader lands far from the text, or the text sits visually detached below/above an orphan dot, the callout has failed its primitive contract and must be repaired.
+- **Arrow labels sit on paper-colored masking rects**, not on bare strokes. No collision between label glyphs and the arrow they label.
+- **Bottom horizontal legend strip**, separated from the diagram body by a hairline rule (`var(--rule)`). Legend items match what is actually drawn above — no ghost items, no missing items.
+- **≤ 2 accent uses per diagram.** Accent lives on exactly one focal element plus at most one supporting cue (e.g., the happy-path arrow).
+- **Z-order: arrows drawn before nodes.** Nodes sit on top of lines, not the other way around. If you see an arrowhead covering a node label, z-order is wrong.
+- **No clipping, no overflow, no overlapping text.** All text stays inside its container. Leader curves do not pass through unrelated labels (e.g. a callout leader crossing a percentage rail label is a collision).
+- **Every coordinate divisible by 4** (except stroke widths, opacity values, and the 22×22 dot pattern). Run a quick grep on the emitted SVG for non-multiple-of-4 coordinates if the visual review finds misalignment.
+- **Shape semantics respected.** Flowcharts use ovals (start/end), rects (steps), diamonds (decisions), dots (merges). Sequence uses lifelines + activation bars. Swimlane uses eyebrow lane labels in the left margin.
+- **Funnel widths honest to proportions.** Layer widths are proportional to the real percentages, not eyeballed-equal.
+- **Quadrant axis labels at axis ENDS, not midpoints.** `LOW COST`/`HIGH COST` pin to the left/right tips of the X axis; `LOW IMPACT`/`HIGH IMPACT` pin to the bottom/top of the Y axis.
+- **No console errors.** `browser_console_messages` should be empty or only expected warnings.
+
+### Repair loop — bounded at 2 attempts
+
+1. **Attempt 1** — fix in-place by editing the SVG source. Re-screenshot. If all checks pass, done.
+2. **Attempt 2** — if issues remain, make one more targeted repair pass (reroute leaders around obstacles, enlarge masks, swap colliding labels to a different anchor, reduce density by removing nodes). Re-screenshot.
+3. **If the second attempt still has unresolved issues, REPLACE that figure with Mermaid.** This is the documented fallback for "hand-authored SVG can't produce a clean layout at this density." Use Mermaid `theme: 'base'` with custom `themeVariables` mapped to the active aesthetic's tokens (see `diagram-tokens.md` for the per-aesthetic mapping). Include the Mermaid CDN, wrap in the `diagram-shell` / `mermaid-wrap` pattern from `templates/mermaid-flowchart.html` so zoom controls work, and re-screenshot to confirm the swap renders cleanly.
+
+### Common repairs
+
+| Failure mode | Fix |
+|---|---|
+| Leader lands in empty whitespace | Reroute the path so it terminates at a landing dot adjacent to the callout text. Prefer approaching the dot from a direction that keeps the last segment short. |
+| Leader crosses another node or label | Reroute via a control point that takes the curve around the obstacle. Start from a different edge of the source node (bottom/side) if needed. |
+| Label colliding with arrow stroke | Enlarge the masking `<rect>` behind the label. Mask width should exceed the glyph bounds by ~4px each side. |
+| Legend lists an item not in the diagram | Remove the legend entry, or add the missing element to the diagram body. |
+| Density forces overlapping text | Drop a node per the Removal Test, or split into two diagrams. If neither is acceptable, escalate to Mermaid. |
+| Funnel widths look eyeballed-equal | Recompute widths from the real percentages; layer 5 at 72% → width = 800 × 0.72 = 576, x = 500 − 288 = 212. |
+
+The Screenshot QA Gate closes the loop that the Removal Test opens: the pre-emit gate catches design errors, the post-emit gate catches rendering errors.
 
 ---
 
