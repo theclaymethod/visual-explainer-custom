@@ -58,31 +58,86 @@ Manrope italic for quoted voices and testimonials only: *"Finally! A foundation 
 
 ## 3. Color System
 
+Two layers: **brand color constants** (never change) and **semantic role tokens** (invert with mode). Dark is canonical; light inverts the neutrals but leaves the accent palette untouched.
+
+### Brand constants
+
 ```css
-/* Structure */
---subq-black:    #000000;   /* page bg — canonical */
---subq-navy:     #080d1f;   /* alt surface (rare) */
---subq-charcoal: #3b362d;   /* divider, code surface, surface variant */
---subq-tan:      #b7a99a;   /* border, secondary text, ghost chrome */
---subq-gray:     #999489;   /* disabled, muted */
---subq-cream:    #fffaf3;   /* contrast panel surface */
+--subq-black:    #000000;
+--subq-navy:     #080d1f;
+--subq-charcoal: #3b362d;
+--subq-tan:      #b7a99a;
+--subq-gray:     #999489;
+--subq-cream:    #fffaf3;
 
-/* Accents — used as pixel blocks and the single CTA color */
---subq-yellow:   #FFE237;   /* inferred — verify against design tokens */
---subq-blue:     #0834bc;   /* CTA fill + accent */
---subq-orange:   #eb521e;   /* accent */
+/* Accents — identical on both canvases */
+--subq-yellow:   #FFE237;
+--subq-blue:     #0834bc;   /* CTA fill */
+--subq-orange:   #eb521e;
 --subq-green:    #3A7A35;   /* inferred — verify against design tokens */
-
-/* Text on black */
---text-display:   #ffffff;
---text-primary:   rgba(255, 255, 255, 0.92);
---text-secondary: #b7a99a;                    /* tan, literal */
---text-disabled:  rgba(255, 255, 255, 0.30);  /* the "ghost" wordmark treatment */
-
-/* Rules */
---rule:         rgba(183, 169, 154, 0.20);    /* tan hairline */
---rule-strong:  rgba(183, 169, 154, 0.40);
 ```
+
+### Semantic roles — dark (canonical)
+
+```css
+:root {
+  --bg:            var(--subq-black);
+  --panel:         var(--subq-cream);
+  --panel-text:    var(--subq-black);
+  --panel-text-dim: rgba(0, 0, 0, 0.70);
+  --panel-label:   rgba(0, 0, 0, 0.55);
+
+  --text-display:   #ffffff;
+  --text-primary:   rgba(255, 255, 255, 0.92);
+  --text-secondary: var(--subq-tan);
+  --text-disabled:  rgba(255, 255, 255, 0.30);
+
+  --rule:        rgba(183, 169, 154, 0.20);
+  --rule-strong: rgba(183, 169, 154, 0.40);
+  --grid-line:   rgba(255, 255, 255, 0.05);
+  --ghost:       rgba(255, 255, 255, 0.12);
+}
+```
+
+### Semantic roles — light (`prefers-color-scheme: light`)
+
+```css
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg:            var(--subq-cream);
+    --panel:         var(--subq-black);   /* panel inverts: black on cream page */
+    --panel-text:    var(--subq-cream);
+    --panel-text-dim: rgba(255, 250, 243, 0.80);
+    --panel-label:   rgba(255, 250, 243, 0.55);
+
+    --text-display:   var(--subq-black);
+    --text-primary:   rgba(0, 0, 0, 0.88);
+    --text-secondary: var(--subq-charcoal);  /* charcoal replaces tan */
+    --text-disabled:  rgba(0, 0, 0, 0.36);
+
+    --rule:        rgba(59, 54, 45, 0.16);
+    --rule-strong: rgba(59, 54, 45, 0.32);
+    --grid-line:   rgba(0, 0, 0, 0.06);
+    --ghost:       rgba(0, 0, 0, 0.10);
+  }
+}
+```
+
+### Inversion rules
+
+| Dark | Light | Notes |
+|---|---|---|
+| Black canvas | Cream canvas | `--bg` |
+| Cream contrast panel | Black contrast panel | `--panel` — the panel is the inverse of the page, always |
+| White display text | Black display text | `--text-display` |
+| Tan secondary text | Charcoal secondary text | `--text-secondary` |
+| White grid lines 5% | Black grid lines 6% | `--grid-line` |
+| White ghost wordmark 12% | Black ghost wordmark 10% | `--ghost` |
+| Pixel blocks (4 accents) | Pixel blocks (4 accents) | **Unchanged** — accents carry across modes |
+| Cross marks (4 accents) | Cross marks (4 accents) | **Unchanged** |
+| Primary CTA (blue fill, white text) | Primary CTA (blue fill, white text) | **Unchanged** — white on blue works either way |
+| Secondary CTA (white border + text) | Secondary CTA (black border + text) | Bind to `--text-display` |
+| Terminal code block (dark) | Terminal code block (dark) | **Unchanged** — terminals are dark, like Mono-Industrial |
 
 ### Where accent colors may appear
 
@@ -94,9 +149,13 @@ Manrope italic for quoted voices and testimonials only: *"Finally! A foundation 
 | Code block syntax tokens (see § 8) | Rainbow data-viz — pick one accent and stick |
 | Edge emphasis in a Mermaid diagram (one accent per diagram) | Gradient fills on anything except a social-post background |
 
-### "Dark-first but not dark-only"
+### Dark-first, light-mode supported
 
-The deck never defines a full light mode. Cream surfaces appear as **embedded panels** on a black page (contrast cards, mock screens, a business-card example). Treat cream as a surface, not a page mode — a `.subq-panel--cream` section on an otherwise black page is correct; flipping the entire page to cream is off-system.
+The brand deck is dark-canonical. The light mode above is this skill's extension, inferred by inverting the deck's existing palette — cream becomes the page, black becomes the contrast panel, tan secondary text becomes charcoal. The four accent colors were audited against both canvases and work on either.
+
+Light mode kicks in via `@media (prefers-color-scheme: light)`. It follows the viewer's OS preference automatically — don't hard-force one mode unless the user explicitly asks.
+
+When generating, verify both modes before delivery. The most common breakage is a value hard-coded as `#ffffff` or `rgba(255, 255, 255, ...)` that fails to invert under light mode. If you find one, bind it to a semantic token (`--text-display`, `--text-primary`, `--ghost`, `--grid-line`) so the inversion happens automatically.
 
 ---
 
@@ -300,41 +359,45 @@ Unlike Mono-Industrial, **labels here stay title-case / sentence-case** (no ALL 
 
 ## 9. Mermaid Theming (SubQ)
 
-Grayscale nodes with tan borders and white text. Accent color appears only on **one** edge or node per diagram, to mark the critical path or the primary surface.
+Neutral nodes (no fill color — they match the page canvas), tan or charcoal borders, white or black text. Accent color appears only on **one** edge or node per diagram, to mark the critical path or the primary surface. Mermaid's `themeVariables` take plain values, not CSS custom properties — so the theme must detect the color scheme at runtime and choose values to match.
 
 ```js
-const nodeFill   = '#000000';
-const nodeBorder = '#b7a99a';
-const nodeText   = '#ffffff';
-const edgeColor  = 'rgba(183, 169, 154, 0.55)';
+const isLight    = matchMedia('(prefers-color-scheme: light)').matches;
+const nodeFill   = isLight ? '#fffaf3' : '#000000';
+const nodeBorder = isLight ? '#3b362d' : '#b7a99a';
+const nodeText   = isLight ? '#000000' : '#ffffff';
+const edgeColor  = isLight ? 'rgba(59, 54, 45, 0.55)'  : 'rgba(183, 169, 154, 0.55)';
+const clusterBd  = isLight ? 'rgba(59, 54, 45, 0.18)'  : 'rgba(183, 169, 154, 0.20)';
+const tertiary   = isLight ? '#b7a99a' : '#3b362d';
 
 mermaid.initialize({
-  startOnLoad: false,
+  startOnLoad: true,
   theme: 'base',
   look: 'classic',
   layout: 'elk',
   themeVariables: {
     fontFamily: "'Manrope', system-ui, sans-serif",
     fontSize: '15px',
-    background: '#000000',
+    background: nodeFill,
     primaryColor: nodeFill,
     primaryTextColor: nodeText,
     primaryBorderColor: nodeBorder,
     lineColor: edgeColor,
-    tertiaryColor: '#3b362d',
-    clusterBkg: '#000000',
-    clusterBorder: 'rgba(183, 169, 154, 0.20)',
+    tertiaryColor: tertiary,
+    clusterBkg: nodeFill,
+    clusterBorder: clusterBd,
     mainBkg: nodeFill,
+    edgeLabelBackground: nodeFill,
   }
 });
 ```
 
-**Single-accent emphasis** — pick one per diagram:
+**Single-accent emphasis** — pick one per diagram. Do **not** set `color:` on classDefs; let the emphasized node inherit the current mode's text color so the diagram stays readable when the scheme flips.
 
 ```
-classDef primary stroke:#0834bc,stroke-width:2px,color:#ffffff;
-classDef warn    stroke:#FFE237,stroke-width:2px,color:#FFE237;
-classDef err     stroke:#eb521e,stroke-width:2px,color:#eb521e;
+classDef primary stroke:#0834bc,stroke-width:2px;
+classDef warn    stroke:#FFE237,stroke-width:2px;
+classDef err     stroke:#eb521e,stroke-width:2px;
 
 A --> B
 B --> C:::primary
@@ -342,7 +405,7 @@ B --> C:::primary
 
 Apply `:::primary` / `:::warn` / `:::err` to **one** node or edge per diagram. Using two accents in one Mermaid diagram signals the page is overworked — consider splitting into two diagrams.
 
-Node labels: Manrope 15px. Edge labels: Roboto Mono 11px, tan (`#b7a99a`), 0.15em tracking.
+Node labels: Manrope 15px. Edge labels: Roboto Mono 11px at 0.15em tracking — color follows `lineColor` which flips with mode.
 
 ---
 
@@ -498,7 +561,7 @@ When the user requests SubQ output, translate the usual patterns:
 | Gradient hero | Black hero with pixel-block column and 40px grid overlay |
 | Full-color KPI cards | Hero number in Libre Baskerville 400 or Roboto Mono 300, label in Roboto Mono tan above |
 | Emoji section headers | Corner cross mark (`+`) on the section + Roboto Mono label |
-| Full-page light mode | Cream panel embedded in an otherwise dark page |
+| Full-page light mode | Supported via `prefers-color-scheme: light`. Cream becomes the canvas, black becomes the contrast panel. |
 
 ---
 
@@ -506,7 +569,8 @@ When the user requests SubQ output, translate the usual patterns:
 
 Before generating, confirm:
 
-- [ ] Is the page black-canvassed by default, cream used only as an embedded surface (not a full mode)?
+- [ ] Is the page wired to semantic role tokens (`--bg`, `--panel`, `--text-display`, `--text-secondary`, `--ghost`, `--grid-line`) — not to `var(--subq-black)` or hard-coded whites/blacks?
+- [ ] Is there a `@media (prefers-color-scheme: light)` block that inverts the semantic tokens?
 - [ ] Am I using Libre Baskerville + Manrope + Roboto Mono — only these three?
 - [ ] Does the one display headline use Libre Baskerville? Is body in Manrope? Are labels in Roboto Mono at 0.15em tracking?
 - [ ] Are accent colors (yellow, blue, orange, green) confined to pixel blocks, the primary CTA, and/or one Mermaid emphasis?
@@ -514,8 +578,10 @@ Before generating, confirm:
 - [ ] Is the hero either bare or accompanied by a pixel-block arrangement — not a gradient, not a photograph, not a stock illustration?
 - [ ] Does the layout lean left, with generous negative space to the right?
 - [ ] Is there zero on-load motion?
-- [ ] Does every code block use the SubQ terminal palette, not the Mono-Industrial one?
-- [ ] Does the footer carry a ghost "Subquadratic" wordmark at ~14% opacity?
+- [ ] Does every code block use the SubQ terminal palette, not the Mono-Industrial one, and stay dark in light mode?
+- [ ] Does the footer carry a ghost "Subquadratic" wordmark that flips correctly between modes (`var(--ghost)`)?
+- [ ] Does the Mermaid theme detect `prefers-color-scheme` and choose node fill / text / border values to match?
+- [ ] Have I checked the page in BOTH `prefers-color-scheme: dark` and `light` before delivering?
 
 ---
 
@@ -532,6 +598,6 @@ Before generating, confirm:
 
 - **Green hex.** The green swatch label was partially obscured in the deck. Best interpretation: `#3A7A35`. Design team should confirm.
 - **Letter-spacing on monumental Roboto Mono.** Billboard treatment reads at ~0.3em, but no explicit token is specified. Use your judgment and bias toward less, not more.
-- **Full light mode.** Not specified in the deck. Until a spec lands, treat cream as a surface for embedded panels, never a full-page mode.
+- **Light mode.** Not specified in the brand deck. The light mode defined in § 3 is this skill's extension, inferred from the deck's palette by inverting neutrals while preserving the accent system. Confirm with design before shipping to public-facing material.
 
 Confirmed directly from the brand deck's palette page: `#FFE237` (yellow), `#000000` (black), `#fffaf3` (cream), `#0834bc` (blue), `#eb521e` (orange), `#999489` (gray), `#080d1f` (navy), `#b7a99a` (tan), `#3b362d` (charcoal).

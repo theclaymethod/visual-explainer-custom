@@ -14,7 +14,9 @@
   Patterns demonstrated here:
   - Three-typeface system: Libre Baskerville (display) + Manrope (body) + Roboto Mono (labels)
   - Roboto Serif Semi-Bold for the "Subquadratic" wordmark only
-  - Dark-first canvas (#000000) with 40px grid texture on hero
+  - Dark-first canvas (#000000) with 40px grid texture on hero — flips to cream
+    canvas (#fffaf3) when prefers-color-scheme: light. Accent palette stays put;
+    neutrals invert. The cream "contrast panel" becomes a black panel in light mode.
   - Cross-mark corner anchors (four corners, each a different accent)
   - Pixel block hero column in the four accent colors
   - Mermaid theme with single-accent emphasis (one edge in SubQ blue)
@@ -41,7 +43,7 @@
     --font-mono:      'Roboto Mono', 'SF Mono', Consolas, monospace;
     --font-logotype:  'Roboto Serif', Georgia, serif;
 
-    /* Structure */
+    /* Brand color constants — never change with mode */
     --subq-black:    #000000;
     --subq-navy:     #080d1f;
     --subq-charcoal: #3b362d;
@@ -49,21 +51,28 @@
     --subq-gray:     #999489;
     --subq-cream:    #fffaf3;
 
-    /* Accents */
+    /* Accents — identical on both canvases */
     --subq-yellow:   #FFE237;
     --subq-blue:     #0834bc;
     --subq-orange:   #eb521e;
     --subq-green:    #3A7A35;
 
-    /* Text */
+    /* Semantic role tokens — DARK mode (canonical) */
+    --bg:            var(--subq-black);
+    --panel:         var(--subq-cream);   /* cream contrast panel on black page */
+    --panel-text:    var(--subq-black);
+    --panel-text-dim: rgba(0, 0, 0, 0.70);
+    --panel-label:   rgba(0, 0, 0, 0.55);
+
     --text-display:   #ffffff;
     --text-primary:   rgba(255, 255, 255, 0.92);
-    --text-secondary: #b7a99a;
+    --text-secondary: var(--subq-tan);
     --text-disabled:  rgba(255, 255, 255, 0.30);
 
-    /* Rules */
     --rule:        rgba(183, 169, 154, 0.20);
     --rule-strong: rgba(183, 169, 154, 0.40);
+    --grid-line:   rgba(255, 255, 255, 0.05);
+    --ghost:       rgba(255, 255, 255, 0.12);
 
     /* Spacing */
     --space-1: 8px;
@@ -84,11 +93,32 @@
     --size-caption:  11px;
   }
 
+  /* Semantic role tokens — LIGHT mode (inverts neutrals; accents unchanged) */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg:            var(--subq-cream);
+      --panel:         var(--subq-black);   /* black contrast panel on cream page */
+      --panel-text:    var(--subq-cream);
+      --panel-text-dim: rgba(255, 250, 243, 0.80);
+      --panel-label:   rgba(255, 250, 243, 0.55);
+
+      --text-display:   var(--subq-black);
+      --text-primary:   rgba(0, 0, 0, 0.88);
+      --text-secondary: var(--subq-charcoal);
+      --text-disabled:  rgba(0, 0, 0, 0.36);
+
+      --rule:        rgba(59, 54, 45, 0.16);
+      --rule-strong: rgba(59, 54, 45, 0.32);
+      --grid-line:   rgba(0, 0, 0, 0.06);
+      --ghost:       rgba(0, 0, 0, 0.10);
+    }
+  }
+
   /* ============ RESET ============ */
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    background: var(--subq-black);
+    background: var(--bg);
     color: var(--text-primary);
     font-family: var(--font-body);
     font-size: var(--size-body);
@@ -100,10 +130,10 @@
 
   /* ============ GRID CANVAS TEXTURE (hero only) ============ */
   .subq-grid {
-    background-color: var(--subq-black);
+    background-color: var(--bg);
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
     background-size: 40px 40px;
     background-position: -1px -1px;
   }
@@ -166,7 +196,7 @@
     border: 1px solid transparent;
   }
   .subq-btn--primary { background: var(--subq-blue); color: #ffffff; border-color: var(--subq-blue); }
-  .subq-btn--secondary { background: transparent; color: #ffffff; border-color: #ffffff; }
+  .subq-btn--secondary { background: transparent; color: var(--text-display); border-color: var(--text-display); }
   .subq-btn:hover { opacity: 0.85; }
 
   /* ============ HERO ============ */
@@ -250,7 +280,7 @@
     line-height: 1.5;
   }
   .subq-section__label {
-    color: var(--subq-tan);
+    color: var(--text-secondary);
     display: block;
     margin-bottom: var(--space-2);
   }
@@ -290,10 +320,13 @@
     .subq-section { grid-template-columns: 1fr; gap: var(--space-3); }
   }
 
-  /* ============ CREAM PANEL (contrast moment — one per page) ============ */
+  /* ============ CONTRAST PANEL (one per page) ============
+     Dark mode: cream panel on black page
+     Light mode: black panel on cream page
+     Either way, the panel is the inverse of the page. */
   .subq-panel-cream {
-    background: var(--subq-cream);
-    color: var(--subq-black);
+    background: var(--panel);
+    color: var(--panel-text);
     padding: var(--space-6) var(--space-5);
     border-radius: 4px;
     margin: var(--space-5) 0;
@@ -301,15 +334,15 @@
   .subq-panel-cream h3 {
     font-family: var(--font-display);
     font-weight: 700;
-    color: var(--subq-black);
+    color: var(--panel-text);
     margin: 0 0 var(--space-2);
   }
-  .subq-panel-cream p { color: rgba(8, 0, 0, 0.78); margin: 0; }
+  .subq-panel-cream p { color: var(--panel-text-dim); margin: 0; }
   .subq-panel-cream .subq-panel-cream__label {
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
-    color: rgba(8, 0, 0, 0.55);
+    color: var(--panel-label);
     display: block;
     margin-bottom: var(--space-2);
   }
@@ -354,7 +387,7 @@
     margin: var(--space-4) 0;
     border: 1px solid var(--rule);
     border-radius: 4px;
-    background: var(--subq-black);
+    background: var(--bg);
     overflow: hidden;
   }
   .mermaid-shell__cap {
@@ -364,7 +397,7 @@
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
-    color: var(--subq-tan);
+    color: var(--text-secondary);
   }
   .mermaid-wrap {
     position: relative;
@@ -384,7 +417,7 @@
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
-    color: var(--subq-tan);
+    color: var(--text-secondary);
   }
   .code-file__name { color: var(--text-primary); }
 
@@ -433,11 +466,11 @@
   }
   .subq-table thead th {
     position: sticky; top: 0;
-    background: var(--subq-black);
+    background: var(--bg);
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
-    color: var(--subq-tan);
+    color: var(--text-secondary);
     text-align: left;
     padding: var(--space-2) var(--space-3);
     border-bottom: 1px solid var(--rule-strong);
@@ -473,7 +506,7 @@
     font-weight: 600;
     font-size: clamp(56px, 14vw, 180px);
     line-height: 1;
-    color: rgba(255, 255, 255, 0.12);
+    color: var(--ghost);
     letter-spacing: -0.03em;
     white-space: nowrap;
   }
@@ -483,7 +516,7 @@
     font-family: var(--font-mono);
     font-size: 11px;
     letter-spacing: 0.15em;
-    color: var(--subq-tan);
+    color: var(--text-secondary);
   }
 </style>
 </head>
@@ -595,7 +628,7 @@ flowchart LR
   TTS   --> Orch
   Orch  --> Client
 
-  classDef primary stroke:#0834bc,stroke-width:2px,color:#ffffff;
+  classDef primary stroke:#0834bc,stroke-width:2px;
           </pre>
         </div>
       </div>
@@ -743,9 +776,18 @@ microphone.pipe(session.write);
   </div>
 </footer>
 
-<!-- Mermaid -->
+<!-- Mermaid — theme follows prefers-color-scheme so the diagram matches the rest of the page. -->
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+
+  const isLight    = matchMedia('(prefers-color-scheme: light)').matches;
+  const nodeFill   = isLight ? '#fffaf3' : '#000000';
+  const nodeBorder = isLight ? '#3b362d' : '#b7a99a';
+  const nodeText   = isLight ? '#000000' : '#ffffff';
+  const edgeColor  = isLight ? 'rgba(59, 54, 45, 0.55)'  : 'rgba(183, 169, 154, 0.55)';
+  const clusterBd  = isLight ? 'rgba(59, 54, 45, 0.18)'  : 'rgba(183, 169, 154, 0.20)';
+  const tertiary   = isLight ? '#b7a99a' : '#3b362d';
+
   mermaid.initialize({
     startOnLoad: true,
     theme: 'base',
@@ -753,16 +795,16 @@ microphone.pipe(session.write);
     themeVariables: {
       fontFamily: "'Manrope', system-ui, sans-serif",
       fontSize: '15px',
-      background: '#000000',
-      primaryColor: '#000000',
-      primaryTextColor: '#ffffff',
-      primaryBorderColor: '#b7a99a',
-      lineColor: 'rgba(183, 169, 154, 0.55)',
-      tertiaryColor: '#3b362d',
-      clusterBkg: '#000000',
-      clusterBorder: 'rgba(183, 169, 154, 0.20)',
-      mainBkg: '#000000',
-      edgeLabelBackground: '#000000',
+      background: nodeFill,
+      primaryColor: nodeFill,
+      primaryTextColor: nodeText,
+      primaryBorderColor: nodeBorder,
+      lineColor: edgeColor,
+      tertiaryColor: tertiary,
+      clusterBkg: nodeFill,
+      clusterBorder: clusterBd,
+      mainBkg: nodeFill,
+      edgeLabelBackground: nodeFill,
     }
   });
 </script>
