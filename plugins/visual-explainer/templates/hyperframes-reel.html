@@ -51,7 +51,7 @@
   /* Safe zone: phone UI eats ~100px top and bottom. Keep primary content inside this. */
   .safe {
     position: absolute;
-    inset: 100px 48px 200px 48px; /* bottom 200px reserved for captions */
+    inset: 100px 48px 200px 48px; /* bottom 200px reserved for caption pill clearance */
   }
 
   .beat {
@@ -112,31 +112,40 @@
     margin-top: 24px;
   }
 
-  /* Burned-in captions — bottom third of the frame */
+  /* Burned-in captions — centered pill near the bottom.
+     One <div class="cap"> per narration sentence, generated from
+     transcript.json — never hand-authored. See reel-patterns.md
+     § "The verbatim-transcript rule". */
   .captions {
     position: absolute;
     left: 48px;
     right: 48px;
-    bottom: 120px;
-    min-height: 140px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
+    bottom: 140px;
+    height: 160px;
     pointer-events: none;
+    z-index: 30;
   }
   .cap {
-    display: inline-block;
-    padding: 20px 28px;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0 auto;
+    padding: 22px 32px;
     background: var(--caption-bg);
-    color: var(--fg);
-    font-size: 36px;
-    font-weight: 600;
-    line-height: 1.25;
-    text-align: center;
+    width: fit-content;
     max-width: 100%;
+    border-radius: 999px;
+    border-left: 3px solid var(--accent);
+    font-size: 42px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+    color: var(--fg);
+    text-align: center;
     opacity: 0;
-    border-radius: 4px;
   }
+  .cap .accent { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -210,20 +219,23 @@
     </div>
   </div>
 
-  <!-- Captions layer (burned into the video) -->
+  <!-- Captions layer (burned into the video).
+       REQUIRED: generate from transcript.json, one sentence per <div>.
+       Do NOT hand-author paraphrases of the visuals.
+
+         bash {{skill_dir}}/scripts/captions-from-transcript.sh transcript.json
+
+       Example output (paste below, then wire timings in the GSAP timeline
+       OR let the data-start/data-duration attributes drive the reveal). -->
   <div class="captions">
-    <div class="cap cap-1">the one stat that matters</div>
-    <div class="cap cap-2">your queue chokes at five hundred</div>
-    <div class="cap cap-3">every backed-up job is a user waiting</div>
-    <div class="cap cap-4">we partitioned the queue by tenant</div>
-    <div class="cap cap-5">eight point four x throughput</div>
-    <div class="cap cap-6">partition by tenant, not by type</div>
-    <div class="cap cap-7">full writeup at the handle</div>
+    <div class="cap cap-1" data-start="0.03" data-duration="1.57">Agent design is a fitting problem.</div>
+    <div class="cap cap-2" data-start="1.63" data-duration="1.08">Hold the model fixed.</div>
+    <div class="cap cap-3" data-start="2.79" data-duration="1.45">Search the harness around it.</div>
+    <!-- ...one <div> per narration sentence... -->
   </div>
 
-  <!-- Narration track
-  <audio data-start="0" data-duration="32" data-track-index="0" src="narration.wav"></audio>
-  -->
+  <!-- Narration track -->
+  <audio id="narration" data-start="0" data-duration="32" data-track-index="0" src="narration.wav"></audio>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>

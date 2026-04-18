@@ -12,7 +12,7 @@
              desktop Slack/Discord shares, conference intro stings.
              Same brain-rot pacing as the 9:16 reel — just landscape.
   Pacing:    Hard cuts every 1.2-1.8s during body beats. Kinetic typography.
-             Burned-in captions (centered bar, not bottom strip).
+             Burned-in captions in a centered pill near the bottom.
              TTS narration synced to beat boundaries.
 
   Pair with: references/hyperframes.md, references/gsap-rules.md, references/reel-patterns.md.
@@ -32,7 +32,7 @@
     - Safe zone: 60px top/bottom (desktop UI is forgiving; no phone chrome)
     - Hook stat: scales horizontally (280-420px font), can sit next to a stat-label on the same line
     - Claim text: max-width 1600px; splits into 2 lines of 6-8 words instead of 1-line-per-word stacks
-    - Captions: centered bar 120px from the bottom, max-width 1400px (not full-bleed strip)
+    - Captions: centered pill 48px from the bottom, max-width 1400px
     - Mechanism diagrams: can use full horizontal width — split left/right is natural
     - Split-screen layouts (before/after, problem/solution) become a native option
 -->
@@ -63,7 +63,7 @@
   /* Desktop safe zone: only 60px top/bottom (no phone chrome to avoid). */
   .safe {
     position: absolute;
-    inset: 60px 96px 140px 96px; /* bottom 140px reserved for caption bar */
+    inset: 60px 96px 140px 96px; /* bottom 140px reserved for caption pill clearance */
   }
 
   .beat {
@@ -147,11 +147,13 @@
   .split__side--dark  { background: var(--bg); }
   .split__side--alt   { background: #141414; border-left: 1px solid rgba(242, 237, 229, 0.12); }
 
-  /* Burned-in captions — centered bar, not full-strip */
+  /* Burned-in captions — centered pill near the bottom.
+     One <div> per narration sentence, generated verbatim from
+     transcript.json. See reel-patterns.md § "The verbatim-transcript rule". */
   .captions {
     position: absolute;
     left: 50%;
-    bottom: 60px;
+    bottom: 48px;
     transform: translateX(-50%);
     width: auto;
     max-width: 1400px;
@@ -165,15 +167,18 @@
     display: inline-block;
     padding: 16px 28px;
     background: var(--caption-bg);
-    color: var(--fg);
-    font-size: 36px;
-    font-weight: 600;
-    line-height: 1.25;
-    text-align: center;
     max-width: 100%;
+    border-radius: 999px;
+    border-left: 3px solid var(--accent);
+    font-size: 38px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+    color: var(--fg);
+    text-align: center;
     opacity: 0;
-    border-radius: 4px;
   }
+  .cap .accent { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -255,14 +260,14 @@
   </div>
 
   <!-- Burned-in caption layer -->
+  <!-- Captions: generate from transcript.json, one sentence per <div>.
+         bash {{skill_dir}}/scripts/captions-from-transcript.sh transcript.json
+       Do NOT hand-author paraphrases of the visuals. -->
   <div class="captions">
-    <div class="cap cap-1">the one stat that matters</div>
-    <div class="cap cap-2">your queue chokes at five hundred</div>
-    <div class="cap cap-3">every backed-up job is a user waiting</div>
-    <div class="cap cap-4">one queue per tenant — nobody waits</div>
-    <div class="cap cap-5">eight point four x throughput</div>
-    <div class="cap cap-6">partition by tenant, not by type</div>
-    <div class="cap cap-7">full writeup at the handle</div>
+    <div class="cap cap-1" data-start="0.03" data-duration="1.57">Agent design is a fitting problem.</div>
+    <div class="cap cap-2" data-start="1.63" data-duration="1.08">Hold the model fixed.</div>
+    <div class="cap cap-3" data-start="2.79" data-duration="1.45">Search the harness around it.</div>
+    <!-- ...one <div> per narration sentence... -->
   </div>
 
   <!-- Narration track

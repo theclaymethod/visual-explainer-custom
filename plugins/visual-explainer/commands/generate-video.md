@@ -38,7 +38,7 @@ Two styles, picked via `--style` or confirmed via AskUserQuestion.
   - `templates/hyperframes-reel.html` (9:16)
   - `templates/hyperframes-reel-landscape.html` (16:9)
 - **Animations:** Kinetic typography (word-by-word), progressive diagram reveal, Ken Burns on imagery, shader transitions at beat boundaries. 16:9 MECHANISM beats use native split-screen (before/after side-by-side) instead of vertical stacks.
-- **Audio:** TTS narration with burned-in captions; safe zones adapt (9:16 bottom 200px for phone chrome, 16:9 bottom 140px centered caption bar)
+- **Audio:** TTS narration with burned-in captions; safe zones adapt (9:16 bottom 200px for phone chrome and caption clearance, 16:9 bottom 140px for a centered caption pill)
 - **Read:** `references/reel-patterns.md` § Two aspect ratios — authoritative guide for picking between 9:16 and 16:9 and the layout rules that differ between them.
 
 ---
