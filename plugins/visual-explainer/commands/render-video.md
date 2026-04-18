@@ -32,6 +32,8 @@ Video is high-cost. Always confirm via AskUserQuestion unless the user passes `-
 bash {{skill_dir}}/scripts/hyperframes-doctor.sh
 ```
 
+The doctor also probes the upstream `/hyperframes` + `/hyperframes-cli` + `/gsap` skills and warns (non-fatal) if missing. When present, delegate vocab and plumbing to them. When absent, author directly from `references/hyperframes.md`, `references/gsap-rules.md`, and `references/reel-patterns.md`. See `references/hyperframes.md` → "Delegation boundary".
+
 ### 3. Parse the source deck
 
 Read the HTML file. Identify each slide:

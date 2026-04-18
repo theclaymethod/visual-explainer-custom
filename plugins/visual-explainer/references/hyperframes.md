@@ -2,7 +2,34 @@
 
 **What it is.** [Hyperframes](https://github.com/heygen-com/hyperframes) is an open-source (Apache 2.0) local video renderer from HeyGen. Compositions are authored as HTML with `data-*` timing attributes and GSAP timelines. The engine renders frames via headless Chrome and encodes with FFmpeg. No cloud account, no API keys, no HeyGen service dependency — it runs entirely on the user's machine.
 
-This reference summarizes the integration contract the visual-explainer skill uses. For the full upstream specification, see the [Hyperframes docs](https://hyperframes.heygen.com/).
+This reference summarizes the integration contract the visual-explainer skill uses. For the full upstream specification, see the [Hyperframes docs](https://hyperframes.heygen.com/) and the LLM-optimized index at [`hyperframes.mintlify.app/llms.txt`](https://hyperframes.mintlify.app/llms.txt).
+
+---
+
+## Delegation boundary (upstream vs us)
+
+Lean on the upstream skills where they cover the mechanics; keep our own authoring for the opinionated layers they don't know about.
+
+**Upstream `/hyperframes`, `/hyperframes-cli`, `/gsap` own:**
+- Motion / caption / transition / highlight vocab → GSAP ease mapping
+- TTS voice matrix by content type (`af_heart`, `af_nova`, `am_adam`, `bf_emma`, `af_sky`, `am_michael`, …)
+- Timed-element contract (`class="clip"` + `data-start` / `data-duration` / `data-track-index`)
+- `npx hyperframes preview` — live browser preview during authoring
+- `npx hyperframes lint` + `validate` — rule + WCAG audit
+- General GSAP idiom (see `/gsap` skill)
+
+**We own:**
+- 6 recipes + entry routing (`explainer-longform`, `social-reel`, `announcement-bumper` on `/generate-video`; `deck-to-video`, `overlay-transparent`, `browser-loop` on `/render-video`)
+- Mono-industrial aesthetic enforcement (`references/mono-industrial.md`)
+- Reel grammar (HOOK → PROBLEM → CONTEXT → MECHANISM → PROOF → RESOLUTION → CTA in `references/reel-patterns.md`)
+- Clarify-first policy (`references/clarify.md`)
+- Draft-render + keyframe review gate (step 5–7 of the skill workflow)
+- `hyperframes-doctor.sh` runtime + skill probe
+
+**Availability.** `hyperframes-doctor.sh` probes `~/.claude/skills/` and `~/.claude/plugins/cache/heygen-com/` for the upstream skills. Probe outcomes:
+
+- **Installed** → video commands delegate vocab + plumbing to `/hyperframes` and author recipe + aesthetic on top.
+- **Missing** → the doctor emits a warning and install hint (`npx skills add heygen-com/hyperframes`) and video commands fall back to authoring directly from our refs (`hyperframes.md`, `gsap-rules.md`, `reel-patterns.md`). Never fatal.
 
 ---
 

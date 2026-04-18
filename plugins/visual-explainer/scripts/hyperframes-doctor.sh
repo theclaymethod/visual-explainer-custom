@@ -62,6 +62,41 @@ if [ "${FAIL}" -eq 0 ]; then
   fi
 fi
 
+# 5. Upstream authoring skills (non-fatal — we have our own authoring as fallback).
+# The video commands prefer the upstream `/hyperframes` + `/gsap` vocab when
+# those skills are installed; otherwise they author directly from our refs.
+skill_dirs=(
+  "${HOME}/.claude/skills"
+  "${HOME}/.claude/plugins/cache/heygen-com"
+)
+
+probe_skill() {
+  local name="$1"
+  for dir in "${skill_dirs[@]}"; do
+    if [ -e "${dir}/${name}" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+MISSING_SKILLS=""
+for skill in hyperframes hyperframes-cli gsap; do
+  if probe_skill "${skill}"; then
+    printf "  [ ok ] upstream skill: %s\n" "${skill}"
+  else
+    printf "  [warn] upstream skill not found: %s\n" "${skill}"
+    MISSING_SKILLS="${MISSING_SKILLS} ${skill}"
+  fi
+done
+
+if [ -n "${MISSING_SKILLS}" ]; then
+  printf "\n  Upstream authoring skills unavailable:%s\n" "${MISSING_SKILLS}"
+  printf "  Install them for the full vocab + preview loop:\n"
+  printf "      npx skills add heygen-com/hyperframes\n"
+  printf "  (Not fatal — video commands fall back to our own authoring refs.)\n"
+fi
+
 printf "\n"
 if [ "${FAIL}" -eq 0 ]; then
   printf "All checks passed. Ready to render.\n"

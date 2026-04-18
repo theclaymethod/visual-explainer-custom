@@ -57,7 +57,11 @@ bash {{skill_dir}}/scripts/hyperframes-doctor.sh
 
 If this exits non-zero, **abort** and forward the install hints to the user. Do not attempt to render.
 
+The doctor also probes the upstream `/hyperframes` + `/hyperframes-cli` + `/gsap` skills and warns (non-fatal) if missing. When present, delegate vocab and plumbing to them. When absent, author directly from `references/hyperframes.md`, `references/gsap-rules.md`, and `references/reel-patterns.md`. See `references/hyperframes.md` → "Delegation boundary" for what lives where.
+
 ### 3. Author the composition
+
+Prefer the upstream `/hyperframes` skill's vocab (motion feel → ease mapping, caption tone typography, transition energy, highlight modes, TTS voice matrix, `class="clip"` timed-element contract) when it's installed. Fall back to our refs below otherwise. Recipe, aesthetic, and reel grammar are always ours.
 
 - **Long-form:** Start from `templates/hyperframes-longform.html`. Build one scene per major beat from the outline. Apply unslop to all prose copy before placing it in the template.
 - **Reel:** Start from `templates/hyperframes-reel.html`. Compress the outline to HOOK → PROBLEM → CONTEXT → MECHANISM → PROOF → RESOLUTION → CTA. Every scene is a single claim.
