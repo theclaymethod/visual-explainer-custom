@@ -130,18 +130,18 @@
   }
 
   /* ============ THEME TOGGLE ============
-     Three labeled options — ○ Light · ● Dark · ◐ Auto. Monochrome to match
-     the aesthetic: active button carries a neutral --fg tint (no brand blue).
-     Desktop: top-right pill that collapses to a single indicator at rest,
-     unfurls on hover. Mobile: bottom-right with 44px touch targets. */
+     Three labeled options — ○ Light · ● Dark · ◐ Auto.
+     Always top-right. Always collapsed to a single centered icon at rest —
+     unfurls on hover or focus-within (tap-to-focus on touch). Never moves
+     to the bottom or stretches full-width. */
   .theme-toggle {
     position: fixed;
-    top: 24px;
-    right: 24px;
+    top: clamp(12px, 2vw, 24px);
+    right: clamp(12px, 2vw, 24px);
     z-index: 99;
     display: flex;
-    gap: 4px;
-    padding: 4px;
+    gap: 0;
+    padding: 3px;
     background: color-mix(in srgb, var(--fg) 4%, transparent);
     border: 1px solid var(--rule);
     border-radius: 999px;
@@ -150,19 +150,15 @@
     transition: background 240ms ease-out, border-color 240ms ease-out,
                 padding 260ms ease-out, gap 260ms ease-out;
   }
-  .theme-toggle:hover,
-  .theme-toggle:focus-within {
-    background: color-mix(in srgb, var(--fg) 8%, transparent);
-    border-color: var(--rule-strong);
-  }
   .theme-toggle button {
     appearance: none;
     background: transparent;
     border: 0;
-    padding: 7px 12px;
+    padding: 7px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 0;
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 400;
@@ -186,88 +182,53 @@
   }
   .theme-toggle__label {
     display: inline-block;
-    max-width: 80px;
-    opacity: 1;
+    max-width: 0;
+    opacity: 0;
     overflow: hidden;
     white-space: nowrap;
     transition: max-width 300ms ease-out, opacity 220ms ease-out 40ms;
   }
   .theme-toggle button:hover { color: var(--text-display); }
-  .theme-toggle button[aria-checked="true"] {
-    color: var(--text-display);
-    background: color-mix(in srgb, var(--fg) 10%, transparent);
-  }
   .theme-toggle button:focus-visible {
     outline: 1px solid var(--text-display);
     outline-offset: 2px;
   }
 
-  /* Hover-capable devices: collapse to a single circular indicator at rest
-     and unfurl on hover. Keeps the chrome quiet — Mono-Industrial forbids
-     persistent decoration. */
-  @media (hover: hover) and (pointer: fine) {
-    .theme-toggle { gap: 0; padding: 3px; }
-    .theme-toggle button:not([aria-checked="true"]) {
-      max-width: 0; padding: 0; opacity: 0;
-    }
-    .theme-toggle button[aria-checked="true"] {
-      background: transparent;
-      padding: 7px;
-      gap: 0;
-    }
-    .theme-toggle button[aria-checked="true"] .theme-toggle__label {
-      max-width: 0; opacity: 0;
-    }
-    .theme-toggle:hover,
-    .theme-toggle:focus-within {
-      padding: 4px; gap: 2px;
-    }
-    .theme-toggle:hover button:not([aria-checked="true"]),
-    .theme-toggle:focus-within button:not([aria-checked="true"]) {
-      max-width: 120px; padding: 7px 12px; opacity: 1;
-    }
-    .theme-toggle:hover button[aria-checked="true"],
-    .theme-toggle:focus-within button[aria-checked="true"] {
-      background: color-mix(in srgb, var(--fg) 10%, transparent);
-      padding: 7px 12px; gap: 6px;
-    }
-    .theme-toggle:hover button[aria-checked="true"] .theme-toggle__label,
-    .theme-toggle:focus-within button[aria-checked="true"] .theme-toggle__label {
-      max-width: 80px; opacity: 1;
-    }
+  /* Collapsed default: only the active indicator is visible. */
+  .theme-toggle button:not([aria-checked="true"]) {
+    max-width: 0; padding: 0; opacity: 0;
+  }
+  .theme-toggle button[aria-checked="true"] {
+    color: var(--text-display);
+    background: transparent;
+  }
+
+  /* Expanded on hover or focus-within (tap-to-focus on touch). */
+  .theme-toggle:hover,
+  .theme-toggle:focus-within {
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+    border-color: var(--rule-strong);
+    padding: 4px;
+    gap: 2px;
+  }
+  .theme-toggle:hover button:not([aria-checked="true"]),
+  .theme-toggle:focus-within button:not([aria-checked="true"]) {
+    max-width: 120px; padding: 7px 12px; opacity: 1; gap: 6px;
+  }
+  .theme-toggle:hover button[aria-checked="true"],
+  .theme-toggle:focus-within button[aria-checked="true"] {
+    background: color-mix(in srgb, var(--fg) 10%, transparent);
+    padding: 7px 12px; gap: 6px;
+  }
+  .theme-toggle:hover .theme-toggle__label,
+  .theme-toggle:focus-within .theme-toggle__label {
+    max-width: 80px; opacity: 1;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .theme-toggle,
     .theme-toggle button,
     .theme-toggle__label { transition: none; }
-  }
-
-  @media (max-width: 768px) {
-    .theme-toggle {
-      top: auto;
-      bottom: 24px;
-      right: 24px;
-      padding: 6px;
-      gap: 6px;
-    }
-    .theme-toggle button {
-      padding: 12px 14px;
-      min-height: 44px;
-      font-size: 12px;
-    }
-    .theme-toggle__glyph { width: 13px; height: 13px; }
-  }
-  @media (max-width: 420px) {
-    .theme-toggle {
-      left: 16px;
-      right: 16px;
-      bottom: 16px;
-      justify-content: space-around;
-    }
-    .theme-toggle button {
-      flex: 1;
-      justify-content: center;
-    }
   }
 
   /* ============ RESET ============ */

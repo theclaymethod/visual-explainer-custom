@@ -192,19 +192,18 @@
   @media (max-width: 768px) { .subq-crossmark { display: none; } }
 
   /* ============ THEME TOGGLE ============
-     Three labeled options — ○ Light · ● Dark · ◐ Auto. Each button pairs
-     its glyph with a visible word so the affordance reads at a glance;
-     the active option carries a SubQ-blue tinted pill background to echo
-     the primary CTA color. Responsive: desktop pill top-right, mobile
-     bottom-right with 44px touch targets, narrow mobile bottom-full-width. */
+     Always top-right, offset inward from the blue --tr crossmark so brand
+     chrome and functional chrome don't overlap. Collapsed to a single centered
+     icon at rest; unfurls on hover or focus-within (tap-to-focus on touch).
+     Active indicator carries the SubQ-blue tint. */
   .theme-toggle {
     position: fixed;
-    top: 24px;
-    right: 24px;
-    z-index: 99;
+    top: clamp(12px, 2vw, 24px);
+    right: clamp(12px, 2vw, 72px);
+    z-index: 101;
     display: flex;
-    gap: 4px;
-    padding: 4px;
+    gap: 0;
+    padding: 3px;
     background: color-mix(in srgb, var(--text-display) 4%, transparent);
     border: 1px solid var(--rule);
     border-radius: 999px;
@@ -214,11 +213,6 @@
     animation: subq-toggle-in 520ms ease-out 300ms forwards;
     transition: background 240ms ease-out, border-color 240ms ease-out,
                 padding 260ms ease-out, gap 260ms ease-out;
-  }
-  .theme-toggle:hover,
-  .theme-toggle:focus-within {
-    background: color-mix(in srgb, var(--text-display) 8%, transparent);
-    border-color: var(--rule-strong);
   }
 
   @keyframes subq-toggle-in {
@@ -230,10 +224,11 @@
     appearance: none;
     background: transparent;
     border: 0;
-    padding: 7px 12px;
+    padding: 7px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 0;
     font-family: var(--font-mono);
     font-size: 11px;
     font-weight: 400;
@@ -248,122 +243,56 @@
                 padding 260ms ease-out, gap 240ms ease-out,
                 max-width 320ms ease-out, opacity 220ms ease-out;
   }
-  .theme-toggle__glyph {
-    display: block;
-    flex-shrink: 0;
-    width: 12px;
-    height: 12px;
-  }
+  .theme-toggle__glyph { display: block; flex-shrink: 0; width: 12px; height: 12px; }
   .theme-toggle__label {
     display: inline-block;
-    max-width: 80px;
-    opacity: 1;
+    max-width: 0;
+    opacity: 0;
     overflow: hidden;
     white-space: nowrap;
     transition: max-width 300ms ease-out, opacity 220ms ease-out 40ms;
   }
   .theme-toggle button:hover { color: var(--text-display); }
-  .theme-toggle button[aria-checked="true"] {
-    color: var(--text-display);
-    background: color-mix(in srgb, var(--subq-blue) 14%, transparent);
-  }
-
   .theme-toggle button:focus-visible {
     outline: 1px solid var(--subq-blue);
     outline-offset: 2px;
   }
 
-  /* Hover-capable devices: collapse to a single circular indicator at rest.
-     Rules to avoid nested-circle noise:
-       – pill padding is symmetric (3px all sides) so container = perfect circle
-       – active button padding is symmetric (7px all sides) = square content box
-       – active button's blue tint hides when collapsed; the pill container IS
-         the selection indicator, so no inner pill is needed
-     On hover the pill unfurls leftward; the active button's blue tint fades in
-     alongside the two other buttons. */
-  @media (hover: hover) and (pointer: fine) {
-    .theme-toggle {
-      gap: 0;
-      padding: 3px;
-    }
-    .theme-toggle button:not([aria-checked="true"]) {
-      max-width: 0;
-      padding-left: 0;
-      padding-right: 0;
-      padding-top: 0;
-      padding-bottom: 0;
-      opacity: 0;
-    }
-    .theme-toggle button[aria-checked="true"] {
-      background: transparent;
-      padding: 7px;
-      gap: 0;
-    }
-    .theme-toggle button[aria-checked="true"] .theme-toggle__label {
-      max-width: 0;
-      opacity: 0;
-    }
+  /* Collapsed default: only the active indicator is visible. */
+  .theme-toggle button:not([aria-checked="true"]) {
+    max-width: 0; padding: 0; opacity: 0;
+  }
+  .theme-toggle button[aria-checked="true"] {
+    color: var(--text-display);
+    background: transparent;
+  }
 
-    .theme-toggle:hover,
-    .theme-toggle:focus-within {
-      padding: 4px;
-      gap: 2px;
-    }
-    .theme-toggle:hover button:not([aria-checked="true"]),
-    .theme-toggle:focus-within button:not([aria-checked="true"]) {
-      max-width: 120px;
-      padding: 7px 12px;
-      opacity: 1;
-    }
-    .theme-toggle:hover button[aria-checked="true"],
-    .theme-toggle:focus-within button[aria-checked="true"] {
-      background: color-mix(in srgb, var(--subq-blue) 14%, transparent);
-      padding: 7px 12px;
-      gap: 6px;
-    }
-    .theme-toggle:hover button[aria-checked="true"] .theme-toggle__label,
-    .theme-toggle:focus-within button[aria-checked="true"] .theme-toggle__label {
-      max-width: 80px;
-      opacity: 1;
-    }
+  /* Expanded on hover or focus-within. */
+  .theme-toggle:hover,
+  .theme-toggle:focus-within {
+    background: color-mix(in srgb, var(--text-display) 8%, transparent);
+    border-color: var(--rule-strong);
+    padding: 4px;
+    gap: 2px;
+  }
+  .theme-toggle:hover button:not([aria-checked="true"]),
+  .theme-toggle:focus-within button:not([aria-checked="true"]) {
+    max-width: 120px; padding: 7px 12px; opacity: 1; gap: 6px;
+  }
+  .theme-toggle:hover button[aria-checked="true"],
+  .theme-toggle:focus-within button[aria-checked="true"] {
+    background: color-mix(in srgb, var(--subq-blue) 14%, transparent);
+    padding: 7px 12px; gap: 6px;
+  }
+  .theme-toggle:hover .theme-toggle__label,
+  .theme-toggle:focus-within .theme-toggle__label {
+    max-width: 80px; opacity: 1;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .theme-toggle { animation: none; opacity: 1; transform: none; }
+    .theme-toggle { animation: none; opacity: 1; transform: none; transition: none; }
     .theme-toggle button,
     .theme-toggle__label { transition: none; }
-  }
-
-  /* Tablet / phone: move to bottom-right, enforce 44px touch targets. */
-  @media (max-width: 768px) {
-    .theme-toggle {
-      top: auto;
-      bottom: 24px;
-      right: 24px;
-      padding: 6px;
-      gap: 6px;
-    }
-    .theme-toggle button {
-      padding: 12px 14px;
-      min-height: 44px;
-      font-size: 12px;
-    }
-    .theme-toggle__glyph { font-size: 13px; }
-  }
-
-  /* Narrow phone: stretch across the bottom so each tap target is generous
-     and sits inside the thumb zone. */
-  @media (max-width: 420px) {
-    .theme-toggle {
-      left: 16px;
-      right: 16px;
-      bottom: 16px;
-      justify-content: space-around;
-    }
-    .theme-toggle button {
-      flex: 1;
-      justify-content: center;
-    }
   }
 
   /* ============ NAV ============ */
