@@ -293,12 +293,6 @@ At every viewport size the pill stays pinned top-right as a single centered glyp
 
 Every template adapts from 1440px+ desktop down to 390px mobile. The theme toggle keeps its top-right collapsed-glyph position at every breakpoint; layout responsiveness comes from the content — pixel columns rotate, crossmarks hide, hero scales — not from chrome relocation.
 
-<p align="center">
-  <img src="docs/img/subq-roadmap-mobile.png" alt="SubQ theme on mobile" width="320">
-  <br>
-  <em>SubQ on a 390px viewport. Crossmarks hide below 768px and the hero's pixel column rotates horizontal; the theme toggle (off-frame here) stays docked top-right.</em>
-</p>
-
 ## Limitations
 
 - Requires a browser to view HTML output
