@@ -287,16 +287,16 @@ The skill routes to the right approach automatically: Mermaid for flowcharts, CS
 
 Every Mono-Industrial and SubQ page ships with a three-option selector (`○ Light · ● Dark · ◐ Auto`) docked top-right. Choice persists to `localStorage` and beats the OS `prefers-color-scheme` preference; `Auto` removes the override and tracks the OS live. Mermaid diagrams re-render in the new palette on every flip — no page refresh required. The SubQ variant keys the active state off brand blue; Mono-Industrial stays monochrome (`--fg` tint only, no accent color in chrome).
 
-On hover-capable devices the pill collapses to just the active glyph and unfurls on hover. Touch devices keep all three labels visible; at ≤ 768px the pill drops to the bottom-right thumb zone with 44px targets, and at ≤ 420px it stretches full-width across the bottom.
+At every viewport size the pill stays pinned top-right as a single centered glyph and unfurls to the three labeled options on `:hover` or `:focus-within` — the latter covers touch via tap-to-focus. No bottom-dock, no full-width stretch, no separate mobile layout.
 
 ## Responsive
 
-Every template adapts from 1440px+ desktop down to 390px mobile. The theme toggle shifts from top-right pill to bottom-right thumb zone to full-width bottom bar at the 768px and 420px breakpoints.
+Every template adapts from 1440px+ desktop down to 390px mobile. The theme toggle keeps its top-right collapsed-glyph position at every breakpoint; layout responsiveness comes from the content — pixel columns rotate, crossmarks hide, hero scales — not from chrome relocation.
 
 <p align="center">
   <img src="docs/img/subq-roadmap-mobile.png" alt="SubQ theme on mobile" width="320">
   <br>
-  <em>SubQ on a 390px viewport. Cross marks hide below 768px, the toggle drops to a thumb-zone pill, and the hero's pixel column rotates horizontal.</em>
+  <em>SubQ on a 390px viewport. Crossmarks hide below 768px and the hero's pixel column rotates horizontal; the theme toggle (off-frame here) stays docked top-right.</em>
 </p>
 
 ## Limitations
