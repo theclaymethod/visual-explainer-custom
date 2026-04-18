@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skill Repo Plan</title>
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: rgba(255, 255, 255, 0.72);
+      --ink: #151515;
+      --muted: #5b5954;
+      --line: rgba(21, 21, 21, 0.12);
+      --line-strong: rgba(21, 21, 21, 0.22);
+      --accent: #1258ff;
+      --accent-soft: rgba(18, 88, 255, 0.10);
+      --amber: #a96600;
+      --amber-soft: rgba(169, 102, 0, 0.10);
+      --green: #177245;
+      --green-soft: rgba(23, 114, 69, 0.10);
+      --red: #9f2d2d;
+      --red-soft: rgba(159, 45, 45, 0.09);
+      --shadow: 0 16px 50px rgba(0, 0, 0, 0.08);
+      --radius: 24px;
+      --radius-sm: 16px;
+      --max: 1280px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(18, 88, 255, 0.08), transparent 32%),
+        radial-gradient(circle at 100% 20%, rgba(169, 102, 0, 0.06), transparent 28%),
+        linear-gradient(180deg, #f7f2ea, #f1ece3 52%, #ece6dc);
+      color: var(--ink);
+      font-family: "Inter", "Segoe UI", sans-serif;
+    }
+
+    body {
+      padding: 40px 20px 80px;
+    }
+
+    .page {
+      max-width: var(--max);
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero,
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1.35fr 0.9fr;
+      min-height: 360px;
+    }
+
+    .hero__main {
+      padding: 42px;
+      display: grid;
+      align-content: space-between;
+      gap: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      max-width: 10ch;
+      font-size: clamp(42px, 7vw, 80px);
+      line-height: 0.92;
+      letter-spacing: -0.06em;
+    }
+
+    .lede {
+      max-width: 62ch;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .hero__rail {
+      border-left: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(18, 88, 255, 0.09), transparent 52%),
+        linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.50));
+      padding: 32px;
+      display: grid;
+      gap: 18px;
+      align-content: center;
+    }
+
+    .metric {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.70);
+    }
+
+    .metric__label {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .metric__value {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin: 0 0 6px;
+    }
+
+    .metric__note {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .grid-3,
+    .grid-2,
+    .grid-4 {
+      display: grid;
+      gap: 24px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+    .panel {
+      padding: 28px;
+    }
+
+    h2, h3 {
+      margin: 0 0 14px;
+      letter-spacing: -0.04em;
+    }
+
+    h2 { font-size: 30px; }
+    h3 { font-size: 20px; }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.58);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .card {
+      padding: 22px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.52);
+      min-width: 0;
+    }
+
+    .tone-blue { background: linear-gradient(180deg, var(--accent-soft), rgba(255,255,255,0.5)); }
+    .tone-amber { background: linear-gradient(180deg, var(--amber-soft), rgba(255,255,255,0.5)); }
+    .tone-green { background: linear-gradient(180deg, var(--green-soft), rgba(255,255,255,0.5)); }
+    .tone-red { background: linear-gradient(180deg, var(--red-soft), rgba(255,255,255,0.5)); }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+
+    .flow__step {
+      padding: 18px;
+      min-height: 180px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+      position: relative;
+    }
+
+    .flow__step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -12px;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      border: 1px solid var(--line-strong);
+      background: #fff;
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .kicker {
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 10px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .mini-list div {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.62);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .tree {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 13px;
+    }
+
+    .tree code {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #141414;
+      color: #f5f5f5;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    .footer-note {
+      font-size: 14px;
+      color: var(--muted);
+      padding-top: 4px;
+    }
+
+    @media (max-width: 1100px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero__rail { border-left: 0; border-top: 1px solid var(--line); }
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow { grid-template-columns: 1fr; }
+      .flow__step:not(:last-child)::after {
+        content: "↓";
+        right: auto;
+        left: 50%;
+        top: auto;
+        bottom: -12px;
+        transform: translateX(-50%);
+      }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 18px 14px 48px; }
+      .hero__main, .hero__rail, .panel { padding: 22px; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      h2 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero__main">
+        <div>
+          <div class="eyebrow">Skill Repo Evolution</div>
+          <h1>Routing first, formats second, recipes underneath.</h1>
+        </div>
+        <p class="lede">
+          The repo already has strong ingredients: a fat core skill, narrow commands, references,
+          templates, and export scripts. The next move is to make routing explicit. We will treat
+          output surfaces like PDF, MP4, MOV, and WebM as first-class decisions, then hang video
+          recipes and export commands off that resolver instead of burying them behind flags.
+        </p>
+      </div>
+      <aside class="hero__rail">
+        <div class="metric">
+          <div class="metric__label">Branch</div>
+          <p class="metric__value">`codex/skill-repo-resolver-plan`</p>
+          <p class="metric__note">Dedicated branch for the routing and format architecture work.</p>
+        </div>
+        <div class="metric">
+          <div class="metric__label">North Star</div>
+          <p class="metric__value">Legible skill system</p>
+          <p class="metric__note">Every capability is reachable, every format has a clear contract, every prompt shape maps to a known path.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid-3">
+      <article class="panel">
+        <h2>Why Change</h2>
+        <p>
+          Today, video and export behavior is technically capable but conceptually compressed.
+          `generate-video`, `render-video`, `--pdf`, `--poster-export`, and format choices are
+          mixed together. The result works, but the routing layer is implicit.
+        </p>
+        <div class="tag-row">
+          <span class="tag">Formats hidden as flags</span>
+          <span class="tag">No explicit output resolver</span>
+          <span class="tag">Prompting vocabulary under-modeled</span>
+        </div>
+      </article>
+      <article class="panel tone-blue">
+        <h2>Target State</h2>
+        <p>
+          A resolver-driven system. User intent picks an output family first, then the right command,
+          then the right recipe, then the right references. Skills stop inventing format logic ad hoc.
+        </p>
+        <div class="tag-row">
+          <span class="tag">Resolver.md</span>
+          <span class="tag">Output contracts</span>
+          <span class="tag">Recipe manifests</span>
+        </div>
+      </article>
+      <article class="panel tone-green">
+        <h2>Immediate Outcome</h2>
+        <p>
+          Clearer commands, cleaner docs, and a repo that can grow into more delivery surfaces
+          without becoming a pile of special cases.
+        </p>
+        <div class="tag-row">
+          <span class="tag">PDF becomes first-class</span>
+          <span class="tag">Video recipes expand safely</span>
+          <span class="tag">Reachability gets test coverage</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Execution Flow</h2>
+      <div class="flow">
+        <div class="flow__step">
+          <div class="kicker">1. Resolver</div>
+          <div class="step-title">Define routing</div>
+          <p>Write one authoritative routing table for output family, command selection, and required context.</p>
+          <div class="mini-list">
+            <div>`output-resolver.md`</div>
+            <div>Intent: read / present / share / edit / embed</div>
+            <div>Input shapes: topic / doc / deck / HTML / frames</div>
+          </div>
+        </div>
+        <div class="flow__step">
+          <div class="kicker">2. Manifest</div>
+          <div class="step-title">Make it machine-readable</div>
+          <p>Add a manifest for commands, formats, cost tiers, prerequisites, and references.</p>
+          <div class="mini-list">
+            <div>Command ids + aliases</div>
+            <div>Supported formats</div>
+            <div>Required refs + prerequisite tools</div>
+          </div>
+        </div>
+        <div class="flow__step">
+          <div class="kicker">3. Surfaces</div>
+          <div class="step-title">Split export surfaces</div>
+          <p>Promote PDF and asset export to first-class concepts instead of leaving them as incidental flags.</p>
+          <div class="mini-list">
+            <div>`/export-pdf`</div>
+            <div>`/export-assets`</div>
+            <div>Keep flags as compatibility aliases</div>
+          </div>
+        </div>
+        <div class="flow__step">
+          <div class="kicker">4. Video recipes</div>
+          <div class="step-title">Model delivery intent</div>
+          <p>Keep the core commands, but route them to recipe-specific flows like reel, overlay, browser loop, and long-form explainer.</p>
+          <div class="mini-list">
+            <div>Long-form explainer</div>
+            <div>Social reel</div>
+            <div>Transparent overlay</div>
+          </div>
+        </div>
+        <div class="flow__step">
+          <div class="kicker">5. Evals</div>
+          <div class="step-title">Test reachability</div>
+          <p>Add resolver evals and a `check-resolvable` pass so every command and recipe is discoverable.</p>
+          <div class="mini-list">
+            <div>Prompt routing fixtures</div>
+            <div>Manifest drift checks</div>
+            <div>Unreachable capability detector</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <article class="panel">
+        <h2>Command Surface We Intend To Land</h2>
+        <div class="grid-2">
+          <div class="card tone-blue">
+            <h3>Keep</h3>
+            <p>`/generate-video` for greenfield video authoring.<br>`/render-video` for existing HTML or deck inputs.</p>
+          </div>
+          <div class="card tone-green">
+            <h3>Add</h3>
+            <p>`/export-pdf` for slides, magazines, and scroll docs.<br>`/export-assets` for PNGs, keyframes, thumbnails, browser loops.</p>
+          </div>
+          <div class="card tone-amber">
+            <h3>Internal Recipes</h3>
+            <p>`explainer-longform`, `social-reel`, `deck-to-video`, `overlay-transparent`, `browser-loop`, `announcement-bumper`.</p>
+          </div>
+          <div class="card tone-red">
+            <h3>Retain For Compatibility</h3>
+            <p>`--pdf`, `--poster-export`, and similar flags remain as aliases while the new surface settles.</p>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>Format Matrix</h2>
+        <div class="grid-2">
+          <div class="card">
+            <div class="kicker">Delivery</div>
+            <h3>MP4</h3>
+            <p>Default for reviews, explainers, and shareable renders.</p>
+          </div>
+          <div class="card">
+            <div class="kicker">Editing</div>
+            <h3>MOV</h3>
+            <p>Transparent overlays and NLE workflows. First-class in the resolver, not buried.</p>
+          </div>
+          <div class="card">
+            <div class="kicker">Browser</div>
+            <h3>WebM</h3>
+            <p>Loops, transparent browser assets, self-contained embeds.</p>
+          </div>
+          <div class="card">
+            <div class="kicker">Print / handoff</div>
+            <h3>PDF</h3>
+            <p>Decks, magazines, and long printable documents via a dedicated export path.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid-2">
+      <article class="panel">
+        <h2>Prompting Upgrade For HyperFrames</h2>
+        <p>
+          We will mirror HyperFrames’ current prompting model directly in local references so
+          the repo can reason about more than just `style=reel`. The key move is to encode
+          prompt shape and vocabulary, not just technical flags.
+        </p>
+        <div class="mini-list">
+          <div><strong>Prompt shapes:</strong> cold start vs warm start</div>
+          <div><strong>Vocabulary:</strong> motion feel, caption tone, transition energy, voice, quality</div>
+          <div><strong>Iteration:</strong> small editor-style follow-ups, not full re-prompts</div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <h2>References To Add</h2>
+        <div class="mini-list">
+          <div>`plugins/visual-explainer/references/output-resolver.md`</div>
+          <div>`plugins/visual-explainer/references/hyperframes-prompting.md`</div>
+          <div>`plugins/visual-explainer/references/export-contracts.md`</div>
+          <div>`plugins/visual-explainer/references/render-modes.md`</div>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Likely File Changes</h2>
+      <div class="tree">
+        <code>plugins/visual-explainer/
+├── commands/
+│   ├── generate-video.md        # thinner, recipe-aware
+│   ├── render-video.md          # thinner, deck/html input contracts
+│   ├── export-pdf.md            # new
+│   └── export-assets.md         # new
+├── references/
+│   ├── output-resolver.md       # new
+│   ├── hyperframes-prompting.md # new
+│   ├── export-contracts.md      # new
+│   └── render-modes.md          # new
+└── scripts/
+    ├── export-slides-pdf.mjs    # reused, documented as first-class
+    └── check-resolvable.mjs     # new</code>
+        <code>tests/
+├── resolver-cases.json          # prompt -> expected route
+└── resolver.test.mjs            # reachability + drift checks</code>
+      </div>
+    </section>
+
+    <section class="grid-4">
+      <article class="panel">
+        <div class="kicker">Phase 1</div>
+        <h3>Routing docs</h3>
+        <p>Write resolver + manifest so every future capability has a home.</p>
+      </article>
+      <article class="panel">
+        <div class="kicker">Phase 2</div>
+        <h3>Format separation</h3>
+        <p>Promote PDF and export assets into dedicated command surfaces.</p>
+      </article>
+      <article class="panel">
+        <div class="kicker">Phase 3</div>
+        <h3>Video recipe expansion</h3>
+        <p>Model overlays, loops, and social variants without multiplying top-level skills.</p>
+      </article>
+      <article class="panel">
+        <div class="kicker">Phase 4</div>
+        <h3>Resolver evals</h3>
+        <p>Make drift visible before users discover a dark capability path.</p>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Guiding Rule</h2>
+      <p>
+        We are not trying to add “more commands because more commands feel powerful.”
+        We are trying to make the organization legible. The fat skill remains the domain brain.
+        Commands stay narrow. References load on demand. Recipes handle variation underneath.
+        The resolver becomes the management layer that tells the system which path to take.
+      </p>
+      <p class="footer-note">
+        Next implementation step after review: add the resolver/reference files first, then thin the existing commands around them.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

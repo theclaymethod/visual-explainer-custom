@@ -14,6 +14,8 @@ Generate self-contained HTML files for technical diagrams, visualizations, and d
 
 **Proactive table rendering.** When you're about to present tabular data as an ASCII box-drawing table in the terminal (comparisons, audits, feature matrices, status reports, any structured rows/columns), generate an HTML page instead. The threshold: if the table has 4+ rows or 3+ columns, it belongs in the browser. Don't wait for the user to ask — render it as HTML automatically and tell them the file path. You can still include a brief text summary in the chat, but the table itself should be the HTML page.
 
+**Resolver first.** Before choosing a command or output surface, read `./RESOLVER.md`. Before choosing a format, read `./references/output-resolver.md`. Command docs are intentionally thinner than the old style — the resolver and manifest now hold the routing logic.
+
 ## Available Commands
 
 Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/diff-review`). In Claude Code, namespaced (`/visual-explainer:diff-review`). In Codex, use `/prompts:diff-review` (if installed to `~/.codex/prompts/`) or invoke `$visual-explainer` and describe the workflow.
@@ -24,12 +26,14 @@ Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/d
 | `generate-visual-plan` | Generate a visual implementation plan for a feature |
 | `generate-slides` | Generate a magazine-quality slide deck (vertical or `--magazine` horizontal) |
 | `generate-poster` | Generate a single-canvas rich-composition poster (HTML + PNG) via poster-ai — see `./references/poster.md` |
-| `generate-video` | Generate an explainer video (MP4) via Hyperframes; `--style=long-form\|reel` |
-| `render-video` | Convert an existing HTML deck to an MP4 via Hyperframes |
+| `generate-video` | Generate a new video via Hyperframes; routes to delivery (`mp4`), editable (`mov`), or browser (`webm`) recipes |
+| `render-video` | Convert an existing HTML artifact into video output via Hyperframes |
 | `diff-review` | Visual diff review with architecture comparison and code review |
 | `plan-review` | Compare a plan against the codebase with risk assessment |
 | `project-recap` | Mental model snapshot for context-switching back to a project |
 | `fact-check` | Verify accuracy of a document against actual code |
+| `export-pdf` | Export an existing HTML artifact to PDF |
+| `export-assets` | Export stills, keyframes, and reusable media snippets |
 | `share` | Deploy an HTML page to Vercel and get a live URL |
 
 ## Workflow
@@ -42,7 +46,7 @@ Detailed prompt templates in `./commands/`. In Pi, these are slash commands (`/d
 
 - **Tier 0 — always ask** (high-cost commands): `/generate-video`, `/render-video`, `/generate-slides --magazine`, `/generate-poster`. Ask at least style + duration + narration (video) or aesthetic + page-count (magazine) or canvas-size + focal (poster), regardless of how clear the request otherwise is. Bypass only on explicit `--no-ask`.
 - **Tier 1 — ask when ambiguous** (most commands): `/generate-web-diagram`, `/generate-visual-plan`, `/generate-slides` (vertical), `/diff-review`, `/plan-review`, `/project-recap`. Ask only if the four-dimension brief is incomplete. Clear requests flow through unchanged.
-- **Tier 2 — never ask** (mechanical commands): `/fact-check`, `/share`. These operate on an existing target and have no creative choices.
+- **Tier 2 — never ask** (mechanical commands): `/fact-check`, `/share`, `/export-pdf`, `/export-assets`. These operate on an existing target and have no creative choices.
 
 **Escape hatches.** The user can always skip questions via:
 - `--no-ask` flag
@@ -542,34 +546,33 @@ Also read `./references/css-patterns.md` for shared patterns, `./references/libr
 
 **`--slides` flag on existing prompts:** When a user passes `--slides` to `/diff-review`, `/plan-review`, `/project-recap`, or other prompts, the agent gathers data using the prompt's normal data-gathering instructions, then presents the content as a slide deck instead of a scrollable page. The slide version tells the same story with different structure and pacing — but the same breadth of coverage. Don't use the slide format as an excuse to summarize or skip sections that the scrollable version would have included.
 
-**`--poster-export` flag (optional).** When the user passes `--poster-export` to `/generate-slides`, the agent produces the interactive HTML deck first (canonical), then *additionally* renders each slide to its own fixed-canvas PNG via `poster-ai`. Slides go to `~/.agent/diagrams/<deck-name>/slides/<NN>-<title>.png` at 1920×1080 (or 1600×900 for tighter 16:9). Use these PNGs to share individual slides or to import into Keynote / Google Slides. Check `which poster` first; if missing, tell the user the flag is unavailable and proceed with HTML-only. See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow.
+**`--poster-export` flag (optional).** Compatibility alias for `/export-assets --kind=slides`. After the interactive HTML is produced, run `node {{skill_dir}}/scripts/export-slides-png.mjs <input.html> <outputDir>` to render one PNG per slide/page at 1920×1080 (1080×1920 for portrait magazine). PNGs go to `~/.agent/diagrams/<deck-name>/slides/`. Requires Playwright; forward the install hint and deliver HTML-only if it's missing. See `./commands/export-assets.md` and `./references/export-contracts.md`.
 
 ## Video Output Mode
 
-An alternative output format: MP4 / WebM video via [Hyperframes](https://github.com/heygen-com/hyperframes) (Apache 2.0, HeyGen). **Opt-in only** — the agent generates video when the user invokes `/generate-video` or `/render-video`, or explicitly asks for an "explainer video," "reel," or "mp4." Never auto-select video.
+Video is an opt-in output family via [Hyperframes](https://github.com/heygen-com/hyperframes) (Apache 2.0, HeyGen). The agent generates video only when the user invokes `/generate-video` / `/render-video` or explicitly asks for a video — never auto-select.
 
-**Two commands:**
-- `/generate-video` — greenfield. Takes a topic/outline, builds a Hyperframes composition from scratch, renders MP4.
-- `/render-video` — takes an existing HTML deck (from `/generate-slides` or `/generate-slides --magazine`) and converts it to MP4.
+**Routing is resolver-first.** Before authoring, read `./RESOLVER.md`, `./references/output-resolver.md`, `./references/render-modes.md`, and `./references/hyperframes-prompting.md`. Do not pick a command or format from this file — the resolver and `commands/manifest.json` are the single source of truth.
 
-**Two styles, picked explicitly:**
-- `long-form` — 16:9 landscape, 1920×1080, 60–180s, slide-paced dwell scenes, TTS narration, minor shader transitions. For meetings, onboarding, LinkedIn.
-- `reel` — 30–60s, hard cuts every 1.2–1.8s, kinetic typography, progressive diagram reveal, burned-in captions. Supports two aspect ratios via `--aspect=9:16` (vertical 1080×1920 — Shorts/Reels/TikTok) or `--aspect=16:9` (landscape 1920×1080 — X/LinkedIn/YouTube-embedded/desktop). Same format, different canvas — see `./references/reel-patterns.md` § Two aspect ratios for what differs between them.
+**Command scope (authoritative in manifest):**
+- `/generate-video` — greenfield, topic → composition → `mp4` only. Hosts `explainer-longform`, `social-reel`, `announcement-bumper`.
+- `/render-video` — existing HTML → `mp4` / `mov` / `webm`. Hosts `deck-to-video`, `overlay-transparent`, `browser-loop`.
+- For `.mov` / `.webm` cold-start: author the composition HTML via `/generate-web-diagram` first, then hand off to `/render-video`. Never claim `/generate-video` can emit `.mov` or `.webm`.
 
-**Before generating video, read `./references/hyperframes.md` (runtime, constraints, CLI flags), `./references/gsap-rules.md` (hard constraints — timelines must be `{ paused: true }`, no `Math.random`, no `repeat: -1`), and — for reel style — `./references/reel-patterns.md` (beat structure, kinetic typography, progressive diagram reveal, TTS + burned-in captions).** Start compositions from `./templates/hyperframes-longform.html` (16:9 long-form), `./templates/hyperframes-reel.html` (9:16 reel), or `./templates/hyperframes-reel-landscape.html` (16:9 reel).
+**Hard authoring rules.** Read `./references/hyperframes.md` (runtime, CLI flags), `./references/gsap-rules.md` (timelines must be `{ paused: true }`, synchronous `window.__timelines[<id>]` registration, no `Math.random` / `Date.now` / `repeat: -1`), and — for reel style — `./references/reel-patterns.md`. Start from the templates in `./templates/hyperframes-*.html`.
 
-**Runtime requirements.** Hyperframes needs Node ≥ 22 and FFmpeg on PATH. The skill runs `bash {{skill_dir}}/scripts/hyperframes-doctor.sh` at the start of any video command; if it exits non-zero, abort and forward install hints to the user. Do not attempt to render with missing deps.
+**Runtime requirements.** Node ≥ 22 and FFmpeg on PATH. Run `bash {{skill_dir}}/scripts/hyperframes-doctor.sh` at the start of every video command; if it exits non-zero, abort and forward install hints. Do not attempt to render with missing deps.
 
 **Verification flow is mandatory.** Video is a high-cost command.
-1. `npx hyperframes lint && npx hyperframes validate` before render (validate runs WCAG contrast audit)
+1. `npx hyperframes lint && npx hyperframes validate` before render (WCAG contrast audit included)
 2. `npx hyperframes render --quality draft` for fast preview
-3. `bash {{skill_dir}}/scripts/extract-keyframes.sh <draft.mp4>` → 3 keyframes (start/mid/end)
+3. `bash {{skill_dir}}/scripts/extract-keyframes.sh <draft>` → 3 keyframes (start/mid/end)
 4. Show keyframes to user, ask for approval
-5. On approval: `npx hyperframes render --quality standard` for delivery
+5. On approval: `npx hyperframes render --quality standard` for delivery — with the format dictated by the recipe (`--format=mov` / `--format=webm` where applicable)
 
-Because video is high-cost, the AskUserQuestion caveat (see `./references/clarify.md`) **always fires** for video commands — even if the user's request is otherwise clear. Minimum questions: style (long-form vs reel) and duration. Bypass only on explicit `--no-ask` flag.
+AskUserQuestion (see `./references/clarify.md`) **always fires** for video — minimum questions are style/recipe and duration. Bypass only on explicit `--no-ask`.
 
-**Video output location:** `~/.agent/videos/<slug>.mp4` (not `~/.agent/diagrams/`). Keyframes to `~/.agent/videos/<slug>/keyframes/`. Intermediate assets (narration.wav, captions.vtt) to `~/.agent/videos/<slug>/`.
+**Output location:** `~/.agent/videos/<slug>/<slug>.<ext>` (ext is `mp4` / `mov` / `webm` per recipe). Keyframes to `~/.agent/videos/<slug>/keyframes/`. Intermediate assets (narration.wav, captions.vtt) to `~/.agent/videos/<slug>/`.
 
 ## File Structure
 

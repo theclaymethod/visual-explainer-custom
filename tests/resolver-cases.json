@@ -1,0 +1,19 @@
+[
+  { "prompt": "draw me an architecture diagram of our auth flow", "command": "generate-web-diagram", "format": "html" },
+  { "prompt": "make a visual implementation plan for optimistic updates", "command": "generate-visual-plan", "format": "html" },
+  { "prompt": "turn this topic into a vertical slide deck", "command": "generate-slides", "format": "html" },
+  { "prompt": "make a single shareable poster from this release summary", "command": "generate-poster", "format": "html" },
+  { "prompt": "create a 90 second explainer video about our queue redesign", "command": "generate-video", "format": "mp4", "recipe": "explainer-longform" },
+  { "prompt": "make a 35 second social reel from this changelog", "command": "generate-video", "format": "mp4", "recipe": "social-reel" },
+  { "prompt": "create a short intro bumper for the launch video", "command": "generate-video", "format": "mp4", "recipe": "announcement-bumper" },
+  { "prompt": "convert this HTML deck into a narrated review video", "command": "render-video", "format": "mp4", "recipe": "deck-to-video" },
+  { "prompt": "render this lower third as a transparent video for Premiere", "command": "render-video", "format": "mov", "recipe": "overlay-transparent" },
+  { "prompt": "turn this hero animation into a transparent browser loop", "command": "render-video", "format": "webm", "recipe": "browser-loop" },
+  { "prompt": "generate a visual diff review for this branch", "command": "diff-review", "format": "html" },
+  { "prompt": "compare this RFC to the current codebase visually", "command": "plan-review", "format": "html" },
+  { "prompt": "give me a recap of the last 2 weeks in the project", "command": "project-recap", "format": "html" },
+  { "prompt": "verify whether this recap document is accurate", "command": "fact-check", "format": "md" },
+  { "prompt": "share this generated html page", "command": "share", "format": "html" },
+  { "prompt": "export this generated deck as a pdf", "command": "export-pdf", "format": "pdf" },
+  { "prompt": "extract keyframes from this draft video", "command": "export-assets", "format": "png" }
+]

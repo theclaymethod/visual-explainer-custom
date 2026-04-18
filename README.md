@@ -153,6 +153,21 @@ rm -rf /tmp/ve
 
 If you want the upstream (non-SubQ) version instead, see [nicobailon/visual-explainer](https://github.com/nicobailon/visual-explainer).
 
+## Resolver-first structure
+
+This fork now has a top-level routing layer instead of burying capability choice in command prose:
+
+- [`plugins/visual-explainer/RESOLVER.md`](plugins/visual-explainer/RESOLVER.md) decides which command should fire
+- [`plugins/visual-explainer/references/output-resolver.md`](plugins/visual-explainer/references/output-resolver.md) decides which output family the user actually wants
+- [`plugins/visual-explainer/commands/manifest.json`](plugins/visual-explainer/commands/manifest.json) is the machine-readable source of truth for commands, formats, refs, and recipes
+
+Validation commands:
+
+```bash
+npm run check:resolver
+npm test
+```
+
 ## Commands
 
 | Command | What it does |
@@ -161,12 +176,14 @@ If you want the upstream (non-SubQ) version instead, see [nicobailon/visual-expl
 | `/generate-visual-plan` | Generate a visual implementation plan for a feature or extension |
 | `/generate-slides` | Generate a magazine-quality slide deck (vertical, or `--magazine` for horizontal editorial layout) |
 | `/generate-poster` | Generate a single-canvas poster via poster-ai |
-| `/generate-video` | Generate an explainer MP4 via Hyperframes (`--style=long-form` or `--style=reel`) |
-| `/render-video` | Convert an existing HTML deck or magazine to an MP4 |
+| `/generate-video` | Generate a new video via Hyperframes (`mp4`, `mov`, or `webm`, depending on recipe) |
+| `/render-video` | Convert an existing HTML deck, magazine, or explainer into video output |
 | `/diff-review` | Visual diff review with architecture comparison and code review |
 | `/plan-review` | Compare a plan against the codebase with risk assessment |
 | `/project-recap` | Mental model snapshot for context-switching back to a project |
 | `/fact-check` | Verify accuracy of a document against actual code |
+| `/export-pdf` | Export an existing HTML artifact to PDF |
+| `/export-assets` | Export keyframes, stills, snippets, and loopable assets |
 | `/share` | Deploy an HTML page to Vercel and get a live URL |
 
 The agent also kicks in automatically when it's about to dump a complex table in the terminal (4+ rows or 3+ columns) — it renders HTML instead.
@@ -200,10 +217,10 @@ Any command that produces a scrollable page supports `--slides` to generate a sl
 /generate-slides --magazine "quarterly engineering recap"
 ```
 
-Pass `--pdf` to also render a multi-page landscape PDF (1920×1080, one slide/page per PDF page). See § 8 above for the full rationale.
+Use `/export-pdf` when the PDF itself is the primary ask. `--pdf` on `/generate-slides` remains as a compatibility alias.
 
 ```
-/generate-slides --pdf "q2 roadmap"
+/export-pdf ~/.agent/diagrams/q2-roadmap.html
 /generate-slides --magazine --pdf "quarterly engineering recap"
 ```
 
@@ -215,15 +232,17 @@ Pass `--pdf` to also render a multi-page landscape PDF (1920×1080, one slide/pa
 
 ## Video Mode
 
-Generate MP4 explainer videos locally via Hyperframes. No cloud account, no API keys — requires Node ≥ 22 and FFmpeg.
+Generate video artifacts locally via Hyperframes. No cloud account, no API keys — requires Node ≥ 22 and FFmpeg.
 
 ```
 /generate-video "how our queue redesign works" --style=long-form
 /generate-video "one-stat hook about the 8.4x throughput" --style=reel
+/render-video ~/.agent/diagrams/lower-third.html --format=mov
+/render-video ~/.agent/diagrams/hero-loop.html --format=webm
 /render-video ~/.agent/diagrams/quarterly-recap-magazine.html --style=reel
 ```
 
-Two styles: `long-form` (16:9, 60–180s, slide-paced with TTS narration) or `reel` (9:16, 30–60s, hard-cut kinetic typography with burned-in captions). Video is a high-cost command — the skill always confirms style and duration via `AskUserQuestion` before rendering, and extracts three keyframes from a fast draft render for approval before committing to the final-quality pass.
+Two styles: `long-form` (16:9, 60–180s, slide-paced with TTS narration) or `reel` (9:16, 30–60s, hard-cut kinetic typography with burned-in captions). Format is now a separate routing decision: `mp4` for default delivery, `mov` for transparent editor assets, `webm` for browser-native loops and transparent embeds. Video is a high-cost command — the skill always confirms style and duration via `AskUserQuestion` before rendering, and extracts three keyframes from a fast draft render for approval before committing to the final-quality pass.
 
 <p align="center">
   <video src="demos/videos/reel-9x16.mp4" controls muted playsinline width="320"></video>
@@ -241,12 +260,17 @@ plugins/
 └── visual-explainer/
     ├── .claude-plugin/plugin.json
     ├── SKILL.md                          ← workflow + design principles
-    ├── commands/                         ← slash commands (incl. generate-video, render-video)
+    ├── RESOLVER.md                       ← top-level routing table
+    ├── commands/                         ← slash commands + manifest
     ├── references/
     │   ├── mono-industrial.md            ← default aesthetic
     │   ├── subq.md                       ← SubQ brand (this fork)
     │   ├── diagrams-svg.md               ← 13-type SVG diagram rules (this fork)
     │   ├── diagram-tokens.md             ← per-aesthetic token maps (this fork)
+    │   ├── output-resolver.md            ← output-family routing (this fork)
+    │   ├── hyperframes-prompting.md      ← Hyperframes prompt vocabulary (this fork)
+    │   ├── export-contracts.md           ← PDF / MP4 / MOV / WebM rules (this fork)
+    │   ├── render-modes.md               ← local vs docker, delivery vs editor (this fork)
     │   ├── hyperframes.md                ← Hyperframes integration (this fork)
     │   ├── gsap-rules.md                 ← GSAP constraints for video (this fork)
     │   ├── reel-patterns.md              ← 9:16 fast-cut reel rules (this fork)
@@ -305,6 +329,7 @@ Every template adapts from 1440px+ desktop down to 390px mobile. The theme toggl
 - Results vary by model capability
 - Demo capture requires `ffmpeg` (always) plus either Playwright MCP or `agent-browser` (either one works)
 - Video output (`/generate-video`, `/render-video`) requires Node ≥ 22 and FFmpeg; the skill runs `hyperframes-doctor.sh` at the start of any video command and aborts with install hints if prerequisites are missing
+- PDF export (`/export-pdf`) requires Playwright in the current directory or an ancestor
 
 ## Credits
 

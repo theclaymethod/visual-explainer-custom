@@ -1,0 +1,187 @@
+{
+  "commands": [
+    {
+      "id": "generate-web-diagram",
+      "tier": 1,
+      "kind": "html",
+      "summary": "Generate a standalone HTML diagram or visual explainer page.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "clarify.md", "mono-industrial.md"],
+      "prerequisites": [],
+      "supportedFormats": ["html"]
+    },
+    {
+      "id": "generate-visual-plan",
+      "tier": 1,
+      "kind": "html",
+      "summary": "Generate a visual implementation plan from a feature request or brief.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "clarify.md"],
+      "prerequisites": [],
+      "supportedFormats": ["html"]
+    },
+    {
+      "id": "generate-slides",
+      "tier": 1,
+      "kind": "html",
+      "summary": "Generate a vertical slide deck or horizontal magazine.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "clarify.md", "slide-patterns.md"],
+      "prerequisites": [],
+      "supportedFormats": ["html", "pdf", "png"]
+    },
+    {
+      "id": "generate-poster",
+      "tier": 0,
+      "kind": "html",
+      "summary": "Generate a poster-style fixed-canvas artifact via poster-ai.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "clarify.md", "poster.md", "export-contracts.md"],
+      "prerequisites": ["poster-ai"],
+      "supportedFormats": ["html", "png", "pdf"]
+    },
+    {
+      "id": "generate-video",
+      "tier": 0,
+      "kind": "video",
+      "summary": "Generate a new mp4 video from a topic, outline, transcript, changelog, doc, or URL. mov / webm recipes route through render-video.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "hyperframes-prompting.md", "render-modes.md", "hyperframes.md"],
+      "prerequisites": ["node>=22", "ffmpeg", "hyperframes"],
+      "supportedFormats": ["mp4"]
+    },
+    {
+      "id": "render-video",
+      "tier": 0,
+      "kind": "video",
+      "summary": "Render an existing HTML artifact into a video deliverable.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "hyperframes-prompting.md", "render-modes.md", "hyperframes.md"],
+      "prerequisites": ["node>=22", "ffmpeg", "hyperframes"],
+      "supportedFormats": ["mp4", "mov", "webm"]
+    },
+    {
+      "id": "diff-review",
+      "tier": 1,
+      "kind": "html",
+      "summary": "Generate a visual diff review from a branch, commit, range, or PR.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "clarify.md"],
+      "prerequisites": ["git"],
+      "supportedFormats": ["html"]
+    },
+    {
+      "id": "plan-review",
+      "tier": 1,
+      "kind": "html",
+      "summary": "Compare a plan or spec to the current codebase visually.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "clarify.md"],
+      "prerequisites": [],
+      "supportedFormats": ["html"]
+    },
+    {
+      "id": "project-recap",
+      "tier": 1,
+      "kind": "html",
+      "summary": "Generate a visual recap of project state, activity, and decisions.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md", "clarify.md"],
+      "prerequisites": ["git"],
+      "supportedFormats": ["html"]
+    },
+    {
+      "id": "fact-check",
+      "tier": 2,
+      "kind": "verification",
+      "summary": "Verify an existing document against the codebase and correct inaccuracies.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md"],
+      "prerequisites": [],
+      "supportedFormats": ["html", "md"]
+    },
+    {
+      "id": "share",
+      "tier": 2,
+      "kind": "delivery",
+      "summary": "Deploy an existing HTML artifact and return a live URL.",
+      "aliases": [],
+      "requiredRefs": ["output-resolver.md"],
+      "prerequisites": ["vercel-deploy-skill"],
+      "supportedFormats": ["html"]
+    },
+    {
+      "id": "export-pdf",
+      "tier": 2,
+      "kind": "export",
+      "summary": "Export an existing HTML artifact to a PDF handoff format.",
+      "aliases": ["generate-slides --pdf"],
+      "requiredRefs": ["output-resolver.md", "export-contracts.md"],
+      "prerequisites": ["playwright"],
+      "supportedFormats": ["pdf"]
+    },
+    {
+      "id": "export-assets",
+      "tier": 2,
+      "kind": "export",
+      "summary": "Export stills, keyframes, slide PNGs, and inline media snippets from existing artifacts.",
+      "aliases": ["generate-slides --poster-export"],
+      "requiredRefs": ["output-resolver.md", "export-contracts.md"],
+      "prerequisites": ["ffmpeg", "playwright"],
+      "supportedFormats": ["png", "jpg", "webm", "mp4", "html-snippet"]
+    }
+  ],
+  "outputFamilies": [
+    { "id": "html", "formats": ["html"] },
+    { "id": "document", "formats": ["md"] },
+    { "id": "pdf", "formats": ["pdf"] },
+    { "id": "video-delivery", "formats": ["mp4"] },
+    { "id": "video-editable", "formats": ["mov"] },
+    { "id": "video-browser", "formats": ["webm"] },
+    { "id": "assets", "formats": ["png", "jpg", "html-snippet"] }
+  ],
+  "videoRecipes": [
+    {
+      "id": "explainer-longform",
+      "entryCommand": "generate-video",
+      "defaultFormat": "mp4",
+      "defaultAspect": "16:9",
+      "durationRange": "60-180s"
+    },
+    {
+      "id": "social-reel",
+      "entryCommand": "generate-video",
+      "defaultFormat": "mp4",
+      "defaultAspect": "9:16",
+      "durationRange": "30-60s"
+    },
+    {
+      "id": "deck-to-video",
+      "entryCommand": "render-video",
+      "defaultFormat": "mp4",
+      "defaultAspect": "16:9",
+      "durationRange": "30-180s"
+    },
+    {
+      "id": "overlay-transparent",
+      "entryCommand": "render-video",
+      "defaultFormat": "mov",
+      "defaultAspect": "16:9",
+      "durationRange": "2-20s"
+    },
+    {
+      "id": "browser-loop",
+      "entryCommand": "render-video",
+      "defaultFormat": "webm",
+      "defaultAspect": "16:9",
+      "durationRange": "2-12s"
+    },
+    {
+      "id": "announcement-bumper",
+      "entryCommand": "generate-video",
+      "defaultFormat": "mp4",
+      "defaultAspect": "16:9",
+      "durationRange": "5-20s"
+    }
+  ]
+}

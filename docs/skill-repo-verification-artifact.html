@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skill Repo Verification</title>
+  <style>
+    :root {
+      --bg: #f6f2ea;
+      --surface: rgba(255,255,255,0.78);
+      --text: #161616;
+      --muted: #61605a;
+      --line: rgba(22,22,22,0.12);
+      --blue: #1557ff;
+      --blue-soft: rgba(21,87,255,0.10);
+      --green: #167349;
+      --green-soft: rgba(22,115,73,0.10);
+      --amber: #a66b00;
+      --amber-soft: rgba(166,107,0,0.10);
+      --shadow: 0 18px 50px rgba(0,0,0,0.08);
+      --radius: 24px;
+      --max: 1260px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(21,87,255,0.08), transparent 30%),
+        radial-gradient(circle at 100% 15%, rgba(166,107,0,0.05), transparent 24%),
+        linear-gradient(180deg, #f8f3ec 0%, #f1ebe1 60%, #ece5da 100%);
+      color: var(--text);
+      font-family: "Inter", "Segoe UI", sans-serif;
+    }
+    body { padding: 32px 18px 64px; }
+    .page { max-width: var(--max); margin: 0 auto; display: grid; gap: 22px; }
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      padding: 28px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 0;
+      overflow: hidden;
+    }
+    .hero__main { padding: 36px; display: grid; gap: 22px; }
+    .hero__side {
+      border-left: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--blue-soft), rgba(255,255,255,0.55));
+      padding: 28px;
+      display: grid;
+      gap: 14px;
+      align-content: center;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.65);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(40px, 6vw, 72px);
+      line-height: 0.92;
+      letter-spacing: -0.06em;
+      max-width: 11ch;
+    }
+    h2, h3 { margin: 0 0 14px; letter-spacing: -0.04em; }
+    h2 { font-size: 28px; }
+    h3 { font-size: 20px; }
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .metric-grid, .grid-2, .grid-3, .grid-4 {
+      display: grid;
+      gap: 18px;
+    }
+    .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric, .card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.64);
+      padding: 18px;
+      min-width: 0;
+    }
+    .metric__label {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .metric__value {
+      margin: 0 0 8px;
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: var(--text);
+    }
+    .tone-blue { background: linear-gradient(180deg, var(--blue-soft), rgba(255,255,255,0.55)); }
+    .tone-green { background: linear-gradient(180deg, var(--green-soft), rgba(255,255,255,0.55)); }
+    .tone-amber { background: linear-gradient(180deg, var(--amber-soft), rgba(255,255,255,0.55)); }
+    .tag-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .tag {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.68);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .route {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.62);
+      display: grid;
+      gap: 10px;
+    }
+    .route__arrow {
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: 0.04em;
+    }
+    code, pre {
+      font-family: "SFMono-Regular", Consolas, monospace;
+    }
+    pre {
+      margin: 0;
+      padding: 16px;
+      border-radius: 16px;
+      background: #151515;
+      color: #f7f7f7;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    li + li { margin-top: 4px; }
+    .footer {
+      font-size: 14px;
+      color: var(--muted);
+    }
+    @media (max-width: 980px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero__side { border-left: 0; border-top: 1px solid var(--line); }
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 720px) {
+      .grid-2, .grid-3, .grid-4, .metric-grid { grid-template-columns: 1fr; }
+      .hero__main, .hero__side, .panel { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="panel hero">
+      <div class="hero__main">
+        <div class="eyebrow">Verification Artifact</div>
+        <h1>The repo is now resolver-first.</h1>
+        <p>
+          This artifact reflects the implemented state on the branch, not the earlier proposal.
+          The plugin now has a top-level resolver, a machine-readable manifest, first-class export
+          surfaces, video recipe routing, route fixtures, and passing validation checks.
+        </p>
+        <div class="tag-row">
+          <span class="tag">Branch: <code>codex/skill-repo-resolver-plan</code></span>
+          <span class="tag">Status: structurally green</span>
+          <span class="tag">Artifact source: implemented repo</span>
+        </div>
+      </div>
+      <aside class="hero__side">
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="metric__label">Commands</div>
+            <div class="metric__value">13</div>
+            <p>Manifest-backed command surface.</p>
+          </div>
+          <div class="metric">
+            <div class="metric__label">Video Recipes</div>
+            <div class="metric__value">6</div>
+            <p>Delivery intent modeled below the command layer.</p>
+          </div>
+          <div class="metric">
+            <div class="metric__label">Output Families</div>
+            <div class="metric__value">7</div>
+            <p>HTML, PDF, delivery video, editable video, browser video, assets, document.</p>
+          </div>
+          <div class="metric">
+            <div class="metric__label">Route Fixtures</div>
+            <div class="metric__value">17</div>
+            <p>Prompt -> command -> format coverage for all commands and recipes.</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid-3">
+      <article class="panel tone-blue">
+        <h2>New Source Of Truth</h2>
+        <ul>
+          <li><code>plugins/visual-explainer/RESOLVER.md</code></li>
+          <li><code>plugins/visual-explainer/commands/manifest.json</code></li>
+          <li><code>plugins/visual-explainer/references/output-resolver.md</code></li>
+        </ul>
+      </article>
+      <article class="panel tone-green">
+        <h2>New Export Layer</h2>
+        <ul>
+          <li><code>commands/export-pdf.md</code></li>
+          <li><code>commands/export-assets.md</code></li>
+          <li><code>references/export-contracts.md</code></li>
+        </ul>
+      </article>
+      <article class="panel tone-amber">
+        <h2>New Validation Layer</h2>
+        <ul>
+          <li><code>scripts/check-resolvable.mjs</code></li>
+          <li><code>scripts/lib/resolver-utils.mjs</code></li>
+          <li><code>tests/resolver-cases.json</code></li>
+          <li><code>tests/visual-explainer-resolver.test.mjs</code></li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>What Changed In Practice</h2>
+      <div class="grid-4">
+        <div class="card">
+          <h3>Routing moved up</h3>
+          <p>Command choice is no longer implied only by command prose. The repo now has a top-level resolver.</p>
+        </div>
+        <div class="card">
+          <h3>Formats became first-class</h3>
+          <p>PDF, MP4, MOV, and WebM are explicit output surfaces instead of being treated as incidental flags.</p>
+        </div>
+        <div class="card">
+          <h3>Video got recipe routing</h3>
+          <p><code>generate-video</code> and <code>render-video</code> now sit above recipe-specific intent like reels, overlays, and browser loops.</p>
+        </div>
+        <div class="card">
+          <h3>Static drift now fails</h3>
+          <p>Manifest/filesystem mismatch, missing resolver coverage, doc drift, unknown formats, and missing route coverage are all checked.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Representative Routes</h2>
+      <div class="grid-3">
+        <div class="route">
+          <strong>“Export this deck as a PDF”</strong>
+          <div class="route__arrow">prompt -> output family `pdf` -> `export-pdf`</div>
+          <p>No need to hide the user’s real intent inside <code>/generate-slides --pdf</code>.</p>
+        </div>
+        <div class="route">
+          <strong>“Make a transparent lower third for Premiere”</strong>
+          <div class="route__arrow">prompt -> `render-video` -> `overlay-transparent` -> `mov`</div>
+          <p>Editor-targeted output is now distinct from default playback delivery.</p>
+        </div>
+        <div class="route">
+          <strong>“Turn this changelog into a 35s reel”</strong>
+          <div class="route__arrow">prompt -> `generate-video` -> `social-reel` -> `mp4`</div>
+          <p>Prompt shape and recipe routing are explicit.</p>
+        </div>
+        <div class="route">
+          <strong>“Extract keyframes from this draft video”</strong>
+          <div class="route__arrow">prompt -> output family `assets` -> `export-assets`</div>
+          <p>Asset export is a first-class command surface now.</p>
+        </div>
+        <div class="route">
+          <strong>“Compare this RFC to the codebase visually”</strong>
+          <div class="route__arrow">prompt -> `plan-review` -> `html`</div>
+          <p>Core HTML explainers stay where they belong.</p>
+        </div>
+        <div class="route">
+          <strong>“Make a browser-native transparent loop”</strong>
+          <div class="route__arrow">prompt -> `render-video` -> `browser-loop` -> `webm`</div>
+          <p>Browser playback is no longer conflated with editor delivery.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <article class="panel">
+        <h2>Verification Commands Run</h2>
+        <pre>node plugins/visual-explainer/scripts/check-resolvable.mjs
+check-resolvable passed: 13 commands, 6 video recipes
+
+npm test
+6 tests passed
+0 failed</pre>
+      </article>
+      <article class="panel">
+        <h2>What The Test Layer Covers</h2>
+        <ul>
+          <li>Every function in <code>resolver-utils.mjs</code></li>
+          <li>Manifest vs filesystem coverage</li>
+          <li>Resolver coverage for all commands and all video recipes</li>
+          <li>README + SKILL table drift against the manifest</li>
+          <li>Output format coverage against declared output families</li>
+          <li>Route fixture coverage for every command and recipe</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2>Files Added</h2>
+      <pre>plugins/visual-explainer/RESOLVER.md
+plugins/visual-explainer/commands/manifest.json
+plugins/visual-explainer/commands/export-pdf.md
+plugins/visual-explainer/commands/export-assets.md
+plugins/visual-explainer/references/output-resolver.md
+plugins/visual-explainer/references/hyperframes-prompting.md
+plugins/visual-explainer/references/export-contracts.md
+plugins/visual-explainer/references/render-modes.md
+plugins/visual-explainer/scripts/check-resolvable.mjs
+plugins/visual-explainer/scripts/lib/resolver-utils.mjs
+tests/resolver-cases.json
+tests/visual-explainer-resolver.test.mjs
+docs/skill-repo-verification-artifact.html</pre>
+    </section>
+
+    <section class="panel">
+      <h2>Important Caveat</h2>
+      <p>
+        This verification pass is structural and routing-focused. It proves the resolver, manifest,
+        docs, and route fixtures are coherent and reachable. It does <strong>not</strong> claim that
+        every runtime dependency path was exercised end-to-end in this session. In particular,
+        HyperFrames rendering and Playwright-backed PDF export were not run as full media pipelines here.
+      </p>
+    </section>
+
+    <section class="panel footer">
+      <p>
+        Related plan artifact: <code>docs/skill-repo-resolver-plan.html</code>.
+        This page is the implementation review counterpart.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

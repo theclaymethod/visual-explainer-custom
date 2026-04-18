@@ -33,9 +33,15 @@ If the user hasn't specified and the content is ambiguous (could work as either)
 
 Write output to `~/.agent/diagrams/<slug>.html` (or `<slug>-magazine.html` for `--magazine`) and open the result in the browser.
 
-**`--poster-export` flag (optional).** If the user passes this flag, after producing the interactive HTML deck/magazine, also render each slide/page to its own fixed-canvas PNG via `poster-ai`. Check `which poster`; skip the export silently if unavailable. Write per-slide PNGs to `~/.agent/diagrams/<deck-name>/slides/` at 1920×1080 (or 1080×1920 for a vertical-stat magazine page). See `./references/poster.md` → "Slide decks as per-slide posters" for the workflow. The interactive HTML remains canonical; PNGs are a secondary artifact for sharing.
+**`--poster-export` flag (optional).** This is a compatibility alias for `/export-assets --kind=slides`. After producing the interactive HTML deck/magazine, export one PNG per slide/page using the bundled Playwright-based exporter:
 
-**`--pdf` flag (optional).** After producing the interactive HTML deck/magazine, also render a multi-page landscape PDF (one slide/page per PDF page, 1920×1080) using the bundled Playwright-based exporter:
+```bash
+node <skill-dir>/scripts/export-slides-png.mjs <input.html> <outputDir>
+```
+
+Write PNGs to `~/.agent/diagrams/<deck-name>/slides/` at 1920×1080 (or 1080×1920 for portrait magazine). Requires `playwright` + a Chromium binary — install once per project directory via `npm install playwright && npx playwright install chromium`. If Playwright is unavailable, forward the install hint and deliver only the HTML. See `./commands/export-assets.md` and `./references/export-contracts.md`.
+
+**`--pdf` flag (optional).** This is a compatibility alias for `/export-pdf`. After producing the interactive HTML deck/magazine, export a PDF handoff from that artifact using the bundled Playwright-based exporter:
 
 ```bash
 node <skill-dir>/scripts/export-slides-pdf.mjs <input.html> <output.pdf>

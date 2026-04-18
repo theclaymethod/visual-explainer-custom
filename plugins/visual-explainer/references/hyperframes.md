@@ -73,9 +73,10 @@ The skill uses a standard set of flags:
 | `--output` | `~/.agent/videos/<slug>.mp4` | Always under `~/.agent/videos/` |
 | `--fps` | `30` (long-form), `30` (reel) | `60` doubles render time |
 | `--quality` | `draft` (verify), then `standard` (final) | `high` for delivery masters |
-| `--format` | `mp4` | `webm` only when transparency is needed |
+| `--format` | `mp4` | Use `mov` for transparent editor assets, `webm` for browser-native transparent playback |
 | `--workers` | `auto` | Parallel Chrome instances |
 | `--strict` | on | Lint errors fail the render |
+| `--docker` | off | Deterministic render mode for CI and team-facing finals |
 
 ---
 
@@ -104,6 +105,8 @@ The draft-first gate exists because high-quality renders can take minutes per 30
 |---|---|---|---|---|
 | `long-form` | 16:9 | 1920 × 1080 | 60–180 seconds | 30 |
 | `reel` | 9:16 | 1080 × 1920 | 30–60 seconds | 30 |
+| `overlay` | 16:9 | 1920 × 1080 | 2–20 seconds | 30 |
+| `browser-loop` | 16:9 | 1920 × 1080 | 2–12 seconds | 30 |
 
 Longer than these ranges is allowed but requires explicit user request — AskUserQuestion should confirm before rendering.
 
@@ -115,6 +118,15 @@ Longer than these ranges is allowed but requires explicit user request — AskUs
 - `npx hyperframes transcribe narration.wav` — produce a caption track. The skill burns captions into reel outputs by default (silent autoplay) and offers captions as a side `.vtt` for long-form.
 - `npx hyperframes add <transition-name>` — pull shader/mask transitions from the Hyperframes registry (e.g., `flash-through-white`, `domain-warp-dissolve`). The skill uses these between slides in the long-form style.
 - `npx hyperframes benchmark` — measures render wall-clock on the current machine.
+
+## Prompting Guidance
+
+The local integration now treats prompt shape as part of the contract:
+
+- `cold start`: the user describes the video
+- `warm start`: the user supplies source material and asks for a video
+
+See `references/hyperframes-prompting.md` for the local routing and vocabulary layer.
 
 ---
 

@@ -49,7 +49,9 @@ Commands at this tier:
 These commands operate on a target and don't have creative choices to make. Don't ask.
 
 - `/fact-check` (verifies an existing file)
-- `/share` (deploys an existing file)
+- `/share` (deploys an existing HTML file)
+- `/export-pdf` (exports an existing HTML artifact to PDF)
+- `/export-assets` (exports stills, keyframes, or snippets from an existing artifact)
 
 ---
 

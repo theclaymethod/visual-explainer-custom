@@ -5,17 +5,17 @@ argument-hint: "<topic or outline> [--style=long-form|reel] [--duration=Ns] [--v
 
 # /generate-video
 
-Generate an explainer video from scratch. Wraps Hyperframes (local HTML → MP4 renderer) with specialized modes for explainer content.
+Generate a new video from scratch. Wraps Hyperframes with recipe-based routing for delivery, editable, and browser-native video outputs.
 
 **Input:** a topic, outline, or source document.
-**Output:** one MP4 in `~/.agent/videos/<slug>.mp4` plus 3 keyframe PNGs for review.
+**Output:** one final render in `~/.agent/videos/` (`.mp4`, `.mov`, or `.webm`) plus 3 keyframe PNGs for review.
 **Cost:** medium — render wall-clock is typically 30s–5min depending on duration and quality.
 
 ---
 
 ## Styles
 
-Two styles, picked via `--style` or confirmed via AskUserQuestion.
+Two primary styles, picked via `--style` or confirmed via AskUserQuestion. Output format is a separate routing decision — see `references/output-resolver.md` and `references/render-modes.md`.
 
 ### `long-form` (default when unsure)
 
@@ -45,11 +45,27 @@ Two styles, picked via `--style` or confirmed via AskUserQuestion.
 
 ## Workflow
 
-### 1. Clarify
+### 1. Resolve before authoring
+
+Read:
+
+- `./RESOLVER.md`
+- `./references/output-resolver.md`
+- `./references/hyperframes-prompting.md`
+- `./references/render-modes.md`
+
+Decide:
+
+- cold start vs warm start
+- video recipe
+- output format (`mp4`, `mov`, `webm`)
+- render mode (`local`, `docker`)
+
+### 2. Clarify
 
 If the request is ambiguous (missing: style, duration, audience, aesthetic), ask 1–3 questions via AskUserQuestion. See `references/clarify.md`. **Video is a high-cost command** — always ask at least "style" and "duration" before rendering, even if the user was otherwise clear. Bypass only when the user passed `--no-ask` or stated both style and duration explicitly.
 
-### 2. Check prerequisites
+### 3. Check prerequisites
 
 ```bash
 bash {{skill_dir}}/scripts/hyperframes-doctor.sh
@@ -57,10 +73,18 @@ bash {{skill_dir}}/scripts/hyperframes-doctor.sh
 
 If this exits non-zero, **abort** and forward the install hints to the user. Do not attempt to render.
 
-### 3. Author the composition
+### 4. Author the composition
 
 - **Long-form:** Start from `templates/hyperframes-longform.html`. Build one scene per major beat from the outline. Apply unslop to all prose copy before placing it in the template.
 - **Reel:** Start from `templates/hyperframes-reel.html`. Compress the outline to HOOK → PROBLEM → CONTEXT → MECHANISM → PROOF → RESOLUTION → CTA. Every scene is a single claim.
+
+Recipe-level routing (this command is `mp4`-only — `mov` / `webm` recipes live on `/render-video`):
+
+- `explainer-longform` -> `mp4`
+- `social-reel` -> `mp4`
+- `announcement-bumper` -> `mp4`
+
+If the user wants a `.mov` lower third or a `.webm` browser loop from scratch, route to `/generate-web-diagram` first to author the composition HTML, then hand off to `/render-video --format=mov` or `/render-video --format=webm`. See `./RESOLVER.md` Step 4.
 
 Follow the hard rules in `references/gsap-rules.md`:
 - Timeline is `{ paused: true }` and registered on `window.__timelines["<id>"]` synchronously
@@ -68,7 +92,7 @@ Follow the hard rules in `references/gsap-rules.md`:
 - `<video>` elements have `muted playsinline` (none in default templates)
 - `<audio>` lives in separate elements, not video tracks
 
-### 4. Narration
+### 5. Narration
 
 If narration is in scope (default for reel, optional for long-form):
 
@@ -88,7 +112,7 @@ npx hyperframes transcribe ~/.agent/videos/<slug>/narration.wav \
 
 Use the VTT output to pace the burned-in caption layer in the reel template. Each caption aligns with a beat boundary.
 
-### 5. Lint + validate
+### 6. Lint + validate
 
 ```bash
 cd ~/.agent/videos/<slug>
@@ -98,31 +122,33 @@ npx hyperframes validate   # WCAG contrast audit
 
 Resolve any errors before rendering. `--strict` is applied on render so unresolved lint errors will abort the render anyway.
 
-### 6. Draft render
+### 7. Draft render
 
 ```bash
 npx hyperframes render \
-  --output ~/.agent/videos/<slug>-draft.mp4 \
+  --output ~/.agent/videos/<slug>-draft.<ext> \
   --quality draft \
   --fps 30 \
   --strict
 ```
 
-### 7. Extract keyframes
+Use `--docker` for deterministic team-facing output when Docker is available and the user asked for a final-quality shared render.
+
+### 8. Extract keyframes
 
 ```bash
 bash {{skill_dir}}/scripts/extract-keyframes.sh \
-  ~/.agent/videos/<slug>-draft.mp4 \
+  ~/.agent/videos/<slug>-draft.<ext> \
   ~/.agent/videos/<slug>/keyframes
 ```
 
 Show the 3 keyframes to the user (via `open`, embedding in a markdown response, or any available preview mechanism). Ask: "Ready for the final render, or anything to adjust?" Don't proceed without confirmation — the final render is expensive.
 
-### 8. Final render (on approval)
+### 9. Final render (on approval)
 
 ```bash
 npx hyperframes render \
-  --output ~/.agent/videos/<slug>.mp4 \
+  --output ~/.agent/videos/<slug>.<ext> \
   --quality standard \
   --fps 30 \
   --strict
@@ -130,13 +156,15 @@ npx hyperframes render \
 
 Use `--quality high` only if the user explicitly asks for a delivery master. `high` ~doubles render time.
 
-### 9. Deliver
+### 10. Deliver
 
 Report:
-- Final MP4 path
+- Final render path and format
 - Duration / file size / resolution
 - Thumbnail (first keyframe) inline if the surface supports it
-- Offer `/share` if the user wants a hosted URL (note: `share.sh` currently handles HTML; videos need a different hosting path)
+- If format is `mov`, state that it targets editor/compositing workflows.
+- If format is `webm`, state that it targets browser playback and embeds.
+- Do not offer `/share` for video until a video-hosting path exists.
 
 ---
 
@@ -150,14 +178,20 @@ Report:
 | `--voice=<name>` | `af_nova` | Hyperframes TTS voice |
 | `--no-narration` | off | Skip TTS; silent video |
 | `--no-captions` | off | Reel only; default is captions on |
+| `--format=mp4` | `mp4` | Only `mp4` is supported here. `mov` / `webm` route through `/render-video`. |
 | `--quality=<draft\|standard\|high>` | standard | Final-pass quality |
 | `--fps=<24\|30\|60>` | 30 | `60` doubles render time |
+| `--docker` | off | Deterministic team-facing final render |
 | `--no-ask` | off | Skip AskUserQuestion; use defaults |
 
 ---
 
 ## References
 
+- `RESOLVER.md` — top-level routing
+- `references/output-resolver.md` — format routing
+- `references/hyperframes-prompting.md` — prompt shapes and vocabulary
+- `references/render-modes.md` — local vs docker, mp4 vs mov vs webm
 - `references/hyperframes.md` — runtime, constraints, CLI flags
 - `references/gsap-rules.md` — GSAP constraints for Hyperframes
 - `references/reel-patterns.md` — reel format rules (authoritative for reel style)
