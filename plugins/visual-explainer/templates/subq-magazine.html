@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Magazine — SubQ (Subquadratic)</title>
+<!--
+  Horizontal scroll-snap magazine in the SubQ (Subquadratic) aesthetic.
+
+  Tokens inherit directly from templates/subq.html:
+  - Brand color constants (black / navy / charcoal / tan / gray / cream
+    plus the four accents yellow / blue / orange / green) never change.
+  - Semantic roles (--bg, --panel, --panel-text, --text-display, …) flip
+    via prefers-color-scheme and the [data-theme] toggle, so the page
+    inverts to cream canvas + black contrast panel cleanly.
+  - Three-typeface system: Libre Baskerville (display) + Manrope (body)
+    + Roboto Mono (labels) + Roboto Serif Semi-Bold (wordmark only).
+
+  Magazine-only additions: the scroll-snap engine, nav dots, counter,
+  keyboard/wheel nav, and per-page tint variants built from the
+  semantic roles so they invert with mode.
+
+  Cover + back cover + one interior panel are absolute --subq-black (the
+  spec treats dark pages as mode-independent). Cream-contrast pages use
+  --panel so they flip: cream on the dark canvas, black on the cream
+  canvas — that inversion is the signature SubQ beat.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Manrope:wght@400;500;600&family=Roboto+Mono:wght@300;400&family=Roboto+Serif:wght@600&display=swap"
+  rel="stylesheet"
+/>
+<style>
+  /* ============ TOKENS (mirror templates/subq.html) ============ */
+  :root {
+    --font-display:  'Libre Baskerville', Georgia, serif;
+    --font-body:     'Manrope', system-ui, sans-serif;
+    --font-mono:     'Roboto Mono', 'SF Mono', Consolas, monospace;
+    --font-logotype: 'Roboto Serif', Georgia, serif;
+
+    /* Brand constants — never change with mode */
+    --subq-black:    #000000;
+    --subq-navy:     #080d1f;
+    --subq-charcoal: #3b362d;
+    --subq-tan:      #b7a99a;
+    --subq-gray:     #999489;
+    --subq-cream:    #fffaf3;
+
+    /* Accents — identical across modes */
+    --subq-yellow:   #FFE237;
+    --subq-blue:     #0834bc;
+    --subq-orange:   #eb521e;
+    --subq-green:    #3A7A35;
+
+    /* Semantic role tokens — DARK mode (canonical) */
+    --bg:            var(--subq-black);
+    --panel:         var(--subq-cream);
+    --panel-text:    var(--subq-black);
+    --panel-text-dim:rgba(0, 0, 0, 0.70);
+    --panel-label:   rgba(0, 0, 0, 0.55);
+
+    --text-display:   #ffffff;
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: var(--subq-tan);
+    --text-disabled:  rgba(255, 255, 255, 0.32);
+
+    --rule:        rgba(183, 169, 154, 0.20);
+    --rule-strong: rgba(183, 169, 154, 0.40);
+    --grid-line:   rgba(255, 255, 255, 0.05);
+    --ghost:       rgba(255, 255, 255, 0.12);
+  }
+
+  /* Light mode (OS preference, no explicit override) */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg:            var(--subq-cream);
+      --panel:         var(--subq-black);
+      --panel-text:    var(--subq-cream);
+      --panel-text-dim:rgba(255, 250, 243, 0.80);
+      --panel-label:   rgba(255, 250, 243, 0.55);
+
+      --text-display:   var(--subq-black);
+      --text-primary:   rgba(0, 0, 0, 0.88);
+      --text-secondary: var(--subq-charcoal);
+      --text-disabled:  rgba(0, 0, 0, 0.36);
+
+      --rule:        rgba(59, 54, 45, 0.16);
+      --rule-strong: rgba(59, 54, 45, 0.32);
+      --grid-line:   rgba(0, 0, 0, 0.06);
+      --ghost:       rgba(0, 0, 0, 0.10);
+    }
+  }
+
+  /* Explicit toggle overrides (beat the media query) */
+  :root[data-theme="light"] {
+    --bg:            var(--subq-cream);
+    --panel:         var(--subq-black);
+    --panel-text:    var(--subq-cream);
+    --panel-text-dim:rgba(255, 250, 243, 0.80);
+    --panel-label:   rgba(255, 250, 243, 0.55);
+    --text-display:   var(--subq-black);
+    --text-primary:   rgba(0, 0, 0, 0.88);
+    --text-secondary: var(--subq-charcoal);
+    --text-disabled:  rgba(0, 0, 0, 0.36);
+    --rule:        rgba(59, 54, 45, 0.16);
+    --rule-strong: rgba(59, 54, 45, 0.32);
+    --grid-line:   rgba(0, 0, 0, 0.06);
+    --ghost:       rgba(0, 0, 0, 0.10);
+  }
+  :root[data-theme="dark"] {
+    --bg:            var(--subq-black);
+    --panel:         var(--subq-cream);
+    --panel-text:    var(--subq-black);
+    --panel-text-dim:rgba(0, 0, 0, 0.70);
+    --panel-label:   rgba(0, 0, 0, 0.55);
+    --text-display:   #ffffff;
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: var(--subq-tan);
+    --text-disabled:  rgba(255, 255, 255, 0.32);
+    --rule:        rgba(183, 169, 154, 0.20);
+    --rule-strong: rgba(183, 169, 154, 0.40);
+    --grid-line:   rgba(255, 255, 255, 0.05);
+    --ghost:       rgba(255, 255, 255, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-body);
+    color: var(--text-primary);
+    background: var(--bg);
+    overflow: hidden;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ============ CROSS-MARK CORNER ANCHORS ============
+     TL + BR pair. TR is reserved for the theme toggle; BL stays empty. */
+  .subq-crossmark {
+    position: fixed;
+    font-family: var(--font-mono);
+    font-size: 20px;
+    line-height: 1;
+    user-select: none;
+    pointer-events: none;
+    z-index: 150;
+  }
+  .subq-crossmark--tl { top: 24px;    left: 24px;  color: var(--subq-yellow); }
+  .subq-crossmark--br { bottom: 72px; right: 24px; color: var(--subq-green);  }
+  @media (max-width: 768px) { .subq-crossmark { display: none; } }
+
+  /* ============ THEME TOGGLE ============ */
+  .theme-toggle {
+    position: fixed;
+    top: clamp(12px, 2vw, 24px);
+    right: clamp(12px, 2vw, 72px);
+    z-index: 200;
+    display: flex;
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    transition: background 240ms ease-out, border-color 240ms ease-out,
+                padding 260ms ease-out, gap 260ms ease-out,
+                backdrop-filter 240ms ease-out;
+  }
+  .theme-toggle button {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 999px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: color 180ms ease-out, background 180ms ease-out,
+                padding 260ms ease-out, gap 240ms ease-out,
+                max-width 320ms ease-out, opacity 220ms ease-out;
+  }
+  .theme-toggle__glyph { display: block; flex-shrink: 0; width: 12px; height: 12px; }
+  .theme-toggle__label {
+    display: inline-block;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 300ms ease-out, opacity 220ms ease-out 40ms;
+  }
+  .theme-toggle button:hover { color: var(--text-display); }
+  .theme-toggle button:focus-visible {
+    outline: 1px solid var(--subq-blue);
+    outline-offset: 2px;
+  }
+  .theme-toggle button:not([aria-checked="true"]) {
+    max-width: 0; padding: 0; opacity: 0;
+  }
+  .theme-toggle button[aria-checked="true"] { color: var(--text-display); }
+  .theme-toggle:hover,
+  .theme-toggle:focus-within {
+    background: color-mix(in srgb, var(--text-display) 8%, transparent);
+    border-color: var(--rule-strong);
+    backdrop-filter: blur(10px) saturate(1.1);
+    -webkit-backdrop-filter: blur(10px) saturate(1.1);
+    padding: 4px;
+    gap: 2px;
+  }
+  .theme-toggle:hover button:not([aria-checked="true"]),
+  .theme-toggle:focus-within button:not([aria-checked="true"]) {
+    max-width: 120px; padding: 7px 12px; opacity: 1; gap: 6px;
+  }
+  .theme-toggle:hover button[aria-checked="true"],
+  .theme-toggle:focus-within button[aria-checked="true"] {
+    background: color-mix(in srgb, var(--subq-blue) 14%, transparent);
+    padding: 7px 12px; gap: 6px;
+  }
+  .theme-toggle:hover .theme-toggle__label,
+  .theme-toggle:focus-within .theme-toggle__label {
+    max-width: 80px; opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .theme-toggle,
+    .theme-toggle button,
+    .theme-toggle__label { transition: none; }
+  }
+
+  /* ============ MAGAZINE ENGINE ============ */
+  .mag {
+    width: 100vw;
+    height: 100vh;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: row;
+    scrollbar-width: none;
+  }
+  .mag::-webkit-scrollbar { display: none; }
+
+  .page {
+    flex: 0 0 100vw;
+    width: 100vw;
+    height: 100vh;
+    scroll-snap-align: start;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--text-primary);
+  }
+
+  /* Canvas page keeps default bg. */
+  .page--canvas { background: var(--bg); }
+
+  /* Absolute dark — cover, back cover, interior dark panel. Tokens
+     re-bind locally so descendants see the dark palette regardless
+     of the page-level mode. */
+  .page--dark {
+    background: var(--subq-black);
+    --text-display:   #ffffff;
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: var(--subq-tan);
+    --text-disabled:  rgba(255, 255, 255, 0.32);
+    --rule:        rgba(183, 169, 154, 0.20);
+    --rule-strong: rgba(183, 169, 154, 0.40);
+    --grid-line:   rgba(255, 255, 255, 0.05);
+    --ghost:       rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+  }
+
+  /* Contrast panel page — cream on dark canvas, black on cream canvas.
+     This is the SubQ signature inversion; tokens stay semantic. */
+  .page--panel {
+    background: var(--panel);
+    --text-display:   var(--panel-text);
+    --text-primary:   var(--panel-text);
+    --text-secondary: var(--panel-text-dim);
+    --text-disabled:  var(--panel-label);
+    --rule:        color-mix(in srgb, var(--panel-text) 20%, transparent);
+    --rule-strong: color-mix(in srgb, var(--panel-text) 40%, transparent);
+    color: var(--text-primary);
+  }
+
+  /* Grid texture — 40px hairline grid, used on cover + one dark interior. */
+  .page--grid-texture {
+    background-color: var(--subq-black);
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    background-position: -1px -1px;
+  }
+
+  /* ============ TYPOGRAPHY ============ */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 0.85vw, 13px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(56px, 7.2vw, 120px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--text-display);
+  }
+  .display em {
+    font-style: italic;
+    color: var(--subq-tan);
+  }
+  .page--panel .display em { color: var(--subq-orange); }
+
+  .body-lg {
+    font-weight: 400;
+    font-size: clamp(18px, 1.5vw, 26px);
+    line-height: 1.55;
+    color: var(--text-secondary);
+    max-width: 62ch;
+  }
+
+  .mono-label {
+    font-family: var(--font-mono);
+    font-size: clamp(11px, 0.85vw, 13px);
+    letter-spacing: 0.15em;
+    color: var(--text-disabled);
+  }
+
+  .wordmark {
+    font-family: var(--font-logotype);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--text-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* Ghost wordmark — the signature oversized attribution footprint. */
+  .ghost-mark {
+    font-family: var(--font-logotype);
+    font-weight: 600;
+    font-size: clamp(120px, 22vw, 320px);
+    line-height: 0.85;
+    color: var(--ghost);
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  /* Stat anchor — serif, single accent color */
+  .stat-xl {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(160px, 22vw, 360px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--text-display);
+  }
+  .stat-xl--blue   { color: var(--subq-blue); }
+  .stat-xl--orange { color: var(--subq-orange); }
+  .stat-suffix {
+    font-family: var(--font-body);
+    font-size: 0.28em;
+    color: var(--text-secondary);
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1vw, 18px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-top: 32px;
+  }
+
+  /* ============ PIXEL BLOCKS (brand accent column / inline) ============ */
+  .pixel-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 48px;
+  }
+  .pixel-stack--horizontal {
+    flex-direction: row;
+    width: auto;
+    height: 48px;
+    gap: 6px;
+  }
+  .pixel {
+    width: 100%;
+    display: block;
+  }
+  .pixel-stack--horizontal .pixel { width: 48px; height: 100%; }
+
+  /* ============ PAGE LAYOUTS ============ */
+
+  /* Cover */
+  .page--cover {
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: clamp(56px, 6vh, 112px);
+  }
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    width: 100%;
+    gap: 24px;
+  }
+  .page--cover .cover-main {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: clamp(32px, 4vw, 72px);
+    align-items: flex-end;
+    width: 100%;
+    flex: 1;
+  }
+  .page--cover .cover-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 22ch;
+  }
+
+  /* Content page */
+  .page--content {
+    padding: clamp(64px, 7vh, 120px);
+    justify-content: flex-end;
+    gap: 32px;
+  }
+  .page--content.page--centered { justify-content: center; }
+
+  /* Split */
+  .page--split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0;
+  }
+  .half {
+    padding: clamp(48px, 6vh, 96px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    overflow: hidden;
+    position: relative;
+  }
+  .half-stat {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(48px, 5.5vw, 96px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--text-display);
+  }
+  .half--dark {
+    background: var(--subq-black);
+    --text-display:   #ffffff;
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: var(--subq-tan);
+    color: var(--text-primary);
+  }
+  .half--panel {
+    background: var(--panel);
+    --text-display:   var(--panel-text);
+    --text-primary:   var(--panel-text);
+    --text-secondary: var(--panel-text-dim);
+    color: var(--text-primary);
+  }
+  .half--blue {
+    background: var(--subq-blue);
+    --text-display:   #ffffff;
+    --text-primary:   rgba(255, 255, 255, 0.92);
+    --text-secondary: rgba(255, 255, 255, 0.72);
+    color: var(--text-primary);
+  }
+  .half--yellow {
+    background: var(--subq-yellow);
+    --text-display:   var(--subq-black);
+    --text-primary:   rgba(0, 0, 0, 0.92);
+    --text-secondary: rgba(0, 0, 0, 0.66);
+    color: var(--text-primary);
+  }
+
+  /* Full-bleed stat */
+  .page--stat {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: clamp(48px, 6vh, 96px);
+  }
+  .stat-anchor { display: flex; flex-direction: column; align-items: center; }
+
+  /* 2x2 quadrant */
+  .page--quadrant {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    padding: 0;
+  }
+  .q {
+    padding: clamp(40px, 5vh, 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    overflow: hidden;
+    position: relative;
+  }
+  .q:nth-child(2n) { border-right: none; }
+  .q:nth-child(n+3) { border-bottom: none; }
+  .q-body-block { display: flex; flex-direction: column; gap: 12px; }
+  .q-head {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(28px, 2.8vw, 48px);
+    line-height: 1.1;
+    color: var(--text-display);
+  }
+  .q-body {
+    font-size: clamp(15px, 1.1vw, 18px);
+    line-height: 1.55;
+    color: var(--text-secondary);
+  }
+  .q-accent {
+    width: 40px;
+    height: 40px;
+    display: block;
+  }
+
+  /* 3x2 grid of cells */
+  .page--grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    padding: 0;
+  }
+  .cell {
+    padding: clamp(24px, 3vh, 48px);
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+    overflow: hidden;
+    position: relative;
+  }
+  .cell:nth-child(3n) { border-right: none; }
+  .cell:nth-child(n+4) { border-bottom: none; }
+  .cell-head {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(22px, 2vw, 34px);
+    line-height: 1.12;
+    color: var(--text-display);
+  }
+
+  /* Back cover — ghost wordmark as spatial anchor */
+  .page--back {
+    padding: clamp(56px, 6vh, 112px);
+    justify-content: space-between;
+    position: relative;
+  }
+  .page--back .ghost-wrap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.12em;
+    overflow: hidden;
+    pointer-events: none;
+    line-height: 0;
+  }
+
+  /* ============ NAV DOTS + COUNTER ============ */
+  .nav-dots {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    padding: 10px 16px;
+    background: color-mix(in srgb, var(--subq-black) 60%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 2px;
+    z-index: 100;
+  }
+  .nav-dot {
+    width: 8px; height: 8px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    cursor: pointer;
+    padding: 0;
+    transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+  }
+  .nav-dot:hover { background: rgba(255, 255, 255, 0.4); }
+  .nav-dot.active {
+    background: var(--subq-yellow);
+    border-color: var(--subq-yellow);
+    transform: scale(1.3);
+  }
+
+  .counter {
+    position: fixed;
+    top: 24px;
+    left: 56px; /* sits to the right of the TL crossmark */
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    color: var(--text-secondary);
+    z-index: 100;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .page--cover .cover-main { grid-template-columns: 1fr; gap: 32px; }
+    .page--split { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+    .page--quadrant { grid-template-columns: 1fr; grid-template-rows: repeat(4, 1fr); }
+    .q:nth-child(2n) { border-right: 1px solid var(--rule); }
+    .q:nth-child(n+3) { border-bottom: 1px solid var(--rule); }
+    .page--grid { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr); }
+    .cell:nth-child(3n) { border-right: 1px solid var(--rule); }
+    .cell:nth-child(2n) { border-right: none; }
+    .counter { left: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cross marks — TL yellow + BR green. TR reserved for theme toggle. -->
+<span class="subq-crossmark subq-crossmark--tl">+</span>
+<span class="subq-crossmark subq-crossmark--br">+</span>
+
+<div class="theme-toggle" role="radiogroup" aria-label="Theme">
+  <button type="button" role="radio" data-theme="light" aria-checked="false">
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <span class="theme-toggle__label">Light</span>
+  </button>
+  <button type="button" role="radio" data-theme="dark" aria-checked="false">
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="currentColor" stroke="currentColor" stroke-width="1.5"/>
+    </svg>
+    <span class="theme-toggle__label">Dark</span>
+  </button>
+  <button type="button" role="radio" data-theme="system" aria-checked="true">
+    <svg class="theme-toggle__glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+      <path d="M 8 3 A 5 5 0 0 1 8 13 Z" fill="currentColor"/>
+    </svg>
+    <span class="theme-toggle__label">Auto</span>
+  </button>
+</div>
+
+<div class="counter"><span id="counter-current">01</span> / <span id="counter-total">09</span></div>
+
+<div class="mag" id="mag" aria-label="Magazine">
+
+  <!-- Page 1 — COVER (absolute dark, grid texture, serif display, pixel stack) -->
+  <section class="page page--dark page--grid-texture page--cover" aria-label="Cover">
+    <div class="meta-row">
+      <span class="wordmark">Subquadratic</span>
+      <span class="eyebrow">Field Notes · No. 01</span>
+    </div>
+    <div class="cover-main">
+      <div class="cover-copy">
+        <span class="eyebrow">Dispatch</span>
+        <h1 class="display" style="font-size: clamp(64px, 8.5vw, 148px);">
+          Intelligence<br />is <em>efficiency.</em>
+        </h1>
+        <p class="body-lg">A year of latency budgets, streaming decoders, and the one partition key that bought us an order of magnitude.</p>
+      </div>
+      <div class="pixel-stack" aria-hidden="true">
+        <div class="pixel" style="background: var(--subq-yellow); height: 72px;"></div>
+        <div class="pixel" style="background: var(--subq-orange); height: 48px;"></div>
+        <div class="pixel" style="background: var(--subq-blue);   height: 120px;"></div>
+        <div class="pixel" style="background: var(--subq-gray);   height: 40px;"></div>
+        <div class="pixel" style="background: var(--subq-green);  height: 64px;"></div>
+      </div>
+    </div>
+    <div class="meta-row">
+      <span class="mono-label">24 min read</span>
+      <span class="mono-label">visual-explainer / subq</span>
+    </div>
+  </section>
+
+  <!-- Page 2 — Opening (canvas) -->
+  <section class="page page--canvas page--content" aria-label="Opening">
+    <span class="eyebrow">01 · Opening</span>
+    <h2 class="display">The dashboard said throughput was fine. The queue depth graph said otherwise.</h2>
+    <p class="body-lg">Between the two, we lost three customers before anyone thought to reconcile the gap. This dispatch is a post-mortem written while the traces are still warm.</p>
+  </section>
+
+  <!-- Page 3 — Contrast panel (the SubQ inversion beat) -->
+  <section class="page page--panel page--content page--centered" aria-label="Contrast panel">
+    <div style="max-width: 22ch;">
+      <span class="eyebrow">The quiet finding</span>
+      <h2 class="display" style="font-size: clamp(40px, 4.8vw, 80px); margin-top: 24px;">
+        The ceiling wasn't in the code. It was in the <em>partition key.</em>
+      </h2>
+      <div class="pixel-stack pixel-stack--horizontal" style="margin-top: 40px;" aria-hidden="true">
+        <div class="pixel" style="background: var(--subq-yellow);"></div>
+        <div class="pixel" style="background: var(--subq-orange);"></div>
+        <div class="pixel" style="background: var(--subq-blue);"></div>
+        <div class="pixel" style="background: var(--subq-green);"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 4 — Full-bleed stat (canvas, orange anchor) -->
+  <section class="page page--canvas page--stat" aria-label="Key stat">
+    <div class="stat-anchor">
+      <div class="stat-xl stat-xl--orange">8.4<span class="stat-suffix">&times;</span></div>
+      <div class="stat-label">throughput in production</div>
+    </div>
+  </section>
+
+  <!-- Page 5 — Split (absolute dark / brand yellow) -->
+  <section class="page page--split" aria-label="Before and after">
+    <div class="half half--dark">
+      <span class="eyebrow">Before</span>
+      <div class="half-stat">500 rps</div>
+      <p class="body-lg">Ceiling — not the average. Past this point the queue depth climbed linearly until workers OOM'd and the on-call phone rang at 03:14.</p>
+    </div>
+    <div class="half half--yellow">
+      <span class="eyebrow">After</span>
+      <div class="half-stat">4,200 rps</div>
+      <p class="body-lg">Same hardware, same binaries, one topic config change. Partition by tenant, not by message type.</p>
+    </div>
+  </section>
+
+  <!-- Page 6 — Interior dark panel (the 3rd required dark page, grid texture) -->
+  <section class="page page--dark page--grid-texture page--content page--centered" aria-label="Reframe">
+    <div style="max-width: 32ch;">
+      <span class="eyebrow">Reframe</span>
+      <h2 class="display" style="font-size: clamp(40px, 4.8vw, 84px); margin-top: 24px;">
+        Partition keys encode your real <em>contract.</em>
+      </h2>
+      <p class="body-lg" style="margin-top: 24px; font-size: clamp(16px, 1.3vw, 22px);">Everything else is commentary. When tenant ordering is the guarantee you actually sell, partition by tenant. When message type is, partition by type. We had confused the two for eleven months.</p>
+    </div>
+  </section>
+
+  <!-- Page 7 — Quadrant (canvas / panel / brand blue / dark) -->
+  <section class="page page--quadrant" aria-label="Four trade-offs">
+    <div class="q" style="background: var(--bg);">
+      <div class="q-body-block">
+        <span class="eyebrow">Latency</span>
+        <h3 class="q-head">P99 down 68%.</h3>
+        <p class="q-body">No head-of-line blocking from oversize payloads.</p>
+      </div>
+      <span class="q-accent" style="background: var(--subq-yellow);"></span>
+    </div>
+    <div class="q" style="background: var(--panel); --text-display: var(--panel-text); --text-primary: var(--panel-text); --text-secondary: var(--panel-text-dim);">
+      <div class="q-body-block">
+        <span class="eyebrow">Throughput</span>
+        <h3 class="q-head">8.4&times; ceiling.</h3>
+        <p class="q-body">Same hardware, no scaling event.</p>
+      </div>
+      <span class="q-accent" style="background: var(--subq-orange);"></span>
+    </div>
+    <div class="q" style="background: var(--subq-blue); --text-display: #fff; --text-primary: rgba(255,255,255,0.92); --text-secondary: rgba(255,255,255,0.72);">
+      <div class="q-body-block">
+        <span class="eyebrow">Cost</span>
+        <h3 class="q-head">No change.</h3>
+        <p class="q-body">The fix was a partition key, not more boxes.</p>
+      </div>
+      <span class="q-accent" style="background: var(--subq-yellow);"></span>
+    </div>
+    <div class="q" style="background: var(--subq-black); --text-display: #fff; --text-primary: rgba(255,255,255,0.92); --text-secondary: var(--subq-tan);">
+      <div class="q-body-block">
+        <span class="eyebrow">Regressions</span>
+        <h3 class="q-head">Zero so far.</h3>
+        <p class="q-body">Tenant ordering was already our contract — partitioning by it is lossless.</p>
+      </div>
+      <span class="q-accent" style="background: var(--subq-green);"></span>
+    </div>
+  </section>
+
+  <!-- Page 8 — 6-cell grid, canvas, with pixel accents -->
+  <section class="page page--canvas page--grid" aria-label="Takeaways">
+    <div class="cell">
+      <span class="eyebrow">01</span>
+      <h4 class="cell-head">Read the two graphs together, or don't read either.</h4>
+      <span class="pixel" style="background: var(--subq-yellow); width: 32px; height: 32px;"></span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">02</span>
+      <h4 class="cell-head">Throughput ceilings hide in averages.</h4>
+      <span class="pixel" style="background: var(--subq-orange); width: 32px; height: 32px;"></span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">03</span>
+      <h4 class="cell-head">Partition keys encode your real contract.</h4>
+      <span class="pixel" style="background: var(--subq-blue); width: 32px; height: 32px;"></span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">04</span>
+      <h4 class="cell-head">The fix is almost always a config change.</h4>
+      <span class="pixel" style="background: var(--subq-green); width: 32px; height: 32px;"></span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">05</span>
+      <h4 class="cell-head">Write the post-mortem before the memory fades.</h4>
+      <span class="pixel" style="background: var(--subq-yellow); width: 32px; height: 32px;"></span>
+    </div>
+    <div class="cell">
+      <span class="eyebrow">06</span>
+      <h4 class="cell-head">Ship the one-line fix. Then write the essay.</h4>
+      <span class="pixel" style="background: var(--subq-orange); width: 32px; height: 32px;"></span>
+    </div>
+  </section>
+
+  <!-- Page 9 — BACK COVER (absolute dark, ghost wordmark) -->
+  <section class="page page--dark page--back" aria-label="Back cover">
+    <div class="meta-row">
+      <span class="wordmark">Subquadratic</span>
+      <span class="eyebrow">End of dispatch · No. 01</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 24ch; position: relative; z-index: 1;">
+      <span class="eyebrow">Closing</span>
+      <h2 class="display" style="font-size: clamp(40px, 4.8vw, 84px); margin-top: 24px;">
+        Next issue — the cache key that <em>outlived</em> the cache.
+      </h2>
+    </div>
+    <div class="meta-row" style="position: relative; z-index: 1;">
+      <span class="mono-label">visual-explainer · subq</span>
+      <span class="mono-label">issue 01 / 2026</span>
+    </div>
+    <div class="ghost-wrap" aria-hidden="true">
+      <span class="ghost-mark">Subquadratic</span>
+    </div>
+  </section>
+
+</div>
+
+<nav class="nav-dots" aria-label="Page navigation">
+  <!-- Generated by script. -->
+</nav>
+
+<script>
+  (function () {
+    const html = document.documentElement;
+    const STORAGE_KEY = 'subq-magazine-theme';
+
+    // ============ THEME TOGGLE ============
+    const toggle = document.querySelector('.theme-toggle');
+    const themeButtons = toggle ? [...toggle.querySelectorAll('button')] : [];
+
+    function applyMode(choice) {
+      if (choice === 'system') {
+        delete html.dataset.theme;
+        localStorage.removeItem(STORAGE_KEY);
+      } else {
+        html.dataset.theme = choice;
+        localStorage.setItem(STORAGE_KEY, choice);
+      }
+      themeButtons.forEach(b => {
+        b.setAttribute('aria-checked', String(b.dataset.theme === choice));
+      });
+    }
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    const markup = html.dataset.theme;
+    const initial = saved === 'light' || saved === 'dark'
+      ? saved
+      : (markup === 'light' || markup === 'dark' ? markup : 'system');
+    if (initial === 'system') delete html.dataset.theme;
+    else html.dataset.theme = initial;
+    themeButtons.forEach(b => {
+      b.setAttribute('aria-checked', String(b.dataset.theme === initial));
+      b.addEventListener('click', () => applyMode(b.dataset.theme));
+    });
+
+    // ============ MAGAZINE NAV ============
+    const mag = document.getElementById('mag');
+    const pages = Array.from(mag.querySelectorAll('.page'));
+    const nav = document.querySelector('.nav-dots');
+    const counterCurrent = document.getElementById('counter-current');
+    const counterTotal = document.getElementById('counter-total');
+
+    pages.forEach((_, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'nav-dot' + (i === 0 ? ' active' : '');
+      btn.setAttribute('data-page', String(i + 1));
+      btn.setAttribute('aria-label', 'Go to page ' + (i + 1));
+      btn.addEventListener('click', () => {
+        mag.scrollTo({ left: i * window.innerWidth, behavior: 'smooth' });
+      });
+      nav.appendChild(btn);
+    });
+
+    counterTotal.textContent = String(pages.length).padStart(2, '0');
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+          const idx = pages.indexOf(entry.target);
+          if (idx >= 0) {
+            document.querySelectorAll('.nav-dot').forEach((d, i) =>
+              d.classList.toggle('active', i === idx)
+            );
+            counterCurrent.textContent = String(idx + 1).padStart(2, '0');
+          }
+        }
+      });
+    }, { root: mag, threshold: [0.5] });
+
+    pages.forEach((p) => io.observe(p));
+
+    document.addEventListener('keydown', (e) => {
+      const w = window.innerWidth;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        mag.scrollBy({ left: w, behavior: 'smooth' });
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        mag.scrollBy({ left: -w, behavior: 'smooth' });
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        mag.scrollTo({ left: 0, behavior: 'smooth' });
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        mag.scrollTo({ left: mag.scrollWidth, behavior: 'smooth' });
+      }
+    });
+
+    mag.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        mag.scrollBy({ left: e.deltaY, behavior: 'auto' });
+      }
+    }, { passive: false });
+  })();
+</script>
+</body>
+</html>

@@ -523,7 +523,8 @@ Magazine is a slide mode, not a separate format — the compositional rules, con
 
 **Before generating slides**, read `./references/slide-patterns.md` (engine CSS, slide types, transitions, nav chrome, presets, magazine mode) and one of:
 - `./templates/mono-industrial-slides.html` (vertical, Mono-Industrial)
-- `./templates/mono-industrial-magazine.html` (horizontal, Mono-Industrial)
+- `./templates/mono-industrial-magazine.html` (horizontal, Mono-Industrial — default magazine)
+- `./templates/subq-magazine.html` (horizontal, SubQ brand — when the user asks for SubQ/Subquadratic)
 - `./templates/slide-deck.html` (vertical, legacy aesthetics)
 
 Also read `./references/css-patterns.md` for shared patterns, `./references/libraries.md` for Mermaid/Chart.js theming, and `./references/diagram-tokens.md` for the per-aesthetic tint ramps that magazine mode uses across interior pages.
