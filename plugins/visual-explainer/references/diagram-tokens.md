@@ -82,6 +82,35 @@ Notes:
 - SubQ's "accent" lands on the focal node AND optionally its matching legend cell — pixel blocks in the legend share the accent color. Still ≤ 2 focal elements in the diagram body.
 - Cross-mark corner anchors (SubQ motif) can optionally appear at SVG corners at 8px from each edge.
 
+### Nothing
+
+Diagrams inside a Nothing page carry the instrument-panel look: OLED-black canvas, status-color accents, and the segmented progress bar as the dominant data-viz motif. Doto is available for exactly one hero glyph per diagram (a focal number on a dashboard/layer stack). The accent (`#D71921` Nothing red) is reserved for a single critical node — otherwise default to `--warning` / `--success` drawn from content.
+
+```css
+--paper:       #000000;   /* dark-first; light mode flips to #F5F5F5 */
+--paper-2:     #111111;
+--ink:         #E8E8E8;
+--muted:       #999999;
+--soft:        #666666;
+--rule:        #222222;
+--rule-solid:  #333333;
+--accent:      var(--warning, #D4A843);   /* default focal; escalate to #D71921 only for critical */
+--accent-tint: rgba(212, 168, 67, 0.10);
+--link:        #5B9BF6;
+
+--font-display: "Doto", "Space Mono", monospace;   /* load only when a hero glyph appears */
+--font-body:    "Space Grotesk", system-ui, sans-serif;
+--font-mono:    "Space Mono", ui-monospace, monospace;
+```
+
+Notes:
+- Every text node label in a Nothing diagram is **Space Mono ALL CAPS** with `letter-spacing: 0.08em`. Body-copy callouts use Space Grotesk.
+- **No zebra fills** on layer stacks or swimlanes. Use hairline dividers only.
+- **Segmented progress bars substitute for bar charts** wherever applicable (2px gaps, square ends, status-color fills).
+- Dot-grid backdrop (`radial-gradient(circle, #333 1px, transparent 1px) / 16px 16px`) is the signature hero backdrop; omit it on dense diagrams where it fights with the nodes.
+- Accent red (`#D71921`) is reserved — use `--warning` or `--success` drawn from content status for everything else. Hitting red means "the viewer is looking at the one urgent element on the page."
+- No shadows, no blur, no gradients. Borders only.
+
 ### Editorial-Diagram (diagram-design native)
 
 When the user explicitly asks for "editorial diagram" or "diagram-design" style, use the native palette and font stack from the upstream project.

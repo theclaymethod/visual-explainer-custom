@@ -1458,6 +1458,7 @@ Every page uses a different background tint. The tint values **adapt to the acti
 |---|---|---|
 | Mono-Industrial | `#f6f4f0`, `#efe9df`, `#e8e0d0`, `#ddd3bf`, `#d0c2a8` | `#0a0a0a`, `#16130f` |
 | SubQ | `#f7f0e4`, `#f2e9d7`, `#ebdfc6`, plus pixel-block framed accent pages | `#000000`, `#111111` |
+| Nothing | Dark-first: `#000000` canvas + `#111111` surface + `#1A1A1A` raised. Light mode: `#F5F5F5` canvas + `#FFFFFF` surface + `#F0F0F0` raised. Interior pages rotate canvas → surface → raised, plus dot-grid-backed dark panels for rhythm. | `#000000` (absolute — same in both modes) |
 | Editorial-Diagram / Paper-ink | `#faf7f2`, `#f2ede4`, `#ebe2d2`, `#e2d5bc`, `#d4c29f` | `#1c1917`, `#292524` |
 | Blueprint | `#0f1b2e`, `#13233a`, `#17294a`, `#1b2f56` (dark-first — inverse to mostly dark) | `#050b18` |
 
