@@ -1,6 +1,6 @@
 # Pretext for SVG Diagram Layout
 
-This is an exploration note for [`chenglou/pretext`](https://github.com/chenglou/pretext), not a canonical rule change yet.
+Canonical rule for inline-SVG diagrams in this skill: when a box wraps around measured text, route the label through [`chenglou/pretext`](https://github.com/chenglou/pretext) rather than hand-guessing geometry. Pretext handles text measurement and wrapping; everything else (graph routing, packing, collision resolution) stays with ELK / dagre / manual placement.
 
 ## Why this library is relevant here
 
