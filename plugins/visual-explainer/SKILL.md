@@ -118,6 +118,8 @@ For prose accents, see "Prose Page Elements" in `./references/css-patterns.md`. 
 
 **For pages with 4+ sections** (reviews, recaps, dashboards), also read `./references/responsive-nav.md` for section navigation with sticky sidebar TOC on desktop and horizontal scrollable bar on mobile.
 
+**For every scrollable page** (explainers, magazines, longform — everything except fixed-canvas slides and posters), read `./references/responsive-contract.md` and apply the Layer 1 CSS at the top of the `<style>` block. The contract is a single hard rule: the document body never scrolls horizontally; wide content (tables, Mermaid diagrams, inline SVGs, pipelines, directory trees) scrolls inside its own `.scroll-x` wrapper. Skipping this is the #1 cause of broken mobile layouts from this skill.
+
 **Choosing a rendering approach:**
 
 | Content type | Approach | Why |
@@ -353,7 +355,7 @@ If you skip this step and your prose still reads as AI-generated (telltale phras
 **What to inspect in the screenshots (the LLM reads them):**
 
 - **Mermaid rendered**, not a raw `<pre class="mermaid">` text dump. If you see Mermaid source code on the page, the diagram failed to parse — fix the source and regenerate.
-- **No layout overflow.** Content stays inside its container at both desktop and mobile widths. Horizontal scrollbars on the body are a failure (except inside intentional `.table-scroll` / `.mermaid-wrap` containers).
+- **No layout overflow.** Content stays inside its container at both desktop and mobile widths. Horizontal scrollbars on the body are a **hard failure** — if `document.documentElement.scrollWidth > window.innerWidth` at 390×844, the page does not ship. Wide content (tables, Mermaid diagrams, inline SVGs, pipelines, directory trees) must scroll inside an intentional `.scroll-x` / `.table-scroll` / `.mermaid-wrap` container, never by widening the page. Enforcement rules, root causes, and the Playwright verification snippet live in `./references/responsive-contract.md`.
 - **Text not clipped or truncated.** Headings wrap cleanly. No ellipsis where there shouldn't be one. No characters pushed off-screen.
 - **No template placeholders leaked** into output (`{{skill_dir}}`, `TODO`, placeholder names like "Module A" unless that's genuinely the content).
 - **Hierarchy visible at a glance.** Apply the squint test mentally to the screenshot: the primary element dominates, the tertiary metadata stays quiet. For Mono-Industrial specifically: the three-layer rule is legible, status colors appear only on values, the one moment of surprise is clearly placed.

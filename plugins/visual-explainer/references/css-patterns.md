@@ -1148,16 +1148,56 @@ For simple inline visualizations without a library:
 
 ## Responsive Breakpoint
 
-Include a single breakpoint for narrow viewports:
+**This section is a shortcut. The full mobile contract lives in `./responsive-contract.md` — read that first.** Every scrollable page must apply the page-level overflow contract and the `.scroll-x` wrapper pattern before relying on breakpoints alone.
+
+Default breakpoint: **768px** for most layouts, **820px** only when a sidebar/TOC collapses earlier. Use `minmax(0, 1fr)` for any grid track that contains wide children — plain `1fr` refuses to shrink.
 
 ```css
+/* Page-level contract — apply once, near the top of <style>. */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;   /* fallback */
+  overflow-x: clip;     /* preserves position: sticky in children */
+}
+body { overflow-wrap: anywhere; }
+
+/* Grid / flex children must be allowed to shrink. */
+body :where(.grid, .flex, [class*="-grid"], [class*="-row"]) > * { min-width: 0; }
+
+/* Horizontal-scroll wrapper for wide content (tables, SVGs, pipelines, trees). */
+.scroll-x {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+.scroll-x::-webkit-scrollbar { height: 6px; }
+.scroll-x::-webkit-scrollbar-thumb {
+  background: var(--border-bright, rgba(0,0,0,.25));
+  border-radius: 3px;
+}
+
+/* Mobile collapse rules for the patterns in this file. */
 @media (max-width: 768px) {
-  .arch-grid { grid-template-columns: 1fr; }
-  .pipeline { flex-wrap: wrap; gap: 8px; }
-  .pipeline__arrow { display: none; }
   body { padding: 16px; }
+
+  .arch-grid,
+  .comparison,
+  .diff-panels,
+  .dir-compare { grid-template-columns: 1fr; }
+
+  /* Pipelines scroll horizontally rather than wrap — wrapping breaks the
+     left-to-right reading cue. Pair with .scroll-x if overflow is desired. */
+  .pipeline { flex-wrap: nowrap; }
+
+  /* Shrink minimum column width rather than collapse the row. */
+  .kpi-row { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+  .card-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
 }
 ```
+
+Wrap every `<table>` wider than ~600px in `<div class="scroll-x">` (or combine `.scroll-x` with `.table-scroll`). Wrap every inline SVG with a fixed minimum width in `<div class="scroll-x">`. Mermaid diagrams are already inside `.mermaid-wrap` — verify its `max-width: 100%` and `overflow: auto`.
 
 ## Badges and Tags
 
